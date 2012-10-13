@@ -25,6 +25,8 @@ public class Deamon : GLib.Object {
 
     public static string version;
     
+    private static DBusInterface dbus_interface = null;
+    
     /////////////////////////////////////////////////////////////////////
     /// The beginning of everything.
     /////////////////////////////////////////////////////////////////////
@@ -38,17 +40,6 @@ public class Deamon : GLib.Object {
         
         message("Welcome to OpenPie " + version + "!");
 
-        // create the Deamon and run it
-        run(args);
-
-        return 0;
-    }
-    
-    
-    private static DBusInterface dbus_interface = null;
-  
-    public static void run(string[] args) {
-
         // connect SigHandlers
         Posix.signal(Posix.SIGINT, sig_handler);
 	    Posix.signal(Posix.SIGTERM, sig_handler);
@@ -58,8 +49,10 @@ public class Deamon : GLib.Object {
 	    
 	    dbus_interface = new DBusInterface();
 	    dbus_interface.bind();
+
+        return 0;
     }
-    
+
     /////////////////////////////////////////////////////////////////////
     /// Print a nifty message when the prog is killed.
     /////////////////////////////////////////////////////////////////////

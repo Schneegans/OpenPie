@@ -22,16 +22,12 @@ public class DBusInterface : GLib.Object {
     [DBus (name = "org.openpie.main")]
     public class OpenPieServer : GLib.Object {
 
-        public int open_menu(string menu) {
-            debug("Got request: " + menu);
-            
-            debug("Sent confirmation.");
-            on_selection(0, menu);
+        public string show_menu(string menu_description) {
+            var menu = new Menu.from_string(menu_description);
+            menu.beauty_print();
 
-            return 0;
+            return "fertsch";
         } 
-        
-        public signal void on_selection(int menu_id, string selected_item);
     }
     
     private MainLoop loop = null;
