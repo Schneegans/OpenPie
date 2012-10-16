@@ -21,40 +21,40 @@ public class DBusInterface : GLib.Object {
 
     [DBus (name = "org.openpie.main")]
     public class OpenPieServer : GLib.Object {
+    
+        public signal void on_selection(int id, string item);
+        
+        private PieMenu menu = null;
 
-        public string show_menu(string menu_description) {
-            var menu = new Menu.from_string(menu_description);
-            menu.beauty_print();
-
-            return "fertsch";
+        public int show_menu(string menu_description) {
+            debug("Got show request!");
+            this.menu = new PieMenu(menu_description);
+            this.menu.display();
+            
+            this.menu.on_selection.connect((item) => {
+                on_selection(0, item);
+            });
+            
+            return 0;
         } 
-    }
-    
-    private MainLoop loop = null;
-    
-    public DBusInterface() {
-        loop = new MainLoop();
-    }
-
-    void on_bus_aquired(DBusConnection conn) {
-        try {
-            conn.register_object("/org/openpie/main", new OpenPieServer());
-        } catch (IOError e) {
-            error("Could not register service");
-        }
     }
 
     public void bind() {
         Bus.own_name (BusType.SESSION, "org.openpie.main", BusNameOwnerFlags.NONE,
-        on_bus_aquired,
-        () => message("DBus name aquired!"),
-        () => warning("Could not aquire DBus name!"));
+            (con) => {
+                try {
+                    con.register_object("/org/openpie/main", new OpenPieServer());
+                } catch (IOError e) {
+                    error("Could not register service");
+                }},
+            () => message("DBus name aquired!"),
+            () => warning("Could not aquire DBus name!"));
 
-        loop.run();
+        Gtk.main();
     }
     
     public void unbind() {
-        loop.quit();
+        Gtk.main_quit();
     }
 }
 
