@@ -17,7 +17,9 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace OpenPie {
 
-public class MenuView : GLib.Object {
+public abstract class MenuView : GLib.Object {
+
+    public signal void on_close();
 
     protected TransparentWindow window = null;
     protected MenuModel model = null;
@@ -25,7 +27,11 @@ public class MenuView : GLib.Object {
     public MenuView(MenuModel model, TransparentWindow window) {
         this.window = window;
         this.model = model;
+        
+        this.window.on_draw.connect(on_draw);
     }
+    
+     protected abstract void on_draw(Cairo.Context ctx, double time); 
 
 }   
     

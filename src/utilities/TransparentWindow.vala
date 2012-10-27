@@ -26,6 +26,9 @@ namespace OpenPie {
 public class TransparentWindow : Gtk.Window {
 
     public signal void on_mouse_move(double x, double y);
+    public signal void on_key_down(Key key);
+    public signal void on_key_up(Key key);
+    public signal void on_draw(Cairo.Context ctx, double time);
     
     /////////////////////////////////////////////////////////////////////
     /// The background image used for fake transparency if
@@ -46,6 +49,8 @@ public class TransparentWindow : Gtk.Window {
     
     private bool has_compositing = false;
     
+    private bool needs_redraw = false;
+    
     /////////////////////////////////////////////////////////////////////
     /// C'tor, sets up the window.
     /////////////////////////////////////////////////////////////////////
@@ -59,7 +64,7 @@ public class TransparentWindow : Gtk.Window {
         this.set_resizable(false);
         this.set_accept_focus(false);
         this.set_position(Gtk.WindowPosition.MOUSE);
-        this.set_size_request(300, 300);
+        this.maximize();
         
         // check for compositing
         if (this.screen.is_composited()) {
@@ -77,23 +82,23 @@ public class TransparentWindow : Gtk.Window {
                         Gdk.EventMask.KEY_PRESS_MASK |
                         Gdk.EventMask.POINTER_MOTION_MASK);
 
-        this.button_release_event.connect ((e) => {
-
+        this.button_release_event.connect((e) => {
+            this.on_key_up(new Key.from_mouse(e.button, e.state));
             return true;
         });
         
-        this.button_press_event.connect ((e) => {
-            this.cancel();
+        this.button_press_event.connect((e) => {
+            this.on_key_down(new Key.from_mouse(e.button, e.state));
             return true;
         });
         
         this.key_press_event.connect((e) => {
-
+            this.on_key_down(new Key.from_keyboard(e.keyval, e.state));
             return true;
         });
         
         this.key_release_event.connect((e) => {
-
+            this.on_key_up(new Key.from_keyboard(e.keyval, e.state));
             return true;
         });
         
@@ -131,19 +136,29 @@ public class TransparentWindow : Gtk.Window {
         }
     
         // capture the input focus
-        this.show();
-
-        // start the timer
-        this.timer = new GLib.Timer();
-        this.timer.start();
-        this.queue_draw();
+        this.show(); 
+        this.start_rendering();
+    }
+    
+    public void start_rendering() {
+        if (!this.needs_redraw) {
+            this.needs_redraw = true;    
+            
+            // start the timer
+            this.timer = new GLib.Timer();
+            this.timer.start();
         
-        // the main draw loop
-        GLib.Timeout.add((uint)(1000.0/30.0), () => {  
-                              
             this.queue_draw();
-            return this.visible;
-        }); 
+            GLib.Timeout.add((uint)(1000.0/60.0), () => {             
+                this.queue_draw();
+                return this.needs_redraw;
+            });
+        } 
+    }
+    
+    
+    public void stop_rendering() {
+        this.needs_redraw = false; 
     }
     
     /////////////////////////////////////////////////////////////////////
@@ -166,6 +181,13 @@ public class TransparentWindow : Gtk.Window {
         
         out_x = x + width/2;
         out_y = y + height/2;
+    }
+    
+    public void remove_grab() {
+        debug("remove");
+        Gtk.grab_remove(this);
+        FocusGrabber.ungrab();
+        this.get_window().input_shape_combine_region(new Cairo.Region(), 0, 0);
     }
     
     /////////////////////////////////////////////////////////////////////
@@ -200,18 +222,10 @@ public class TransparentWindow : Gtk.Window {
         // store the frame time
         double frame_time = this.timer.elapsed();
         this.timer.reset();
-        
-        // render the Pie
-        ctx.set_source_rgba(0, 0, 0, 0.5);
-        ctx.paint();
+
+        this.on_draw(ctx, frame_time);
         
         return true;
-    }
-    
-    private void cancel() {
-        Gtk.grab_remove(this);
-        FocusGrabber.ungrab();
-        this.destroy();
     }
 }
 

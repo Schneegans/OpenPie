@@ -19,7 +19,8 @@ namespace OpenPie {
 
 public class PieMenu : GLib.Object {
 
-    public signal void on_selection(string item);
+    public signal void on_select(string item);
+    public signal void on_close();
 
     private TransparentWindow window = null;
     private MenuController controller = null;
@@ -30,7 +31,6 @@ public class PieMenu : GLib.Object {
         window = new TransparentWindow();
     
         model = new TraceMenuModel.from_string(menu_description);
-        model.beauty_print();
 
         controller = new TraceMenuController(model, window);
         view = new TraceMenuView(model, window);
@@ -38,9 +38,14 @@ public class PieMenu : GLib.Object {
     
     public void display() {
         window.open();
-
-        window.hide.connect(() => {
-            on_selection("huhu");
+        
+        controller.on_select.connect((item) => {
+            on_select(item);
+        });
+        
+        view.on_close.connect(() => {
+            window.destroy();
+            on_close();
         });
     }
 }   

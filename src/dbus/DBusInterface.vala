@@ -22,20 +22,33 @@ public class DBusInterface : GLib.Object {
     [DBus (name = "org.openpie.main")]
     public class OpenPieServer : GLib.Object {
     
-        public signal void on_selection(int id, string item);
+        public signal void on_select(int id, string item);
         
-        private PieMenu menu = null;
+        private Gee.HashMap<PieMenu, int> open_menus = null;
+        private int current_id = 0;
+        
+        public OpenPieServer() {
+            this.open_menus = new Gee.HashMap<PieMenu, int>();
+        }
 
         public int show_menu(string menu_description) {
-            debug("Got show request!");
-            this.menu = new PieMenu(menu_description);
-            this.menu.display();
+            var menu = new PieMenu(menu_description);
             
-            this.menu.on_selection.connect((item) => {
-                on_selection(0, item);
+            this.current_id +=1;
+            this.open_menus.set(menu, this.current_id);
+            
+            menu.display();
+            
+            menu.on_select.connect((item) => {
+                on_select(this.open_menus.get(menu), item);
             });
             
-            return 0;
+            menu.on_close.connect(() => {
+                message("close");
+                this.open_menus.remove(menu);
+            });
+            
+            return this.current_id;
         } 
     }
 
