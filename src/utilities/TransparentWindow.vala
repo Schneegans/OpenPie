@@ -49,6 +49,8 @@ public class TransparentWindow : Gtk.Window {
     
     private bool has_compositing = false;
     
+    private bool initial_draw = true;
+    
     private bool needs_redraw = false;
     
     /////////////////////////////////////////////////////////////////////
@@ -184,7 +186,6 @@ public class TransparentWindow : Gtk.Window {
     }
     
     public void remove_grab() {
-        debug("remove");
         Gtk.grab_remove(this);
         FocusGrabber.ungrab();
         this.get_window().input_shape_combine_region(new Cairo.Region(), 0, 0);
@@ -211,7 +212,7 @@ public class TransparentWindow : Gtk.Window {
             ctx.set_source_surface(background.surface, -1, -1);
             ctx.paint();
         }
-
+        
         // align the context to the center of the PieWindow
         ctx.translate(this.width_request*0.5, this.height_request*0.5);
         
@@ -222,8 +223,12 @@ public class TransparentWindow : Gtk.Window {
         // store the frame time
         double frame_time = this.timer.elapsed();
         this.timer.reset();
-
-        this.on_draw(ctx, frame_time);
+        
+        if (this.initial_draw) {
+            this.initial_draw = false;
+        } else {
+            this.on_draw(ctx, frame_time);
+        }
         
         return true;
     }

@@ -44,7 +44,6 @@ public class DBusInterface : GLib.Object {
             });
             
             menu.on_close.connect(() => {
-                message("close");
                 this.open_menus.remove(menu);
             });
             

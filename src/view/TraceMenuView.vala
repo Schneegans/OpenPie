@@ -18,30 +18,15 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace OpenPie {
 
 public class TraceMenuView : MenuView {
-
-    public AnimatorPool anims = null;
-    public Animator size = null;
     
-    public TraceMenuView(MenuModel model, TransparentWindow window) {
-        base(model, window);
+    private TraceMenu model = null;
+    
+    public TraceMenuView(TraceMenu model, TransparentWindow window) {
+        base(window);
         
-        size = new Animator.cubic(Animator.Direction.IN_OUT, 10, 100, 1, 1);
-        bool even = true;
-        
-        anims = new AnimatorPool();
-        anims.add(size);
-        
-        GLib.Timeout.add(3000, () => {
-            even = !even;
-            
-            if (even) size.reset_target(100, 1);
-            else      size.reset_target(10, 1);
-            
-            window.start_rendering();
-            return true;
-        });
-        
-        window.on_key_down.connect((key) => {message("down");GLib.Timeout.add(1000, () => {on_close(); return false;});});
+        this.model = model;
+
+        window.on_key_down.connect((key) => {GLib.Timeout.add(1000, () => {on_close(); return false;});});
     }
     
     protected override void on_draw(Cairo.Context ctx, double time) {
@@ -49,14 +34,32 @@ public class TraceMenuView : MenuView {
         ctx.set_source_rgba(0, 0, 0, 0.5);
         ctx.paint();
         
-        size.update(time);
+        this.model.update_animations(time);
+        this.draw_menu(ctx, this.model, 500, 500);
         
-        ctx.set_source_rgba(1, 0.5, 0, 1);
-        ctx.arc(0, 0, size.val, 0, 2*GLib.Math.PI);
+        if (!this.model.is_animating())
+            this.window.stop_rendering();
+    }
+    
+    private void draw_menu(Cairo.Context ctx, TraceMenu menu, int parent_x, int parent_y) {
+    
+        
+    
+        int x = parent_x;
+        int y = parent_y;
+        if (menu.anim_distance.val != 0) {
+            x += (int) (GLib.Math.sin(menu.anim_angle.val) * menu.anim_distance.val);
+            y -= (int) (GLib.Math.cos(menu.anim_angle.val) * menu.anim_distance.val);
+        }
+        
+//        debug(menu.text + " %f".printf(menu.anim_distance.val));
+    
+        ctx.set_source_rgba(1, 0.5, 0, 1.0);
+        ctx.arc(x, y, menu.anim_radius.val, 0, 2.0*GLib.Math.PI); 
         ctx.fill();
         
-        if (!anims.is_active)
-            window.stop_rendering();
+        foreach (var child in menu.children)
+            this.draw_menu(ctx, child, x, y);
     }
 }   
     

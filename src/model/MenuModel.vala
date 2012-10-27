@@ -17,81 +17,32 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace OpenPie {
 
-public class MenuModel {
-
-    public string text = "Unnamed Item";
-    public string icon = "none";
-    public double angle = 0.0;
-
-    public Gee.ArrayList<MenuModel> children;
+public class MenuModel : GLib.Object {
+    public string text { public get; public set; default = "Unnamed Item"; }
+    public string icon { public get; public set; default = "none"; }
+    public double angle { public get; public set; default = 0.0; }
     
-    public MenuModel() {
-        this.children = new Gee.ArrayList<MenuModel>();
-    }
+    public Gee.ArrayList<MenuModel> children { public get; private set; default = null; }
     
-    public MenuModel.from_string(string data) {
+    construct {
         this.children = new Gee.ArrayList<MenuModel>();
-        
-        var parser = new Json.Parser();
-        
-        try {
-            parser.load_from_data(data);
-            load_from_json(new Json.Reader(parser.get_root()));
-        } catch (GLib.Error e) {
-            error(e.message);
-        }
     }
     
     public void add_child(MenuModel item) {
         children.add(item);
     }
     
-    public void beauty_print(int indent = 0) {
+    private void print(int indent = 0) {
         string space = "";
         
         for (int i=0; i<indent; ++i)
             space += "  ";
             
-        debug(space + text + " (" + icon + ")");
+        debug(space + "\"" + this.text + "\" (Icon: \"" + this.icon + "\", Angle: %f)".printf(this.angle));
         
-        foreach (var child in children)
-            child.beauty_print(indent + 1);
-    }
-    
-    private void load_from_json(Json.Reader reader) {
-        foreach (var member in reader.list_members()) {
-            reader.read_member(member);
-        
-            if (member == "subs") {
-                if (reader.is_array()) {
-                    for (int i=0; i<reader.count_elements(); ++i) {
-                        reader.read_element(i);
-                        var child = new MenuModel();
-                        child.load_from_json(reader);
-                        add_child(child);
-                        reader.end_element();
-                    }
-                    
-                } else {
-                    warning("Element \"" + member + "\" in menu description has to be an array!");
-                }
-                
-            } else if (member == "icon") {    
-                icon = reader.get_string_value();
-                
-            } else if (member == "text") {  
-                text = reader.get_string_value();
-                
-            } else if (member == "angle") {  
-                angle = reader.get_double_value();
-                
-            } else {
-                warning("Invalid element \"" + member + "\" in menu description!");
-            }
-            
-            reader.end_member();
-        }
+        foreach (var child in this.children)
+            child.print(indent + 1);
     }
 }
-
+    
 }

@@ -22,11 +22,9 @@ public abstract class MenuController : GLib.Object {
     public signal void on_select(string item);
 
     protected TransparentWindow window = null;
-    protected MenuModel model = null;
     
-    public MenuController(MenuModel model, TransparentWindow window) {
+    public MenuController(TransparentWindow window) {
         this.window = window;
-        this.model = model;
         
         this.window.on_mouse_move.connect(on_mouse_move);
         this.window.on_key_down.connect(on_key_down);

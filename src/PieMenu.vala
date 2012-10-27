@@ -25,19 +25,21 @@ public class PieMenu : GLib.Object {
     private TransparentWindow window = null;
     private MenuController controller = null;
     private MenuView view = null;
-    private MenuModel model = null;
+    private TraceMenu menu = null;
     
     public PieMenu(string menu_description) {
         window = new TransparentWindow();
-    
-        model = new TraceMenuModel.from_string(menu_description);
-
-        controller = new TraceMenuController(model, window);
-        view = new TraceMenuView(model, window);
+        
+        var loader = new MenuLoader.from_string(menu_description);
+        
+        menu = new TraceMenu(loader.root);
+        controller = new TraceMenuController(menu, window);
+        view = new TraceMenuView(menu, window);
     }
     
     public void display() {
         window.open();
+        window.start_rendering();
         
         controller.on_select.connect((item) => {
             on_select(item);
