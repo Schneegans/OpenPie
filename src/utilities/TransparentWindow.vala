@@ -66,7 +66,6 @@ public class TransparentWindow : Gtk.Window {
         this.set_resizable(false);
         this.set_accept_focus(false);
         this.set_position(Gtk.WindowPosition.MOUSE);
-        this.maximize();
         
         // check for compositing
         if (this.screen.is_composited()) {
@@ -128,17 +127,9 @@ public class TransparentWindow : Gtk.Window {
     
     public void open() {
         this.realize();
-        
-        // capture the background image if there is no compositing
-        if (!this.has_compositing) {
-            int x, y, width, height;
-            this.get_position(out x, out y);
-            this.get_size(out width, out height);
-            this.background = new Image.capture_screen(x, y, width+1, height+1);
-        }
-    
-        // capture the input focus
+        this.maximize();
         this.show(); 
+        
         this.start_rendering();
     }
     
@@ -191,6 +182,13 @@ public class TransparentWindow : Gtk.Window {
         this.get_window().input_shape_combine_region(new Cairo.Region(), 0, 0);
     }
     
+    public Vector get_mouse_position() {
+        // get the mouse position
+        Vector result = new Vector();
+        this.get_pointer(out result.x, out result.y);
+        return result;
+    }
+    
     /////////////////////////////////////////////////////////////////////
     /// Draw the Pie.
     /////////////////////////////////////////////////////////////////////
@@ -208,17 +206,23 @@ public class TransparentWindow : Gtk.Window {
             ctx.paint();
             ctx.set_operator (Cairo.Operator.OVER);
         } else {
+        
+            // capture the background image if there is no compositing
+            if (this.background == null) {
+                int x, y, width, height;
+                this.get_window().get_origin(out x, out y);
+                this.get_size(out width, out height);
+                
+                if (width == 1 && height == 1)
+                    return true;
+                
+                this.background = new Image.capture_screen(x, y, width+1, height+1);
+            }
+        
             ctx.set_operator (Cairo.Operator.OVER);
             ctx.set_source_surface(background.surface, -1, -1);
             ctx.paint();
         }
-        
-        // align the context to the center of the PieWindow
-        ctx.translate(this.width_request*0.5, this.height_request*0.5);
-        
-        // get the mouse position
-        double mouse_x = 0.0, mouse_y = 0.0;
-        this.get_pointer(out mouse_x, out mouse_y);
         
         // store the frame time
         double frame_time = this.timer.elapsed();

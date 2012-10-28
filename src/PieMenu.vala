@@ -32,7 +32,7 @@ public class PieMenu : GLib.Object {
         
         var loader = new MenuLoader.from_string(menu_description);
         
-        menu = new TraceMenu(loader.root);
+        menu = new TraceMenu(TraceMenuHelpers.adjust_angles(loader.root));
         controller = new TraceMenuController(menu, window);
         view = new TraceMenuView(menu, window);
     }

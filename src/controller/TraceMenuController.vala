@@ -19,13 +19,12 @@ namespace OpenPie {
 
 public class TraceMenuController : MenuController {
     
-    private TraceMenu model = null;
+    private TraceMenu menu = null;
     
-    public TraceMenuController(TraceMenu model, TransparentWindow window) {
+    public TraceMenuController(TraceMenu menu, TransparentWindow window) {
         base(window);
         
-        this.model = model;
-        this.model.state = TraceMenu.State.ACTIVE;
+        this.menu = menu;
     }
     
     protected override void on_mouse_move(double x, double y) {
@@ -38,6 +37,8 @@ public class TraceMenuController : MenuController {
     
     protected override void on_key_down(Key key) {
         this.window.remove_grab();
+        this.menu.fade_out();
+        this.window.start_rendering();
         this.on_select("test");
     }
 }   

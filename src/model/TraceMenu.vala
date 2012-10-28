@@ -18,55 +18,33 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace OpenPie {
 
 public class TraceMenu : GLib.Object {
+                
+    public Gee.ArrayList<TraceMenuItem> children { public get; 
+                                                   private set; 
+                                                   default = null;}
     
-    public enum State { ACTIVE, HOVERED, HOVERABLE, PREVIEW, SELECTED, INVISIBLE }
+    public Vector origin { public get; public set; default = new Vector(-1, -1); }
     
-    public State state { public get {return this._state;} 
-                         public set {this.update_state(value);} }
-                         
-    public string text { public get; 
-                         private set; 
-                         default = "Unnamed Item";}
-                         
-    public string icon { public get; 
-                         private set; 
-                         default = "none";}
-                         
-    public double angle { public get; 
-                          private set; 
-                          default = 0.0;}
-                         
-    public Gee.ArrayList<TraceMenu> children { public get; 
-                                                    private set; 
-                                                    default = null;}
+    public Animator anim_alpha { public get; private set; default = null; }
     
-    public Animator anim_distance { public get; private set; default = null;}
-    public Animator anim_angle { public get; private set; default = null;}
-    public Animator anim_radius { public get; private set; default = null;}
-    
-    private State _state = State.INVISIBLE;
     private AnimatorPool animations = null;
     
     construct {
-        this.children = new Gee.ArrayList<TraceMenu>();
+        this.children = new Gee.ArrayList<TraceMenuItem>();
         this.animations = new AnimatorPool();
     }
     
     public TraceMenu(MenuModel model) {
-        this.text = model.text;
-        this.icon = model.icon;
-        this.angle = model.angle;
+        this.anim_alpha = new Animator.linear(0.0, 0.5, 1.0);
+        this.animations.add(this.anim_alpha);
+
+        foreach (var child in model.children) {
+            children.add(new TraceMenuItem(child));
+        }
         
-        this.anim_distance = new Animator.cubic(Animator.Direction.IN_OUT, 0.0, 0.0, 1.0, 0.5);
-        this.anim_angle = new Animator.cubic(Animator.Direction.IN_OUT, 0.0, this.angle, 1.0, 0.5);
-        this.anim_radius = new Animator.cubic(Animator.Direction.IN_OUT, 0.0, 1.0, 1.0, 0.5);
-        
-        this.animations.add(this.anim_angle);
-        this.animations.add(this.anim_radius);
-        this.animations.add(this.anim_distance);
-        
-        foreach (var child in model.children)
-            children.add(new TraceMenu(child));
+        foreach (var child in children) {
+            child.state = TraceMenuItem.State.HOVERABLE;
+        }
     }
     
     public bool is_animating() {
@@ -87,49 +65,11 @@ public class TraceMenu : GLib.Object {
             child.update_animations(time);
     }
     
-    private void update_state(State new_state) {
-    
-        if (new_state != this.state) {
-            switch (new_state) {
-                case State.ACTIVE: {
-                    foreach (var child in this.children)
-                        child.state = State.HOVERABLE;
-                    this.anim_radius.reset_target(40.0, 1.0);
-                    this.anim_distance.reset_target(100.0, 1.0);
-                } break;
-                
-                case State.HOVERED: {
-                    foreach (var child in this.children)
-                        child.state = State.PREVIEW;
-                } break;
-                
-                case State.HOVERABLE: {
-                    foreach (var child in this.children)
-                        child.state = State.PREVIEW;
-                    this.anim_radius.reset_target(20.0, 1.0);
-                    this.anim_distance.reset_target(70.0, 1.0);
-                } break;
-                
-                case State.PREVIEW: {
-                    foreach (var child in this.children)
-                        child.state = State.INVISIBLE;
-                    this.anim_radius.reset_target(10.0, 1.0);
-                    this.anim_distance.reset_target(30.0, 1.0);
-                } break;
-                
-                case State.SELECTED: {
-                    foreach (var child in this.children)
-                        child.state = State.PREVIEW;
-                    this.anim_radius.reset_target(20.0, 1.0);
-                    this.anim_distance.reset_target(100.0, 1.0);
-                } break;
-                
-                case State.INVISIBLE: {
-                    this.anim_radius.reset_target(0.0, 1.0);
-                    this.anim_distance.reset_target(20.0, 1.0);
-                } break;
-            }
-        }
+    public void fade_out() {
+        this.anim_alpha.reset_target(0.0, 1.0);
+        
+        foreach (var child in this.children)
+            child.fade_out();
     }
 }    
     
