@@ -53,20 +53,29 @@ public class DBusInterface : GLib.Object {
 
     public void bind() {
         Bus.own_name (BusType.SESSION, "org.openpie.main", BusNameOwnerFlags.NONE,
-            (con) => {
-                try {
-                    con.register_object("/org/openpie/main", new OpenPieServer());
-                } catch (IOError e) {
-                    error("Could not register service");
-                }},
-            () => message("DBus name aquired!"),
-            () => warning("Could not aquire DBus name!"));
+                        on_connection, on_success, on_fail);
 
         Gtk.main();
     }
     
     public void unbind() {
         Gtk.main_quit();
+    }
+    
+    private void on_connection(GLib.DBusConnection con) {
+        try {
+            con.register_object("/org/openpie/main", new OpenPieServer());
+        } catch (IOError e) {
+            error("Could not register service");
+        }
+    }
+    
+    private void on_success() {
+        message("DBus name aquired!");
+    }
+    
+    private void on_fail() {
+        error("Could not aquire DBus name! (Maybe OpenPie server is already running?)");
     }
 }
 

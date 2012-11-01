@@ -30,43 +30,46 @@ public class TraceMenuView : MenuView {
     }
     
     protected override void on_draw(Cairo.Context ctx, double time) {
-        if (this.menu.origin.x == -1)
-            this.menu.origin = window.get_mouse_position();
-    
+        if (this.menu.origin.x == -1) {
+            var mouse = window.get_mouse_position();
+            if (mouse.x == 0 && mouse.y == 0)
+                return;
+            this.menu.origin = mouse;
+        }
+        
         // render the Pie
         ctx.set_source_rgba(0, 0, 0, this.menu.anim_alpha.val);
         ctx.paint();
         
         this.menu.update_animations(time);
-        
-        ctx.set_source_rgba(0.0, 0.5, 1.0, 1.0);
-        ctx.arc(this.menu.origin.x, this.menu.origin.y, 20, 0, 2.0*GLib.Math.PI); 
-        ctx.fill();
-        
-        foreach (var item in this.menu.children)
-            this.draw_menu(ctx, item, this.menu.origin);
+        this.update_menu(this.menu.root, this.menu.origin);
+        this.draw_menu(this.menu.root, ctx);
         
         if (!this.menu.is_animating())
             this.window.stop_rendering();
     }
     
-    private void draw_menu(Cairo.Context ctx, TraceMenuItem menu, Vector parent_position) {
+    private void update_menu(TraceMenuItem menu, Vector parent_position) {
+        menu.position = parent_position.copy();
+        
+        if (menu.anim_distance.val != 0) {
+            menu.position.x += (int) (GLib.Math.sin(menu.anim_angle.val) * menu.anim_distance.val);
+            menu.position.y -= (int) (GLib.Math.cos(menu.anim_angle.val) * menu.anim_distance.val);
+        }
+        
+        foreach (var child in menu.children)
+            this.update_menu(child, menu.position);
+    }
+    
+    private void draw_menu(TraceMenuItem menu, Cairo.Context ctx) {
         
         if (menu.anim_radius.val > 0.0) {
-        
-            Vector position = parent_position.copy();
-            
-            if (menu.anim_distance.val != 0) {
-                position.x += (int) (GLib.Math.sin(menu.anim_angle.val) * menu.anim_distance.val);
-                position.y -= (int) (GLib.Math.cos(menu.anim_angle.val) * menu.anim_distance.val);
-            }
-        
             ctx.set_source_rgba(1, 0.5, 0, 1.0);
-            ctx.arc(position.x, position.y, menu.anim_radius.val, 0, 2.0*GLib.Math.PI); 
+            ctx.arc(menu.position.x, menu.position.y, menu.anim_radius.val, 0, 2.0*GLib.Math.PI); 
             ctx.fill();
             
             foreach (var child in menu.children)
-                this.draw_menu(ctx, child, position);
+                this.draw_menu(child, ctx);
         }
     }
 }   

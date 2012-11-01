@@ -19,9 +19,7 @@ namespace OpenPie {
 
 public class TraceMenu : GLib.Object {
                 
-    public Gee.ArrayList<TraceMenuItem> children { public get; 
-                                                   private set; 
-                                                   default = null;}
+    public TraceMenuItem root { public get; private set; default = null;}
     
     public Vector origin { public get; public set; default = new Vector(-1, -1); }
     
@@ -30,7 +28,6 @@ public class TraceMenu : GLib.Object {
     private AnimatorPool animations = null;
     
     construct {
-        this.children = new Gee.ArrayList<TraceMenuItem>();
         this.animations = new AnimatorPool();
     }
     
@@ -38,38 +35,28 @@ public class TraceMenu : GLib.Object {
         this.anim_alpha = new Animator.linear(0.0, 0.5, 1.0);
         this.animations.add(this.anim_alpha);
 
-        foreach (var child in model.children) {
-            children.add(new TraceMenuItem(child));
-        }
-        
-        foreach (var child in children) {
-            child.state = TraceMenuItem.State.HOVERABLE;
-        }
+        this.root = new TraceMenuItem(model);
+        this.root.state = TraceMenuItem.State.ACTIVE;
     }
     
     public bool is_animating() {
         if (this.animations.is_active)
             return true;
     
-        foreach (var child in this.children)
-            if (child.is_animating())
-                return true;
+        if (this.root.is_animating())
+            return true;
                 
         return false;
     }
     
     public void update_animations(double time) {
         this.animations.update(time);
-    
-        foreach (var child in this.children)
-            child.update_animations(time);
+        this.root.update_animations(time);
     }
     
     public void fade_out() {
         this.anim_alpha.reset_target(0.0, 1.0);
-        
-        foreach (var child in this.children)
-            child.fade_out();
+        this.root.fade_out();
     }
 }    
     

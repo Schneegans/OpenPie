@@ -35,6 +35,10 @@ public class TraceMenuItem : GLib.Object {
     public double angle { public get; 
                           private set; 
                           default = 0.0;}
+                          
+    public Vector position { public get; 
+                             public set; 
+                             default = new Vector();}
                          
     public Gee.ArrayList<TraceMenuItem> children { public get; 
                                                     private set; 
@@ -57,8 +61,8 @@ public class TraceMenuItem : GLib.Object {
         this.icon = model.icon;
         this.angle = model.angle;
         
-        this.anim_distance = new Animator.cubic(Animator.Direction.IN_OUT, 0.0, 0.0, 1.0, 1.5);
-        this.anim_angle = new Animator.cubic(Animator.Direction.IN_OUT, 0.0, this.angle, 1.0, 1.5);
+        this.anim_distance = new Animator.cubic(Animator.Direction.OUT, 0.0, 0.0, 1.0, 1.5);
+        this.anim_angle = new Animator.cubic(Animator.Direction.OUT, 0.0, this.angle, 1.0, 1.5);
         this.anim_radius = new Animator.cubic(Animator.Direction.OUT, 0.0, 0.0, 1.0, 1.5);
         
         this.animations.add(this.anim_angle);
