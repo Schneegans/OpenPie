@@ -18,19 +18,22 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace OpenPie {
 
 public class MenuModel : GLib.Object {
-    public string text { public get; public set; default = "Unnamed Item"; }
-    public string icon { public get; public set; default = "none"; }
+
+    public string text  { public get; public set; default = "Unnamed Item"; }
+    public string icon  { public get; public set; default = "none"; }
     public double angle { public get; public set; default = 0.0; }
     
     public Gee.ArrayList<MenuModel> children { public get; private set; default = null; }
     
     construct {
-        this.children = new Gee.ArrayList<MenuModel>();
+        children = new Gee.ArrayList<MenuModel>();
     }
     
     public void add_child(MenuModel item) {
         children.add(item);
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
     
     private void print(int indent = 0) {
         string space = "";

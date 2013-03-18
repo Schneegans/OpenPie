@@ -54,6 +54,10 @@ public class Vector : GLib.Object {
         }
     }
     
+    public string to_string() {
+        return "(%f, %f)".printf(x, y);
+    }
+    
     public static Vector direction(Vector from, Vector to) {
         return new Vector(to.x - from.x, to.y - from.y);
     }

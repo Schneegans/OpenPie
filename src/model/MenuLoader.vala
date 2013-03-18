@@ -19,10 +19,10 @@ namespace OpenPie {
 
 public class MenuLoader : GLib.Object {
 
-    public MenuModel root { public get; private set; default = null; }
+    public MenuModel model { public get; private set; default = null; }
     
     construct {
-        this.root = new MenuModel();
+        model = new MenuModel();
     }
     
     public MenuLoader.from_string(string data) {
@@ -30,11 +30,13 @@ public class MenuLoader : GLib.Object {
         
         try {
             parser.load_from_data(data);
-            load_from_json(this.root, new Json.Reader(parser.get_root()));
+            load_from_json(model, new Json.Reader(parser.get_root()));
         } catch (GLib.Error e) {
             error(e.message);
         }
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
     
     private void load_from_json(MenuModel current, Json.Reader reader) {
         foreach (var member in reader.list_members()) {

@@ -35,7 +35,6 @@ public class Deamon : GLib.Object {
         version = "0.1";
     
         Logger.init();
-        Gdk.threads_init();
         Gtk.init(ref args);
         
         message("Welcome to OpenPie " + version + "!");

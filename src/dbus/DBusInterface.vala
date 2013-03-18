@@ -19,42 +19,10 @@ namespace OpenPie {
 	
 public class DBusInterface : GLib.Object {
 
-    [DBus (name = "org.openpie.main")]
-    public class OpenPieServer : GLib.Object {
-    
-        public signal void on_select(int id, string item);
-        
-        private Gee.HashMap<PieMenu, int> open_menus = null;
-        private int current_id = 0;
-        
-        public OpenPieServer() {
-            this.open_menus = new Gee.HashMap<PieMenu, int>();
-        }
-
-        public int show_menu(string menu_description) {
-            var menu = new PieMenu(menu_description);
-            
-            this.current_id +=1;
-            this.open_menus.set(menu, this.current_id);
-            
-            menu.display();
-            
-            menu.on_select.connect((item) => {
-                on_select(this.open_menus.get(menu), item);
-            });
-            
-            menu.on_close.connect(() => {
-                this.open_menus.remove(menu);
-            });
-            
-            return this.current_id;
-        } 
-    }
-
     public void bind() {
-        Bus.own_name (BusType.SESSION, "org.openpie.main", BusNameOwnerFlags.NONE,
-                        on_connection, on_success, on_fail);
-
+        Bus.own_name(BusType.SESSION, "org.openpie.main", 
+                     BusNameOwnerFlags.NONE,
+                     on_connection_, on_success_, on_fail_);
         Gtk.main();
     }
     
@@ -62,7 +30,9 @@ public class DBusInterface : GLib.Object {
         Gtk.main_quit();
     }
     
-    private void on_connection(GLib.DBusConnection con) {
+    ////////////////////////////////////////////////////////////////////////////
+    
+    private void on_connection_(GLib.DBusConnection con) {
         try {
             con.register_object("/org/openpie/main", new OpenPieServer());
         } catch (IOError e) {
@@ -70,11 +40,11 @@ public class DBusInterface : GLib.Object {
         }
     }
     
-    private void on_success() {
+    private void on_success_() {
         message("DBus name aquired!");
     }
     
-    private void on_fail() {
+    private void on_fail_() {
         error("Could not aquire DBus name! (Maybe OpenPie server is already running?)");
     }
 }

@@ -50,22 +50,22 @@ public class TraceMenuController : MenuController {
 
             int next_active_index = -1;
 
-            if (distance > 50) {
+            if (distance > 70 && distance < 300) {
                 next_active_index = (int)(angle*active_menu.children.size/(2*GLib.Math.PI) + 0.5) % active_menu.children.size;
             } 
             
             if (next_active_index >= 0) {
             
                 if (hovered_item != null && hovered_item != active_menu.children.get(next_active_index)) {
-                    hovered_item.anim_distance.reset_target(70, 0.5);
+                    hovered_item.anim_distance.reset_target(70, 0.2);
                     hovered_item.anim_angle.reset_target(hovered_item.angle, 0.5);
                 }
                     
                 hovered_item = active_menu.children.get(next_active_index);
-                hovered_item.anim_distance.reset_target(distance, 0.5);
+                hovered_item.anim_distance.reset_target(distance, 0.2);
                 hovered_item.anim_angle.reset_target(angle, 0.5);
             } else if (hovered_item != null) {
-                hovered_item.anim_distance.reset_target(70, 0.5);
+                hovered_item.anim_distance.reset_target(70, 0.2);
                 hovered_item.anim_angle.reset_target(hovered_item.angle, 0.5);
                 hovered_item = null;
             }

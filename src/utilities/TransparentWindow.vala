@@ -61,11 +61,9 @@ public class TransparentWindow : Gtk.Window {
         this.set_skip_taskbar_hint(true);
         this.set_skip_pager_hint(true);
         this.set_keep_above(true);
-        this.set_type_hint(Gdk.WindowTypeHint.POPUP_MENU);
+        this.set_type_hint(Gdk.WindowTypeHint.MENU);
         this.set_decorated(false);
-        this.set_resizable(false);
         this.set_accept_focus(false);
-        this.set_position(Gtk.WindowPosition.MOUSE);
         
         // check for compositing
         if (this.screen.is_composited()) {
@@ -121,14 +119,10 @@ public class TransparentWindow : Gtk.Window {
         #endif
     }
     
-    /////////////////////////////////////////////////////////////////////
-    /// Opens the window. load_pie should have been called before.
-    /////////////////////////////////////////////////////////////////////
-    
     public void open() {
-        this.realize();
-        this.maximize();
-        this.show(); 
+        this.set_size_request(Gdk.Screen.width(), 
+                              Gdk.Screen.height());
+        this.show();
         
         this.start_rendering();
     }

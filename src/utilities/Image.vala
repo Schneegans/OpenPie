@@ -167,8 +167,11 @@ public class Image : GLib.Object {
     /////////////////////////////////////////////////////////////////////
     
     public Gdk.Pixbuf to_pixbuf() {
-        var pixbuf = new Gdk.Pixbuf.from_data(surface.get_data(), Gdk.Colorspace.RGB, true, 8, 
-                                              width(), height(), surface.get_stride(), null);
+        if (this.surface == null || this.surface.get_data().length <= 0)
+            return new Gdk.Pixbuf(Gdk.Colorspace.RGB, true, 8, 1, 1);
+        
+        var pixbuf = new Gdk.Pixbuf.from_data(this.surface.get_data(), Gdk.Colorspace.RGB, true, 8,
+                                              width(), height(), this.surface.get_stride(), null);
         
         pixbuf = pixbuf.copy();
                                        

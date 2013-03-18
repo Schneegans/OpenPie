@@ -30,6 +30,8 @@ public class TraceMenuView : MenuView {
     }
     
     protected override void on_draw(Cairo.Context ctx, double time) {
+        
+    
         if (this.menu.origin.x == -1) {
             var mouse = window.get_mouse_position();
             if (mouse.x == 0 && mouse.y == 0)
@@ -53,8 +55,8 @@ public class TraceMenuView : MenuView {
         menu.position = parent_position.copy();
         
         if (menu.anim_distance.val != 0) {
-            menu.position.x += (int) (GLib.Math.sin(menu.anim_angle.val) * menu.anim_distance.val);
-            menu.position.y -= (int) (GLib.Math.cos(menu.anim_angle.val) * menu.anim_distance.val);
+            menu.position.x += (GLib.Math.sin(menu.anim_angle.val) * menu.anim_distance.val);
+            menu.position.y -= (GLib.Math.cos(menu.anim_angle.val) * menu.anim_distance.val);
         }
         
         foreach (var child in menu.children)

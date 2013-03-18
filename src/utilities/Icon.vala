@@ -48,7 +48,7 @@ public class Icon : Image {
     /////////////////////////////////////////////////////////////////////
     
     public static void clear_cache() {
-        cache = new Gee.HashMap<string, Cairo.ImageSurface?>();
+        Icon.cache = new Gee.HashMap<string, Cairo.ImageSurface?>();
     }
     
     /////////////////////////////////////////////////////////////////////
@@ -56,11 +56,11 @@ public class Icon : Image {
     /////////////////////////////////////////////////////////////////////
     
     public Icon(string icon_name, int size) {
-        var cached = this.cache.get("%s@%u".printf(icon_name, size));
+        var cached = Icon.cache.get("%s@%u".printf(icon_name, size));
         
         if (cached == null) {
-            this.load_file_at_size(this.get_icon_file(icon_name, size), size, size);
-            this.cache.set("%s@%u".printf(icon_name, size), this.surface);
+            this.load_file_at_size(Icon.get_icon_file(icon_name, size), size, size);
+            Icon.cache.set("%s@%u".printf(icon_name, size), this.surface);
         } else {
             this.surface = cached;
         }

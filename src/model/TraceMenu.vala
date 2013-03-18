@@ -32,7 +32,7 @@ public class TraceMenu : GLib.Object {
     }
     
     public TraceMenu(MenuModel model) {
-        this.anim_alpha = new Animator.linear(0.0, 0.5, 1.0);
+        this.anim_alpha = new Animator.linear(0.0, 0.1, 0.2);
         this.animations.add(this.anim_alpha);
 
         this.root = new TraceMenuItem(model);
@@ -55,7 +55,7 @@ public class TraceMenu : GLib.Object {
     }
     
     public void fade_out() {
-        this.anim_alpha.reset_target(0.0, 1.0);
+        this.anim_alpha.reset_target(0.0, 0.2);
         this.root.fade_out();
     }
 }    

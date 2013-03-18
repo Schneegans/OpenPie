@@ -119,7 +119,7 @@ public class TraceMenuItem : GLib.Object {
                 case State.HOVERABLE: {
                     foreach (var child in this.children)
                         child.state = State.PREVIEW;
-                    this.anim_radius.reset_target(10.0, 1.0);
+                    this.anim_radius.reset_target(15.0, 1.0);
                     this.anim_distance.reset_target(70.0, 1.0);
                 } break;
                 
@@ -127,7 +127,7 @@ public class TraceMenuItem : GLib.Object {
                     foreach (var child in this.children)
                         child.state = State.INVISIBLE;
                     this.anim_radius.reset_target(7.0, 1.0);
-                    this.anim_distance.reset_target(20.0, 1.0);
+                    this.anim_distance.reset_target(18.0, 1.0);
                 } break;
                 
                 case State.SELECTED: {

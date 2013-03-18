@@ -19,36 +19,42 @@ namespace OpenPie {
 
 public class PieMenu : GLib.Object {
 
-    public signal void on_select(string item);
-    public signal void on_close();
-
-    private TransparentWindow window = null;
-    private MenuController controller = null;
-    private MenuView view = null;
-    private TraceMenu menu = null;
+    public signal void on_select(PieMenu menu, string item);
+    public signal void on_close(PieMenu menu);
     
     public PieMenu(string menu_description) {
-        window = new TransparentWindow();
-        
         var loader = new MenuLoader.from_string(menu_description);
         
-        menu = new TraceMenu(TraceMenuHelpers.adjust_angles(loader.root));
-        controller = new TraceMenuController(menu, window);
-        view = new TraceMenuView(menu, window);
+        window_     = new TransparentWindow();
+        menu_       = new TraceMenu(TraceMenuHelpers.adjust_angles(loader.model));
+        controller_ = new TraceMenuController(menu_, window_);
+        view_       = new TraceMenuView(menu_, window_);
+    }
+
+    public void display() {
+        window_.open();
+        window_.start_rendering();
+        
+        controller_.on_select.connect(on_controller_select_);
+        view_.on_close.connect(on_view_close_);
     }
     
-    public void display() {
-        window.open();
-        window.start_rendering();
-        
-        controller.on_select.connect((item) => {
-            on_select(item);
-        });
-        
-        view.on_close.connect(() => {
-            window.destroy();
-            on_close();
-        });
+    ////////////////////////////////////////////////////////////////////////////
+    
+    private TransparentWindow   window_     = null;
+    private MenuController      controller_ = null;
+    private MenuView            view_       = null;
+    private TraceMenu           menu_       = null;
+    
+    private void on_controller_select_(string item) {
+        controller_.on_select.disconnect(on_controller_select_);
+        on_select(this, item);
+    }
+    
+    private void on_view_close_() {
+        view_.on_close.disconnect(on_view_close_);
+        window_.destroy();
+        on_close(this);
     }
 }   
     
