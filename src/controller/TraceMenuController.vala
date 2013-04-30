@@ -21,7 +21,6 @@ public class TraceMenuController : MenuController {
     
     private TraceMenu menu = null;
     private TraceMenuItem active_menu = null;
-    private TraceMenuItem hovered_item = null;
     
     public TraceMenuController(TraceMenu menu, TransparentWindow window) {
         base(window);
@@ -31,58 +30,19 @@ public class TraceMenuController : MenuController {
     }
     
     protected override void on_mouse_move(double x, double y) {
-        if (this.active_menu.children.size > 0) {
         
-            Vector mouse = Vector.sum(active_menu.position, new Vector(-x, -y));
-        
-            double distance = mouse.length();
-            double angle = 0.0;
-            
-            
-
-            if (distance > 0) {
-                angle = GLib.Math.acos(mouse.x/distance);
-            if (mouse.y < 0)
-                angle = 2.0*GLib.Math.PI - angle;
-            }
-            
-            angle = GLib.Math.fmod(angle + GLib.Math.PI*1.5, 2.0*GLib.Math.PI);
-
-            int next_active_index = -1;
-
-            if (distance > 70 && distance < 300) {
-                next_active_index = (int)(angle*active_menu.children.size/(2*GLib.Math.PI) + 0.5) % active_menu.children.size;
-            } 
-            
-            if (next_active_index >= 0) {
-            
-                if (hovered_item != null && hovered_item != active_menu.children.get(next_active_index)) {
-                    hovered_item.anim_distance.reset_target(70, 0.2);
-                    hovered_item.anim_angle.reset_target(hovered_item.angle, 0.5);
-                }
-                    
-                hovered_item = active_menu.children.get(next_active_index);
-                hovered_item.anim_distance.reset_target(distance, 0.2);
-                hovered_item.anim_angle.reset_target(angle, 0.5);
-            } else if (hovered_item != null) {
-                hovered_item.anim_distance.reset_target(70, 0.2);
-                hovered_item.anim_angle.reset_target(hovered_item.angle, 0.5);
-                hovered_item = null;
-            }
-            
-            this.window.start_rendering();
-        }
     }
     
     protected override void on_key_up(Key key) {
-
+        if (key.with_mouse) {
+            this.window.remove_grab();
+            this.menu.fade_out();
+            this.on_select("test");
+        }
     }
     
     protected override void on_key_down(Key key) {
-        this.window.remove_grab();
-        this.menu.fade_out();
-        this.window.start_rendering();
-        this.on_select("test");
+        
     }
 }   
     

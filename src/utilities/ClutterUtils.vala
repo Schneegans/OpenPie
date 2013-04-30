@@ -17,57 +17,27 @@
 
 namespace OpenPie {
 
-////////////////////////////////////////////////////////////////////////////////
-// The Deamon class owns the main() method of OpenPie. It opens the DBus-     //
-// interface and listens for incoming requests for pie menu openings.         //
-////////////////////////////////////////////////////////////////////////////////
-
-public class Deamon : GLib.Object {
+public class ClutterUtils : GLib.Object {
     
     ////////////////////////////////////////////////////////////////////////////
     //                          public interface                              //              
     ////////////////////////////////////////////////////////////////////////////
     
-    // The current version of OpenPie
-    public static string version = "0.1";
-    
-    // The beginning of everything
-    public static int main(string[] args) 
+    // smoothly animates a property of the given actor
+    public static void animate(Clutter.Actor actor, string property_name, 
+                               Value val, Clutter.AnimationMode mode, 
+                               uint duration, uint delay = 0) 
     {
-        // init toolkits
-        Logger.init();
-        GtkClutter.init(ref args);
+        actor.save_easing_state();
+        actor.set_easing_mode(mode);
+        actor.set_easing_duration(duration);
+        actor.set_easing_delay(delay);
         
-        // be friendly
-        message("Welcome to OpenPie " + version + "!");
-
-        // connect SigHandlers
-        Posix.signal(Posix.SIGINT, sig_handler_);
-	    Posix.signal(Posix.SIGTERM, sig_handler_);
-	
-	    // finished loading... so run the prog!
-	    message("Started happily...");
-	    
-	    dbus_interface_ = new DBusInterface();
-	    dbus_interface_.bind();
-
-        return 0;
+        actor.set_property(property_name, val);
+        
+        actor.restore_easing_state();
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-    //                          private stuff                                 //
-    ////////////////////////////////////////////////////////////////////////////
     
-    // The class which listens for dbus-menu-open-requests
-    private static DBusInterface dbus_interface_ = null;
+}   
     
-    // Print a nifty message when the prog is killed.
-    private static void sig_handler_(int sig) 
-    {
-        stdout.printf("\n");
-		message("Caught signal (%d), bye!".printf(sig));
-        dbus_interface_.unbind();
-	}
-}
-
 }

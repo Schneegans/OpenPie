@@ -21,43 +21,15 @@ public class TraceMenu : GLib.Object {
                 
     public TraceMenuItem root { public get; private set; default = null;}
     
-    public Vector origin { public get; public set; default = new Vector(-1, -1); }
-    
-    public Animator anim_alpha { public get; private set; default = null; }
-    
-    private AnimatorPool animations = null;
-    
-    construct {
-        this.animations = new AnimatorPool();
-    }
-    
     public TraceMenu(MenuModel model) {
-        this.anim_alpha = new Animator.linear(0.0, 0.1, 0.2);
-        this.animations.add(this.anim_alpha);
-
         this.root = new TraceMenuItem(model);
-        this.root.state = TraceMenuItem.State.ACTIVE;
+
     }
-    
-    public bool is_animating() {
-        if (this.animations.is_active)
-            return true;
-    
-        if (this.root.is_animating())
-            return true;
-                
-        return false;
-    }
-    
-    public void update_animations(double time) {
-        this.animations.update(time);
-        this.root.update_animations(time);
-    }
-    
+   
     public void fade_out() {
-        this.anim_alpha.reset_target(0.0, 0.2);
         this.root.fade_out();
     }
+    
 }    
     
 }

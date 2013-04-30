@@ -26,54 +26,20 @@ public class TraceMenuView : MenuView {
         
         this.menu = menu;
 
-        window.on_key_down.connect((key) => {GLib.Timeout.add(1000, () => {on_close(); return false;});});
+        window.on_key_up.connect((key) => {
+            if (key.with_mouse && key.key_code == 1) {
+                GLib.Timeout.add(1000, () => {
+                    on_close(); 
+                    return false;
+                });
+            }
+        });
     }
     
     protected override void on_draw(Cairo.Context ctx, double time) {
-        
     
-        if (this.menu.origin.x == -1) {
-            var mouse = window.get_mouse_position();
-            if (mouse.x == 0 && mouse.y == 0)
-                return;
-            this.menu.origin = mouse;
-        }
-        
-        // render the Pie
-        ctx.set_source_rgba(0, 0, 0, this.menu.anim_alpha.val);
-        ctx.paint();
-        
-        this.menu.update_animations(time);
-        this.update_menu(this.menu.root, this.menu.origin);
-        this.draw_menu(this.menu.root, ctx);
-        
-        if (!this.menu.is_animating())
-            this.window.stop_rendering();
     }
     
-    private void update_menu(TraceMenuItem menu, Vector parent_position) {
-        menu.position = parent_position.copy();
-        
-        if (menu.anim_distance.val != 0) {
-            menu.position.x += (GLib.Math.sin(menu.anim_angle.val) * menu.anim_distance.val);
-            menu.position.y -= (GLib.Math.cos(menu.anim_angle.val) * menu.anim_distance.val);
-        }
-        
-        foreach (var child in menu.children)
-            this.update_menu(child, menu.position);
-    }
-    
-    private void draw_menu(TraceMenuItem menu, Cairo.Context ctx) {
-        
-        if (menu.anim_radius.val > 0.0) {
-            ctx.set_source_rgba(1, 0.5, 0, 1.0);
-            ctx.arc(menu.position.x, menu.position.y, menu.anim_radius.val, 0, 2.0*GLib.Math.PI); 
-            ctx.fill();
-            
-            foreach (var child in menu.children)
-                this.draw_menu(child, ctx);
-        }
-    }
 }   
     
 }
