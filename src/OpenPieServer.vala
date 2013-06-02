@@ -26,54 +26,71 @@ namespace OpenPie {
 [DBus (name = "org.openpie.main")]
 public class OpenPieServer : GLib.Object {
 
-    ////////////////////////////////////////////////////////////////////////////
-    //                          public interface                              //              
-    ////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+  //              public interface                                            //        
+  //////////////////////////////////////////////////////////////////////////////
+  
+  // emitted, when the users selects an item from the currently active menu
+  public signal void on_select(int id, string item);
+  
+  construct
+  {
+    window_ = new TransparentWindow();
+  }
+  
+  // opens a menu according to the given description and returns a newly 
+  // assigned ID
+  public int show_menu(string menu_description) 
+  {
+    var menu = new PieMenu(menu_description, window_);
     
-    // emitted, when the users selects an item from the currently active menu
-    public signal void on_select(int id, string item);
+    current_id_ +=1;
+    open_menus_.set(menu, current_id_);
     
-    // opens a menu according to the given description and returns a newly 
-    // assigned ID
-    public int show_menu(string menu_description) 
-    {
-        var menu = new PieMenu(menu_description);
-        
-        current_id_ +=1;
-        open_menus_.set(menu, current_id_);
-        
-        menu.on_select.connect(on_menu_select_);
-        menu.on_close.connect(on_menu_close_);
-        
-        menu.display();
-        
-        return current_id_;
-    } 
+    menu.on_select.connect(on_menu_select_);
+    menu.on_close.connect(on_menu_close_);
+
+    if (open_menus_.size == 1)
+      window_.open();
     
-    ////////////////////////////////////////////////////////////////////////////
-    //                          private stuff                                 //
-    ////////////////////////////////////////////////////////////////////////////
+    window_.add_grab();
     
-    // stores all currently opened menus with their individual ID
-    private Gee.HashMap<PieMenu, int> open_menus_ = new Gee.HashMap<PieMenu, int>();
+    menu.display();
     
-    // stores the ID of the lastly opened menu
-    private int current_id_ = 0;
+    return current_id_;
+  } 
+  
+  //////////////////////////////////////////////////////////////////////////////
+  //              private stuff                                               //
+  //////////////////////////////////////////////////////////////////////////////
+  
+  // the fullscreen window onto which pie menus are drawn
+  private TransparentWindow window_ = null;
+  
+  // stores all currently opened menus with their individual ID
+  private Gee.HashMap<PieMenu, int> open_menus_ = new Gee.HashMap<PieMenu, int>();
+  
+  // stores the ID of the lastly opened menu
+  private int current_id_ = 0;
+  
+  // callback gets called when the user selects an item
+  // in the currently active menu
+  private void on_menu_select_(PieMenu menu, string item) 
+  {
+    window_.remove_grab();
+    menu.on_select.disconnect(on_menu_select_);
+    on_select(this.open_menus_.get(menu), item);
+  }
+  
+  // callback gets called when the currently active menu is closed
+  private void on_menu_close_(PieMenu menu) 
+  {
+    menu.on_close.disconnect(on_menu_close_);
+    this.open_menus_.unset(menu);
     
-    // callback gets called when the user selects an item
-    // in the currently active menu
-    private void on_menu_select_(PieMenu menu, string item) 
-    {
-        menu.on_select.disconnect(on_menu_select_);
-        on_select(this.open_menus_.get(menu), item);
-    }
-    
-    // callback gets called when the currently active menu is closed
-    private void on_menu_close_(PieMenu menu) 
-    {
-        menu.on_close.disconnect(on_menu_close_);
-        this.open_menus_.unset(menu);
-    }
+    if (open_menus_.size == 0)
+      window_.hide();
+  }
 }
 
 }

@@ -23,51 +23,51 @@ namespace OpenPie {
 ////////////////////////////////////////////////////////////////////////////////
 
 public class Deamon : GLib.Object {
+  
+  //////////////////////////////////////////////////////////////////////////////
+  //              public interface                                            //        
+  //////////////////////////////////////////////////////////////////////////////
+  
+  // The current version of OpenPie
+  public static string version = "0.1";
+  
+  // The beginning of everything
+  public static int main(string[] args) 
+  {
+    // init toolkits
+    Logger.init();
+    GtkClutter.init(ref args);
     
-    ////////////////////////////////////////////////////////////////////////////
-    //                          public interface                              //              
-    ////////////////////////////////////////////////////////////////////////////
-    
-    // The current version of OpenPie
-    public static string version = "0.1";
-    
-    // The beginning of everything
-    public static int main(string[] args) 
-    {
-        // init toolkits
-        Logger.init();
-        GtkClutter.init(ref args);
-        
-        // be friendly
-        message("Welcome to OpenPie " + version + "!");
+    // be friendly
+    message("Welcome to OpenPie " + version + "!");
 
-        // connect SigHandlers
-        Posix.signal(Posix.SIGINT, sig_handler_);
-	    Posix.signal(Posix.SIGTERM, sig_handler_);
-	
-	    // finished loading... so run the prog!
-	    message("Started happily...");
-	    
-	    dbus_interface_ = new DBusInterface();
-	    dbus_interface_.bind();
-
-        return 0;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    //                          private stuff                                 //
-    ////////////////////////////////////////////////////////////////////////////
+    // connect SigHandlers
+    Posix.signal(Posix.SIGINT, sig_handler_);
+    Posix.signal(Posix.SIGTERM, sig_handler_);
+  
+    // finished loading... so run the prog!
+    message("Started happily...");
     
-    // The class which listens for dbus-menu-open-requests
-    private static DBusInterface dbus_interface_ = null;
-    
-    // Print a nifty message when the prog is killed.
-    private static void sig_handler_(int sig) 
-    {
-        stdout.printf("\n");
-		message("Caught signal (%d), bye!".printf(sig));
-        dbus_interface_.unbind();
-	}
+    dbus_interface_ = new DBusInterface();
+    dbus_interface_.bind();
+
+    return 0;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  //              private stuff                                               //
+  //////////////////////////////////////////////////////////////////////////////
+  
+  // The class which listens for dbus-menu-open-requests
+  private static DBusInterface dbus_interface_ = null;
+  
+  // Print a nifty message when the prog is killed.
+  private static void sig_handler_(int sig) 
+  {
+    stdout.printf("\n");
+    message("Caught signal (%d), bye!".printf(sig));
+    dbus_interface_.unbind();
+  }
 }
 
 }

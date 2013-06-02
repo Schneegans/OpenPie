@@ -17,27 +17,46 @@
 
 namespace OpenPie {
 
-public class ClutterUtils : GLib.Object {
-  
+////////////////////////////////////////////////////////////////////////////////
+// This class controls the appearance of an OpenPie menu. Styles can be       //
+// loaded from file.                                                          //
+////////////////////////////////////////////////////////////////////////////////
+
+public class Style : GLib.Object {
+
   //////////////////////////////////////////////////////////////////////////////
   //              public interface                                            //        
   //////////////////////////////////////////////////////////////////////////////
+
+  public Color background_color         { get; set; default = new Color.from_rgb(0.1f, 0.1f, 0.1f);}
+  public Color background_color_hover   { get; set; default = new Color.from_rgb(0.8f, 0.8f, 0.8f);}
+  public Color background_color_active  { get; set; default = new Color.from_rgb(1.0f, 1.0f, 1.0f);}
   
-  // smoothly animates a property of the given actor
-  public static void animate(Clutter.Actor actor, string property_name, 
-                 Value val, Clutter.AnimationMode mode, 
-                 uint duration, uint delay = 0) 
+  public Color font_color               { get; set; default = new Color.from_rgb(0.8f, 0.8f, 0.8f);}
+  public Color font_color_hover         { get; set; default = new Color.from_rgb(0.1f, 0.1f, 0.1f);}
+  public Color font_color_active        { get; set; default = new Color.from_rgb(0.0f, 0.0f, 0.0f);}
+
+  public static Style get_default()
   {
-    actor.save_easing_state();
-    actor.set_easing_mode(mode);
-    actor.set_easing_duration(duration);
-    actor.set_easing_delay(delay);
-    
-    actor.set_property(property_name, val);
-    
-    actor.restore_easing_state();
+    return default_style_;
   }
   
+  static construct 
+  {
+    default_style_ = new Style();
+  }
+  
+  public Style() {
+
+  }
+  
+
+  //////////////////////////////////////////////////////////////////////////////
+  //              private stuff                                               //
+  //////////////////////////////////////////////////////////////////////////////
+  
+  private static Style default_style_;
+   
 }   
   
 }

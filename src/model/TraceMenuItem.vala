@@ -18,26 +18,26 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace OpenPie {
 
 public class TraceMenuItem : GLib.Object {
-                         
-    public Gee.ArrayList<TraceMenuItem> children { public get; 
-                                                    private set; 
-                                                    default = null;}
-    
-    construct {
-        this.children = new Gee.ArrayList<TraceMenuItem>();
-    }
-    
-    public TraceMenuItem(MenuModel model) {
-        foreach (var child in model.children)
-            children.add(new TraceMenuItem(child));
-    }
-    
-    public void fade_out() {
-       
-        foreach (var child in this.children)
-            child.fade_out();
-    }
+             
+  public Gee.ArrayList<TraceMenuItem> children { public get; 
+                          private set; 
+                          default = null;}
+  
+  construct {
+    this.children = new Gee.ArrayList<TraceMenuItem>();
+  }
+  
+  public TraceMenuItem(MenuModel model) {
+    foreach (var child in model.children)
+      children.add(new TraceMenuItem(child));
+  }
+  
+  public void fade_out() {
+     
+    foreach (var child in this.children)
+      child.fade_out();
+  }
 
-}    
-    
+}  
+  
 }

@@ -22,53 +22,53 @@ namespace OpenPie {
 ////////////////////////////////////////////////////////////////////////////////
 
 public class DBusInterface : GLib.Object {
-    
-    ////////////////////////////////////////////////////////////////////////////
-    //                          public interface                              //              
-    ////////////////////////////////////////////////////////////////////////////
-    
-    // creates an OpenPieServer and makes it listen to incoming requests
-    public void bind() 
-    {
-        Bus.own_name(BusType.SESSION, "org.openpie.main", 
-                     BusNameOwnerFlags.NONE,
-                     on_connection_, on_success_, on_fail_);
-        Clutter.main();
+  
+  //////////////////////////////////////////////////////////////////////////////
+  //              public interface                                            //        
+  //////////////////////////////////////////////////////////////////////////////
+  
+  // creates an OpenPieServer and makes it listen to incoming requests
+  public void bind() 
+  {
+    Bus.own_name(BusType.SESSION, "org.openpie.main", 
+           BusNameOwnerFlags.NONE,
+           on_connection_, on_success_, on_fail_);
+    Clutter.main();
+  }
+  
+  // stops listening
+  public void unbind() 
+  {
+    Clutter.main_quit();
+  }
+  
+  //////////////////////////////////////////////////////////////////////////////
+  //              private stuff                                               //
+  //////////////////////////////////////////////////////////////////////////////
+  
+  // registers OpenPie on the DBus and creates an OpenPieServer which waits
+  // for incoming menu requests
+  private void on_connection_(GLib.DBusConnection con) 
+  {
+    try {
+      con.register_object("/org/openpie/main", new OpenPieServer());
+    } catch (IOError e) {
+      error("Could not register service");
     }
-    
-    // stops listening
-    public void unbind() 
-    {
-        Clutter.main_quit();
-    }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    //                          private stuff                                 //
-    ////////////////////////////////////////////////////////////////////////////
-    
-    // registers OpenPie on the DBus and creates an OpenPieServer which waits
-    // for incoming menu requests
-    private void on_connection_(GLib.DBusConnection con) 
-    {
-        try {
-            con.register_object("/org/openpie/main", new OpenPieServer());
-        } catch (IOError e) {
-            error("Could not register service");
-        }
-    }
-    
-    // print message on success
-    private void on_success_() 
-    {
-        message("DBus name aquired!");
-    }
-    
-    // print error on failure
-    private void on_fail_() 
-    {
-        error("Could not aquire DBus name! " +
-              "(Maybe OpenPie deamon is already running?)");
-    }
+  }
+  
+  // print message on success
+  private void on_success_() 
+  {
+    message("DBus name aquired!");
+  }
+  
+  // print error on failure
+  private void on_fail_() 
+  {
+    error("Could not aquire DBus name! " +
+        "(Maybe OpenPie deamon is already running?)");
+  }
 }
 
 }

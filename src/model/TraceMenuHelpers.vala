@@ -18,33 +18,33 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace OpenPie {
 
 public class TraceMenuHelpers : GLib.Object {
+  
+  public static MenuModel adjust_angles(MenuModel model) {
     
-    public static MenuModel adjust_angles(MenuModel model) {
-        
-        int item_count = model.children.size;
-        
-        for (int i=0; i<item_count; ++i) {
-            model.children.get(i).angle = i * 2.0*GLib.Math.PI/item_count;
-            
-            if (model.children.get(i).children.size > 0)
-                adjust_child_angles(model.children.get(i));
-        }
-        
-        return model;
-        
+    int item_count = model.children.size;
+    
+    for (int i=0; i<item_count; ++i) {
+      model.children.get(i).angle = i * 2.0*GLib.Math.PI/item_count;
+      
+      if (model.children.get(i).children.size > 0)
+        adjust_child_angles(model.children.get(i));
     }
     
-    private static void adjust_child_angles(MenuModel model) {
-        double item_angle = 2.0*GLib.Math.PI/(model.children.size + 1);
-        double parent_angle = GLib.Math.fmod(model.angle + GLib.Math.PI, 2.0*GLib.Math.PI);
-        
-        for (int i=0; i<model.children.size; ++i) {
-            model.children.get(i).angle = GLib.Math.fmod(parent_angle + (i+1)*item_angle, 2.0*GLib.Math.PI);
-            
-            adjust_child_angles(model.children.get(i));
-        }
+    return model;
     
+  }
+  
+  private static void adjust_child_angles(MenuModel model) {
+    double item_angle = 2.0*GLib.Math.PI/(model.children.size + 1);
+    double parent_angle = GLib.Math.fmod(model.angle + GLib.Math.PI, 2.0*GLib.Math.PI);
+    
+    for (int i=0; i<model.children.size; ++i) {
+      model.children.get(i).angle = GLib.Math.fmod(parent_angle + (i+1)*item_angle, 2.0*GLib.Math.PI);
+      
+      adjust_child_angles(model.children.get(i));
     }
-}    
-    
+  
+  }
+}  
+  
 }

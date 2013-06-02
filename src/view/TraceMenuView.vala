@@ -18,28 +18,28 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace OpenPie {
 
 public class TraceMenuView : MenuView {
+  
+  private TraceMenu menu = null;
+  
+  public TraceMenuView(TraceMenu menu, TransparentWindow window) {
+    base(window);
     
-    private TraceMenu menu = null;
-    
-    public TraceMenuView(TraceMenu menu, TransparentWindow window) {
-        base(window);
-        
-        this.menu = menu;
+    this.menu = menu;
 
-        window.on_key_up.connect((key) => {
-            if (key.with_mouse && key.key_code == 1) {
-                GLib.Timeout.add(1000, () => {
-                    on_close(); 
-                    return false;
-                });
-            }
+    window.on_key_up.connect((key) => {
+      if (key.with_mouse && key.key_code == 1) {
+        GLib.Timeout.add(1000, () => {
+          on_close(); 
+          return false;
         });
-    }
-    
-    protected override void on_draw(Cairo.Context ctx, double time) {
-    
-    }
-    
+      }
+    });
+  }
+  
+  protected override void on_draw(Cairo.Context ctx, double time) {
+  
+  }
+  
 }   
-    
+  
 }

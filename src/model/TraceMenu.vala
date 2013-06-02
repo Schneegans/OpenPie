@@ -18,18 +18,18 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace OpenPie {
 
 public class TraceMenu : GLib.Object {
-                
-    public TraceMenuItem root { public get; private set; default = null;}
-    
-    public TraceMenu(MenuModel model) {
-        this.root = new TraceMenuItem(model);
+        
+  public TraceMenuItem root { public get; private set; default = null;}
+  
+  public TraceMenu(MenuModel model) {
+    this.root = new TraceMenuItem(model);
 
-    }
+  }
    
-    public void fade_out() {
-        this.root.fade_out();
-    }
-    
-}    
-    
+  public void fade_out() {
+    this.root.fade_out();
+  }
+  
+}  
+  
 }

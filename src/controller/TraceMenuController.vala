@@ -18,32 +18,31 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace OpenPie {
 
 public class TraceMenuController : MenuController {
+  
+  private TraceMenu menu = null;
+  private TraceMenuItem active_menu = null;
+  
+  public TraceMenuController(TraceMenu menu, TransparentWindow window) {
+    base(window);
     
-    private TraceMenu menu = null;
-    private TraceMenuItem active_menu = null;
+    this.menu = menu;
+    this.active_menu = menu.root;
+  }
+  
+  protected override void on_mouse_move(double x, double y) {
     
-    public TraceMenuController(TraceMenu menu, TransparentWindow window) {
-        base(window);
-        
-        this.menu = menu;
-        this.active_menu = menu.root;
+  }
+  
+  protected override void on_key_up(Key key) {
+    if (key.with_mouse) {
+      this.menu.fade_out();
+      this.on_select("test");
     }
+  }
+  
+  protected override void on_key_down(Key key) {
     
-    protected override void on_mouse_move(double x, double y) {
-        
-    }
-    
-    protected override void on_key_up(Key key) {
-        if (key.with_mouse) {
-            this.window.remove_grab();
-            this.menu.fade_out();
-            this.on_select("test");
-        }
-    }
-    
-    protected override void on_key_down(Key key) {
-        
-    }
+  }
 }   
-    
+  
 }

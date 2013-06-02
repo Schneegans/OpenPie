@@ -16,65 +16,65 @@ this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 public class Vector : GLib.Object {
-    public double x = 0;
-    public double y = 0;
+  public double x = 0;
+  public double y = 0;
+  
+  public Vector(double x = 0.0, double y = 0.0) {
+    this.x = x;
+    this.y = y;
+  }
+  
+  public double length() {
+    return GLib.Math.sqrt(length_sqr());
+  }
+  
+  public double length_sqr() {
+    return x*x + y*y;
+  }
+  
+  public Vector copy() {
+    return new Vector(x, y);
+  }
+  
+  public void normalize() {
+    double length = length();
     
-    public Vector(double x = 0.0, double y = 0.0) {
-        this.x = x;
-        this.y = y;
+    if (length > 0) {
+      x /= length;
+      y /= length;
     }
+  }
+  
+  public void set_length(double length) {
+    double curr_length = this.length();
     
-    public double length() {
-        return GLib.Math.sqrt(length_sqr());
+    if (curr_length > 0) {
+      x /= curr_length/length;
+      y /= curr_length/length;
     }
-    
-    public double length_sqr() {
-        return x*x + y*y;
-    }
-    
-    public Vector copy() {
-        return new Vector(x, y);
-    }
-    
-    public void normalize() {
-        double length = length();
-        
-        if (length > 0) {
-            x /= length;
-            y /= length;
-        }
-    }
-    
-    public void set_length(double length) {
-        double curr_length = this.length();
-        
-        if (curr_length > 0) {
-            x /= curr_length/length;
-            y /= curr_length/length;
-        }
-    }
-    
-    public string to_string() {
-        return "(%f, %f)".printf(x, y);
-    }
-    
-    public static Vector direction(Vector from, Vector to) {
-        return new Vector(to.x - from.x, to.y - from.y);
-    }
-    
-    public static Vector sum(Vector a, Vector b) {
-        return new Vector(a.x + b.x, a.y + b.y);
-    }
-    
-    public static double distance(Vector from, Vector to) {
-        return direction(from, to).length();
-    }
-    
-    public static double angle(Vector a, Vector b) {
-        return GLib.Math.acos(dot(a, b)/(a.length() * b.length()));
-    }
-    
-    public static double dot(Vector a, Vector b) {
-        return a.x*b.x + a.y*b.y;
-    }
+  }
+  
+  public string to_string() {
+    return "(%f, %f)".printf(x, y);
+  }
+  
+  public static Vector direction(Vector from, Vector to) {
+    return new Vector(to.x - from.x, to.y - from.y);
+  }
+  
+  public static Vector sum(Vector a, Vector b) {
+    return new Vector(a.x + b.x, a.y + b.y);
+  }
+  
+  public static double distance(Vector from, Vector to) {
+    return direction(from, to).length();
+  }
+  
+  public static double angle(Vector a, Vector b) {
+    return GLib.Math.acos(dot(a, b)/(a.length() * b.length()));
+  }
+  
+  public static double dot(Vector a, Vector b) {
+    return a.x*b.x + a.y*b.y;
+  }
 }

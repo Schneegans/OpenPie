@@ -98,12 +98,6 @@ set(INCLUDE_PATHS
 )
 include_directories(${INCLUDE_PATHS})
 
-################################################################
-# Add executable
-################################################################
-
-set(EXECUTABLE_OUTPUT_PATH ${openpie_SOURCE_DIR})
-
 set(VALA_PKGS
   gtk+-3.0
   unique-3.0
@@ -119,7 +113,24 @@ set(VALA_PKGS
   clutter-gtk-1.0
 )
 
+################################################################
+# Add executable
+################################################################
+
+set(EXECUTABLE_OUTPUT_PATH ${openpie_SOURCE_DIR})
 add_subdirectory(src)
+
+################################################################
+# Add plugins
+################################################################
+
+message( "" )
+message( "Searching for plugins..." )
+
+file(GLOB _PLUGINS ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*)
+FOREACH(_PLUGIN ${_PLUGINS})
+    add_subdirectory(${_PLUGIN})
+ENDFOREACH(_PLUGIN ${_PLUGINS})
 
 ################################################################
 # Add uninstall option

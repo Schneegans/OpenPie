@@ -19,21 +19,21 @@ namespace OpenPie {
 
 public abstract class MenuController : GLib.Object {
 
-    public signal void on_select(string item);
+  public signal void on_select(string item);
 
-    protected TransparentWindow window = null;
+  protected TransparentWindow window = null;
+  
+  public MenuController(TransparentWindow window) {
+    this.window = window;
     
-    public MenuController(TransparentWindow window) {
-        this.window = window;
-        
-        this.window.on_mouse_move.connect(on_mouse_move);
-        this.window.on_key_down.connect(on_key_down);
-        this.window.on_key_up.connect(on_key_up);
-    }
-    
-    protected abstract void on_mouse_move(double x, double y); 
-    protected abstract void on_key_down(Key key);
-    protected abstract void on_key_up(Key key);
+    this.window.on_mouse_move.connect(on_mouse_move);
+    this.window.on_key_down.connect(on_key_down);
+    this.window.on_key_up.connect(on_key_up);
+  }
+  
+  protected abstract void on_mouse_move(double x, double y); 
+  protected abstract void on_key_down(Key key);
+  protected abstract void on_key_up(Key key);
 }   
-    
+  
 }

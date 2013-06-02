@@ -19,33 +19,33 @@ namespace OpenPie {
 
 public class MenuModel : GLib.Object {
 
-    public string text  { public get; public set; default = "Unnamed Item"; }
-    public string icon  { public get; public set; default = "none"; }
-    public double angle { public get; public set; default = 0.0; }
+  public string text  { public get; public set; default = "Unnamed Item"; }
+  public string icon  { public get; public set; default = "none"; }
+  public double angle { public get; public set; default = 0.0; }
+  
+  public Gee.ArrayList<MenuModel> children { public get; private set; default = null; }
+  
+  construct {
+    children = new Gee.ArrayList<MenuModel>();
+  }
+  
+  public void add_child(MenuModel item) {
+    children.add(item);
+  }
+  
+  ////////////////////////////////////////////////////////////////////////////
+  
+  private void print(int indent = 0) {
+    string space = "";
     
-    public Gee.ArrayList<MenuModel> children { public get; private set; default = null; }
+    for (int i=0; i<indent; ++i)
+      space += "  ";
+      
+    debug(space + "\"" + this.text + "\" (Icon: \"" + this.icon + "\", Angle: %f)".printf(this.angle));
     
-    construct {
-        children = new Gee.ArrayList<MenuModel>();
-    }
-    
-    public void add_child(MenuModel item) {
-        children.add(item);
-    }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    
-    private void print(int indent = 0) {
-        string space = "";
-        
-        for (int i=0; i<indent; ++i)
-            space += "  ";
-            
-        debug(space + "\"" + this.text + "\" (Icon: \"" + this.icon + "\", Angle: %f)".printf(this.angle));
-        
-        foreach (var child in this.children)
-            child.print(indent + 1);
-    }
+    foreach (var child in this.children)
+      child.print(indent + 1);
+  }
 }
-    
+  
 }

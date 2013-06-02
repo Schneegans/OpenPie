@@ -19,59 +19,59 @@ namespace OpenPie {
 
 public class MenuLoader : GLib.Object {
 
-    public MenuModel model { public get; private set; default = null; }
+  public MenuModel model { public get; private set; default = null; }
+  
+  construct {
+    model = new MenuModel();
+  }
+  
+  public MenuLoader.from_string(string data) {
+    var parser = new Json.Parser();
     
-    construct {
-        model = new MenuModel();
+    try {
+      parser.load_from_data(data);
+      load_from_json(model, new Json.Reader(parser.get_root()));
+    } catch (GLib.Error e) {
+      error(e.message);
     }
+  }
+  
+  ////////////////////////////////////////////////////////////////////////////
+  
+  private void load_from_json(MenuModel current, Json.Reader reader) {
+    foreach (var member in reader.list_members()) {
+      reader.read_member(member);
     
-    public MenuLoader.from_string(string data) {
-        var parser = new Json.Parser();
-        
-        try {
-            parser.load_from_data(data);
-            load_from_json(model, new Json.Reader(parser.get_root()));
-        } catch (GLib.Error e) {
-            error(e.message);
+      if (member == "subs") {
+        if (reader.is_array()) {
+          for (int i=0; i<reader.count_elements(); ++i) {
+            reader.read_element(i);
+            var child = new MenuModel();
+            this.load_from_json(child, reader);
+            current.add_child(child);
+            reader.end_element();
+          }
+          
+        } else {
+          warning("Element \"" + member + "\" in menu description has to be an array!");
         }
-    }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    
-    private void load_from_json(MenuModel current, Json.Reader reader) {
-        foreach (var member in reader.list_members()) {
-            reader.read_member(member);
         
-            if (member == "subs") {
-                if (reader.is_array()) {
-                    for (int i=0; i<reader.count_elements(); ++i) {
-                        reader.read_element(i);
-                        var child = new MenuModel();
-                        this.load_from_json(child, reader);
-                        current.add_child(child);
-                        reader.end_element();
-                    }
-                    
-                } else {
-                    warning("Element \"" + member + "\" in menu description has to be an array!");
-                }
-                
-            } else if (member == "icon") {    
-                current.icon = reader.get_string_value();
-                
-            } else if (member == "text") {  
-                current.text = reader.get_string_value();
-                
-            } else if (member == "angle") {  
-                current.angle = reader.get_double_value();
+      } else if (member == "icon") {  
+        current.icon = reader.get_string_value();
+        
+      } else if (member == "text") {  
+        current.text = reader.get_string_value();
+        
+      } else if (member == "angle") {  
+        current.angle = reader.get_double_value();
 
-            } else {
-                warning("Invalid element \"" + member + "\" in menu description!");
-            }
-            
-            reader.end_member();
-        }
+      } else {
+        warning("Invalid element \"" + member + "\" in menu description!");
+      }
+      
+      reader.end_member();
     }
+  }
 }
 
 }
