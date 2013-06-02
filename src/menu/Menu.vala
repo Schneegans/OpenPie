@@ -17,57 +17,71 @@
 
 namespace OpenPie {
 
-////////////////////////////////////////////////////////////////////////////////
-// The Deamon class owns the main() method of OpenPie. It opens the DBus-     //
-// interface and listens for incoming requests for pie menu openings.         //
-////////////////////////////////////////////////////////////////////////////////
-
-public class Deamon : GLib.Object {
+public class Menu : GLib.Object {
   
   //////////////////////////////////////////////////////////////////////////////
-  //              public interface                                            //        
+  //                          public interface                                //        
   //////////////////////////////////////////////////////////////////////////////
   
-  // The current version of OpenPie
-  public static string version = "0.1";
+  // emitted when some item is selected (occurs prior to on_close)
+  public signal void on_select(Menu menu, string item);
   
-  // The beginning of everything
-  public static int main(string[] args) 
-  {
-    // init toolkits
-    Logger.init();
-    GtkClutter.init(ref args);
-    
-    // be friendly
-    message("Welcome to OpenPie " + version + "!");
-
-    // connect SigHandlers
-    Posix.signal(Posix.SIGINT, sig_handler_);
-    Posix.signal(Posix.SIGTERM, sig_handler_);
+  // emitted when the menu finally disappears from screen
+  public signal void on_close(Menu menu);
   
-    // finished loading... so run the prog!
-    message("Started happily...");
-    
-    dbus_interface_ = new DBusInterface();  
-    dbus_interface_.bind();
-
-    return 0;
+  public Menu(string menu_description, TransparentWindow window) {
+    window_ = window;
+  
+    var loader  = new MenuLoader.from_string(menu_description);
+    root_       = loader.root;
   }
 
-  //////////////////////////////////////////////////////////////////////////////
-  //              private stuff                                               //
-  //////////////////////////////////////////////////////////////////////////////
-  
-  // The class which listens for dbus-menu-open-requests
-  private static DBusInterface dbus_interface_ = null;
-  
-  // Print a nifty message when the prog is killed.
-  private static void sig_handler_(int sig) 
-  {
-    stdout.printf("\n");
-    message("Caught signal (%d), bye!".printf(sig));
-    dbus_interface_.unbind();
+  public void display() {
+    window_.on_key_up.connect(on_key_up_);
+    window_.on_key_down.connect(on_key_down_);
+    window_.on_mouse_move.connect(on_mouse_move_);
+    window_.on_draw.connect(on_draw_);
   }
-}
-
+  
+  //////////////////////////////////////////////////////////////////////////////
+  //                          private stuff                                   //
+  //////////////////////////////////////////////////////////////////////////////
+  
+  private MenuItem            root_   = null;
+  private TransparentWindow   window_ = null;
+  
+  private void on_mouse_move_(double x, double y) {
+    debug("move");
+  }
+  
+  private void on_key_down_(Key key) {
+    debug("key down");
+  }
+  
+  private void on_key_up_(Key key) {
+    debug("key up");
+  
+    if (key.with_mouse)
+      select_("test");
+  }
+  
+  private void on_draw_(Cairo.Context ctx, double time) {
+  
+  }
+  
+  private void select_(string item) {
+    window_.on_key_up.disconnect(on_key_up_);
+    window_.on_key_down.disconnect(on_key_down_);
+    window_.on_mouse_move.disconnect(on_mouse_move_);
+    
+    on_select(this, item);
+  }
+  
+  private void close_() {
+    window_.on_draw.disconnect(on_draw_);
+    
+    on_close(this);
+  }
+}   
+  
 }
