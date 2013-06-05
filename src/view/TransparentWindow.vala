@@ -30,7 +30,7 @@ public class TransparentWindow : Gtk.Window {
   //////////////////////////////////////////////////////////////////////////////
   
   // those get emitted when the according action occurs
-  public signal void on_mouse_move(double x, double y);
+  public signal void on_mouse_move(float x, float y);
   public signal void on_key_down(Key key);
   public signal void on_key_up(Key key);
   public signal void on_draw(Cairo.Context ctx, double time);
@@ -69,7 +69,8 @@ public class TransparentWindow : Gtk.Window {
     
     stage_ = clutter_embed.get_stage() as Clutter.Stage;
     stage_.use_alpha = true;
-    stage_.background_color = Clutter.Color() {red = 0, green = 0, blue = 0, alpha = 0};
+    stage_.background_color = Clutter.Color() {red = 0, green = 0, 
+                                               blue = 0, alpha = 0};
     
     button_press_event.connect((e) => {
       on_key_down(new Key.from_mouse(e.button, e.state));
@@ -97,21 +98,28 @@ public class TransparentWindow : Gtk.Window {
     });
     
     motion_notify_event.connect((e) => {
-      on_mouse_move(e.x, e.y);
+      on_mouse_move((float)e.x, (float)e.y);
       return true;
     });
     
     realize(); 
   }
   
-  /// Gets the center position of the window.
-  public void get_center_pos(out int out_x, out int out_y) {
+  public void add_actor(Clutter.Actor actor) {
+    stage_.add_child(actor);
+  }
+  
+  public void remove_actor(Clutter.Actor actor) {
+    stage_.remove_child(actor);
+  }
+  
+  // Gets the center position of the window.
+  public Vector get_center_pos() {
     int x=0, y=0, width=0, height=0;
     get_position(out x, out y);
     get_size(out width, out height);
     
-    out_x = x + width/2;
-    out_y = y + height/2;
+    return new Vector(x + width/2, y + height/2);
   }
   
   // grabs the input focus

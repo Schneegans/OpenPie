@@ -38,9 +38,10 @@ public class OpenPieServer : GLib.Object {
     window_ = new TransparentWindow();
   }
   
-  // opens a menu according to the given description and returns a newly 
-  // assigned ID
+  // opens a menu according to the given description 
+  // and returns a newly assigned ID
   public int show_menu(string menu_description) {
+  
     // create a new menu
     var menu = new Menu(menu_description, window_);
     
@@ -53,7 +54,7 @@ public class OpenPieServer : GLib.Object {
     menu.on_close.connect(on_menu_close_);
     
     // open the fullscreen window if necessary
-    if (open_menus_.size == 1)
+    if (!window_.visible)
       window_.show_all();
     
     // focus all input on the big window
@@ -92,8 +93,10 @@ public class OpenPieServer : GLib.Object {
     menu.on_close.disconnect(on_menu_close_);
     this.open_menus_.unset(menu);
     
-    if (open_menus_.size == 0)
-      window_.hide();
+    // necessary? Maybe we can leave the window opened... nobody will notice, 
+    // and everything will be flicker-free...
+    //if (open_menus_.size == 0)
+    //  window_.hide();
   }
 }
 

@@ -16,19 +16,19 @@ this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 public class Vector : GLib.Object {
-  public double x = 0;
-  public double y = 0;
+  public float x = 0;
+  public float y = 0;
   
-  public Vector(double x = 0.0, double y = 0.0) {
+  public Vector(float x = 0, float y = 0) {
     this.x = x;
     this.y = y;
   }
   
-  public double length() {
-    return GLib.Math.sqrt(length_sqr());
+  public float length() {
+    return GLib.Math.sqrtf(length_sqr());
   }
   
-  public double length_sqr() {
+  public float length_sqr() {
     return x*x + y*y;
   }
   
@@ -37,7 +37,7 @@ public class Vector : GLib.Object {
   }
   
   public void normalize() {
-    double length = length();
+    float length = length();
     
     if (length > 0) {
       x /= length;
@@ -45,8 +45,8 @@ public class Vector : GLib.Object {
     }
   }
   
-  public void set_length(double length) {
-    double curr_length = this.length();
+  public void set_length(float length) {
+    float curr_length = this.length();
     
     if (curr_length > 0) {
       x /= curr_length/length;
@@ -66,15 +66,15 @@ public class Vector : GLib.Object {
     return new Vector(a.x + b.x, a.y + b.y);
   }
   
-  public static double distance(Vector from, Vector to) {
+  public static float distance(Vector from, Vector to) {
     return direction(from, to).length();
   }
   
-  public static double angle(Vector a, Vector b) {
-    return GLib.Math.acos(dot(a, b)/(a.length() * b.length()));
+  public static float angle(Vector a, Vector b) {
+    return GLib.Math.acosf(dot(a, b)/(a.length() * b.length()));
   }
   
-  public static double dot(Vector a, Vector b) {
+  public static float dot(Vector a, Vector b) {
     return a.x*b.x + a.y*b.y;
   }
 }

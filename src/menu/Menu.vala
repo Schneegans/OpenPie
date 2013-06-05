@@ -17,7 +17,7 @@
 
 namespace OpenPie {
 
-public class Menu : GLib.Object {
+public class Menu : Clutter.Actor {
   
   //////////////////////////////////////////////////////////////////////////////
   //                          public interface                                //        
@@ -34,13 +34,18 @@ public class Menu : GLib.Object {
   
     var loader  = new MenuLoader.from_string(menu_description);
     root_       = loader.root;
+    
+    width = 100;
+    height = 100;
+    background_color = Clutter.Color.from_string("blue");
   }
 
   public void display() {
     window_.on_key_up.connect(on_key_up_);
     window_.on_key_down.connect(on_key_down_);
     window_.on_mouse_move.connect(on_mouse_move_);
-    window_.on_draw.connect(on_draw_);
+    
+    window_.add_actor(this);
   }
   
   //////////////////////////////////////////////////////////////////////////////
@@ -50,23 +55,20 @@ public class Menu : GLib.Object {
   private MenuItem            root_   = null;
   private TransparentWindow   window_ = null;
   
-  private void on_mouse_move_(double x, double y) {
-    debug("move");
+  private void on_mouse_move_(float x, float y) {
+    this.x = x;
+    this.y = y;
   }
   
   private void on_key_down_(Key key) {
-    debug("key down");
+
   }
   
   private void on_key_up_(Key key) {
-    debug("key up");
+
   
     if (key.with_mouse)
       select_("test");
-  }
-  
-  private void on_draw_(Cairo.Context ctx, double time) {
-  
   }
   
   private void select_(string item) {
@@ -75,11 +77,16 @@ public class Menu : GLib.Object {
     window_.on_mouse_move.disconnect(on_mouse_move_);
     
     on_select(this, item);
+    
+    GLib.Timeout.add(1000, () => {
+      close_();
+      return false;
+    });
   }
   
   private void close_() {
-    window_.on_draw.disconnect(on_draw_);
-    
+    window_.remove_actor(this);
+  
     on_close(this);
   }
 }   

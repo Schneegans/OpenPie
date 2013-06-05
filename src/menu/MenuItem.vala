@@ -27,7 +27,9 @@ public class MenuItem : GLib.Object {
   public string icon  { public get; public set; default = "none"; }
   public double angle { public get; public set; default = 0.0; }
   
-  public Gee.ArrayList<MenuItem> children { public get; private set; default = null; }
+  public Gee.ArrayList<MenuItem> children { public get; 
+                                            private set; 
+                                            default = null; }
   
   construct {
     children = new Gee.ArrayList<MenuItem>();
@@ -41,8 +43,6 @@ public class MenuItem : GLib.Object {
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
   
-  private MenuItemArea active_area = null;
-  
   // for debugging purposes
   private void print_(int indent = 0) {
     string space = "";
@@ -50,7 +50,9 @@ public class MenuItem : GLib.Object {
     for (int i=0; i<indent; ++i)
       space += "  ";
       
-    debug(space + "\"" + this.text + "\" (Icon: \"" + this.icon + "\", Angle: %f)".printf(this.angle));
+    debug(space + "\"" + this.text 
+                + "\" (Icon: \"" + this.icon 
+                + "\", Angle: %f)".printf(this.angle));
     
     foreach (var child in this.children)
       child.print_(indent + 1);
