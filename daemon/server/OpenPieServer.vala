@@ -51,6 +51,10 @@ public class OpenPieServer : GLib.Object {
     
     // create a new menu
     var menu = plugin_loader_.get_plugin(menu_plugin);
+    
+    if (menu == null) 
+      return -1;
+      
     menu.set_window(window_);
     menu.set_content(menu_description);
     

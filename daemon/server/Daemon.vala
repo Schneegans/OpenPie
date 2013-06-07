@@ -29,11 +29,13 @@ public class Deamon : GLib.Object {
   //////////////////////////////////////////////////////////////////////////////
   
   // The current version of OpenPie
-  public static string version = "0.1";
+  public static string version;
   
   // The beginning of everything
   public static int main(string[] args) 
   {
+    version = "0.1";
+    
     // init toolkits
     Logger.init();
     GtkClutter.init(ref args);

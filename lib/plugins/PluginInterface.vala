@@ -17,7 +17,7 @@
 
 namespace OpenPie {
 
-public interface PluginInterface : GLib.Object {
+public interface PluginInterface : Menu {
   public abstract string print_name();
   public abstract int calculate();
 }

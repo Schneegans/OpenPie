@@ -35,8 +35,6 @@ public class Plugin<T> : Object {
     unowned register_ register_plugin = (register_) f;
     
     type_ = register_plugin(module_);
-    
-    debug("huhu");
   }
 
   public T new_object () {

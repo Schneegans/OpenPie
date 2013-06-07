@@ -60,15 +60,12 @@ public class PluginLoader : GLib.Object {
   
   // returns a menu instance of the given menu type
   public Menu? get_plugin(string plugin_name) {
-  
-    return new Menu();
-  
-//    var plugin = plugins_.get(plugin_name);
-//    if (plugin != null)
-//      return plugin.new_object();
-//      
-//    warning("Failed to create menu: No plugin named \"%s\" found!", plugin_name);
-//    return null;
+    var plugin = plugins_.get(plugin_name);
+    if (plugin != null)
+      return plugin.new_object();
+      
+    warning("Failed to create menu: No plugin named \"%s\" found!", plugin_name);
+    return null;
   }
   
   //////////////////////////////////////////////////////////////////////////////

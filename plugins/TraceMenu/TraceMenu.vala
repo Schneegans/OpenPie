@@ -1,7 +1,7 @@
 
 namespace OpenPie {
 
-class TraceMenu : PluginInterface, GLib.Object {
+class TraceMenu : PluginInterface, Menu {
     
  
     
