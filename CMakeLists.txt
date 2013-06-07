@@ -9,7 +9,7 @@ project("openpie" C)
 cmake_minimum_required(VERSION 2.6)
 
 # Location where cmake first looks for modules 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/vala)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/third-party/cmake)
 
 
 # Find Vala --------------------------------------------------------------------

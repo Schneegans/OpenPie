@@ -14,7 +14,7 @@ vala_precompile(
     CUSTOM_VAPIS
         ${OUTPUT_DIR}/lib/openpie/openpie.vapi
     OPTIONS
-        --vapidir=${CMAKE_SOURCE_DIR}/vapi/
+        --vapidir=${CMAKE_SOURCE_DIR}/third-party/vapi/
         --thread
         ${DEFINES}
 )

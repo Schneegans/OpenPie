@@ -12,7 +12,7 @@ vala_precompile(
     PACKAGES
         ${VALA_PKGS}
     OPTIONS
-        --vapidir=${CMAKE_SOURCE_DIR}/vapi/
+        --vapidir=${CMAKE_SOURCE_DIR}/third-party/vapi/
         --thread
         ${DEFINES}
         -H ${OUTPUT_DIR}/include/openpie/openpie.h
