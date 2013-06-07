@@ -60,14 +60,14 @@ public class TransparentWindow : Gtk.Window {
            Gdk.EventMask.POINTER_MOTION_MASK |
            Gdk.EventMask.TOUCH_MASK);
     
-    var clutter_embed = new GtkClutter.Embed() {
+    embed_ = new GtkClutter.Embed() {
       width_request = Gdk.Screen.width(),
       height_request = Gdk.Screen.height()
     };
                 
-    add(clutter_embed);
+    add(embed_);
     
-    stage_ = clutter_embed.get_stage() as Clutter.Stage;
+    stage_ = embed_.get_stage() as Clutter.Stage;
     stage_.use_alpha = true;
     stage_.background_color = Clutter.Color() {red = 0, green = 0, 
                                                blue = 0, alpha = 0};
@@ -105,12 +105,8 @@ public class TransparentWindow : Gtk.Window {
     realize(); 
   }
   
-  public void add_actor(Clutter.Actor actor) {
-    stage_.add_child(actor);
-  }
-  
-  public void remove_actor(Clutter.Actor actor) {
-    stage_.remove_child(actor);
+  public Clutter.Stage get_stage() {
+    return stage_;
   }
   
   // Gets the center position of the window.
@@ -129,7 +125,8 @@ public class TransparentWindow : Gtk.Window {
                Clutter.AnimationMode.LINEAR, 500);
   
     Gtk.grab_add(this);
-    FocusGrabber.grab(get_window(), true, true, false);
+    FocusGrabber.grab(get_window(), true, true, true);
+    get_window().input_shape_combine_region(get_window().get_visible_region(), 0, 0);
   }
   
   // releases the input focus
@@ -155,7 +152,8 @@ public class TransparentWindow : Gtk.Window {
   private bool has_compositing_ = false;
   
   // The embedded clutter stage
-  private Clutter.Stage stage_ = null;
+  private Clutter.Stage     stage_ = null;
+  private GtkClutter.Embed  embed_ = null;
 }
 
 }

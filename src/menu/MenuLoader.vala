@@ -61,7 +61,7 @@ public class MenuLoader : GLib.Object {
             // recursion!
             this.load_from_json(child, reader);
             
-            current.add_child(child);
+            current.add_sub_menu(child);
             reader.end_element();
           }
           

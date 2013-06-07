@@ -17,7 +17,7 @@
 
 namespace OpenPie {
 
-public class Menu : Clutter.Actor {
+public class Menu : GLib.Object {
   
   //////////////////////////////////////////////////////////////////////////////
   //                          public interface                                //        
@@ -32,12 +32,9 @@ public class Menu : Clutter.Actor {
   public Menu(string menu_description, TransparentWindow window) {
     window_ = window;
   
-    var loader  = new MenuLoader.from_string(menu_description);
-    root_       = loader.root;
-    
-    width = 100;
-    height = 100;
-    background_color = Clutter.Color.from_string("blue");
+    var loader   = new MenuLoader.from_string(menu_description);
+    root_        = loader.root;
+    root_.parent = window_.get_stage();
   }
 
   public void display() {
@@ -45,7 +42,7 @@ public class Menu : Clutter.Actor {
     window_.on_key_down.connect(on_key_down_);
     window_.on_mouse_move.connect(on_mouse_move_);
     
-    window_.add_actor(this);
+    root_.display();
   }
   
   //////////////////////////////////////////////////////////////////////////////
@@ -56,8 +53,8 @@ public class Menu : Clutter.Actor {
   private TransparentWindow   window_ = null;
   
   private void on_mouse_move_(float x, float y) {
-    this.x = x;
-    this.y = y;
+//    root_.x = x;
+//    root_.y = y;
   }
   
   private void on_key_down_(Key key) {
@@ -85,7 +82,7 @@ public class Menu : Clutter.Actor {
   }
   
   private void close_() {
-    window_.remove_actor(this);
+    root_.close();
   
     on_close(this);
   }

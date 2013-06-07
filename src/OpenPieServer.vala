@@ -57,6 +57,10 @@ public class OpenPieServer : GLib.Object {
     if (!window_.visible)
       window_.show_all();
     
+    while(Gtk.events_pending() || Gdk.events_pending()) {
+      Gtk.main_iteration_do(true);
+    }
+    
     // focus all input on the big window
     window_.add_grab();
     

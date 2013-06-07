@@ -17,7 +17,7 @@
 
 namespace OpenPie {
 
-public class MenuItem : GLib.Object {
+public class MenuItem : Clutter.Actor {
 
   //////////////////////////////////////////////////////////////////////////////
   //                          public interface                                //        
@@ -26,22 +26,72 @@ public class MenuItem : GLib.Object {
   public string text  { public get; public set; default = "Unnamed Item"; }
   public string icon  { public get; public set; default = "none"; }
   public double angle { public get; public set; default = 0.0; }
-  
-  public Gee.ArrayList<MenuItem> children { public get; 
-                                            private set; 
-                                            default = null; }
+   
+  public Gee.ArrayList<MenuItem>  children { public get; 
+                                             private set; 
+                                             default = null; }
+  public weak Clutter.Actor       parent   { public get; 
+                                             public set; 
+                                             default = null; }
   
   construct {
     children = new Gee.ArrayList<MenuItem>();
+    reactive = true;
   }
   
-  public void add_child(MenuItem item) {
+  public void add_sub_menu(MenuItem item) {
     children.add(item);
+    item.parent = this;
   }
+  
+  public void display() {
+    
+    enter_event.connect(on_enter);
+    leave_event.connect(on_leave);
+    
+    
+    width = 100;
+    height = 100;
+    x = 100;
+    y = 100;
+    
+//    if (is_root())  background_color = Clutter.Color.from_string("blue");
+//    else            background_color = Clutter.Color.from_string("red");
+    
+    background_color = Clutter.Color.from_string("red");
+  
+    parent.add_child(this);
+    
+    foreach (var child in children) {
+      child.display();
+    }
+  }
+  
+  public void close() {
+    enter_event.disconnect(on_enter);
+    leave_event.disconnect(on_leave);
+  
+    parent.remove_child(this);
+  }
+  
+  public bool is_root() {
+    return parent == null;
+  }
+  
   
   //////////////////////////////////////////////////////////////////////////////
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
+  
+  private bool on_enter(Clutter.CrossingEvent e) {
+    background_color = Clutter.Color.from_string("blue");
+    return true;
+  }
+  
+  private bool on_leave(Clutter.CrossingEvent e) {
+    background_color = Clutter.Color.from_string("red");
+    return true;
+  }
   
   // for debugging purposes
   private void print_(int indent = 0) {
