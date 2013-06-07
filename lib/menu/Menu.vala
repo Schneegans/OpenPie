@@ -29,16 +29,19 @@ public class Menu : GLib.Object {
   // emitted when the menu finally disappears from screen
   public signal void on_close(Menu menu);
   
+  // sets the menu content which shall be displayed
   public void set_content(string menu_description) {
     var loader   = new MenuLoader.from_string(menu_description);
     root_        = loader.root;
     root_.parent = window_.get_stage();
   }
   
+  // sets the window onto which the menu should be drawn
   public void set_window(TransparentWindow window) {
     window_ = window;
   }
-
+  
+  // shows the menu on screen
   public void display() {
     window_.on_key_up.connect(on_key_up_);
     window_.on_key_down.connect(on_key_down_);

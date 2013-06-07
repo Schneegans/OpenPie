@@ -39,24 +39,22 @@ public class MenuItem : Clutter.Actor {
     reactive = true;
   }
   
+  // adds a child to this MenuItem
   public void add_sub_menu(MenuItem item) {
     children.add(item);
     item.parent = this;
   }
   
+  // shows the MenuItem and all of it's children on the screen
   public void display() {
     
     enter_event.connect(on_enter);
     leave_event.connect(on_leave);
     
-    
     width = 100;
     height = 100;
     x = 100;
     y = 100;
-    
-//    if (is_root())  background_color = Clutter.Color.from_string("blue");
-//    else            background_color = Clutter.Color.from_string("red");
     
     background_color = Clutter.Color.from_string("red");
   
@@ -67,6 +65,7 @@ public class MenuItem : Clutter.Actor {
     }
   }
   
+  // rmoves the MenuItem and all of it's children from the screen
   public void close() {
     enter_event.disconnect(on_enter);
     leave_event.disconnect(on_leave);
@@ -74,27 +73,8 @@ public class MenuItem : Clutter.Actor {
     parent.remove_child(this);
   }
   
-  public bool is_root() {
-    return parent == null;
-  }
-  
-  
-  //////////////////////////////////////////////////////////////////////////////
-  //                          private stuff                                   //
-  //////////////////////////////////////////////////////////////////////////////
-  
-  private bool on_enter(Clutter.CrossingEvent e) {
-    background_color = Clutter.Color.from_string("blue");
-    return true;
-  }
-  
-  private bool on_leave(Clutter.CrossingEvent e) {
-    background_color = Clutter.Color.from_string("red");
-    return true;
-  }
-  
   // for debugging purposes
-  private void print_(int indent = 0) {
+  public void print(int indent = 0) {
     string space = "";
     
     for (int i=0; i<indent; ++i)
@@ -105,7 +85,23 @@ public class MenuItem : Clutter.Actor {
                 + "\", Angle: %f)".printf(this.angle));
     
     foreach (var child in this.children)
-      child.print_(indent + 1);
+      child.print(indent + 1);
+  }
+  
+  //////////////////////////////////////////////////////////////////////////////
+  //                          private stuff                                   //
+  //////////////////////////////////////////////////////////////////////////////
+  
+  // called when the mouse starts hovering the MenuItem
+  private bool on_enter(Clutter.CrossingEvent e) {
+    background_color = Clutter.Color.from_string("blue");
+    return true;
+  }
+  
+  // called when the mouse stops hovering the MenuItem
+  private bool on_leave(Clutter.CrossingEvent e) {
+    background_color = Clutter.Color.from_string("red");
+    return true;
   }
 }
   
