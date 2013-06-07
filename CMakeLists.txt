@@ -127,13 +127,9 @@ message( "Searching for plugins..." )
 
 file(GLOB _PLUGINS ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*)
 FOREACH(_PLUGIN ${_PLUGINS})
-<<<<<<< HEAD
-  add_subdirectory(${_PLUGIN})
-=======
   IF (EXISTS ${_PLUGIN}/CMakeLists.txt)
     add_subdirectory(${_PLUGIN})
   ENDIF()
->>>>>>> feature/plugin_structure
 ENDFOREACH(_PLUGIN ${_PLUGINS})
 
 

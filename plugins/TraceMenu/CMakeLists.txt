@@ -1,10 +1,9 @@
-<<<<<<< HEAD
 ################################################################################
 #                     Project OpenPie - Plugin library                         #
 ################################################################################
 
 # Determine source files -------------------------------------------------------
-file(GLOB_RECURSE PLUGIN_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.vala ../../src/*.vala)
+file(GLOB_RECURSE PLUGIN_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.vala ../../src/plugins/PluginInterface.vala)
 
 # Use valac to compile sources to c files --------------------------------------
 vala_precompile(
