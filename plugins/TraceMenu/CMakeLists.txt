@@ -3,7 +3,7 @@
 ################################################################################
 
 # Determine source files -------------------------------------------------------
-file(GLOB_RECURSE PLUGIN_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.vala ../../src/plugins/PluginInterface.vala)
+file(GLOB_RECURSE PLUGIN_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.vala)
 
 # Use valac to compile sources to c files --------------------------------------
 vala_precompile(
@@ -11,6 +11,8 @@ vala_precompile(
         ${PLUGIN_SRC}
     PACKAGES
         ${VALA_PKGS}
+    CUSTOM_VAPIS
+        ${OUTPUT_DIR}/lib/openpie/openpie.vapi
     OPTIONS
         --vapidir=${CMAKE_SOURCE_DIR}/vapi/
         --thread
@@ -18,15 +20,16 @@ vala_precompile(
 )
 
 # Get directory name and use it as plugin name ---------------------------------
-GET_FILENAME_COMPONENT(_LIB_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+get_filename_component(_LIB_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
 # Set plugin output directory to it's source directory -------------------------
-set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+set(LIBRARY_OUTPUT_PATH ${OUTPUT_DIR}/share/openpie/plugins/)
 message("  Found plugin: " ${_LIB_NAME})
 
 # Compile c-sources ------------------------------------------------------------
-ADD_LIBRARY( ${_LIB_NAME} SHARED
+add_library( ${_LIB_NAME} SHARED
     ${VALA_C}
 )
 
-SET_TARGET_PROPERTIES(${_LIB_NAME} PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(${_LIB_NAME} PROPERTIES LINKER_LANGUAGE C)
+add_dependencies(${_LIB_NAME} openpie)

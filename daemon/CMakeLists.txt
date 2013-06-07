@@ -1,5 +1,5 @@
 ################################################################################
-#                    Project OpenPie - Main executable                         #
+#                  Project OpenPie - Daemon executable                         #
 ################################################################################
 
 # Determine source files -------------------------------------------------------
@@ -11,6 +11,8 @@ vala_precompile(
         ${VALA_SRC}
     PACKAGES
         ${VALA_PKGS}
+    CUSTOM_VAPIS
+        ${OUTPUT_DIR}/lib/openpie/openpie.vapi
     OPTIONS
         --vapidir=${CMAKE_SOURCE_DIR}/vapi/
         --thread
@@ -18,12 +20,14 @@ vala_precompile(
 )
 
 # Compile c-sources ------------------------------------------------------------
-add_executable(openpie ${VALA_C})
+set(EXECUTABLE_OUTPUT_PATH ${OUTPUT_DIR}/bin/)
+add_executable(openpie-daemon ${VALA_C})
+target_link_libraries(openpie-daemon openpie)
 
 # Install executable -----------------------------------------------------------
 install(
 	TARGETS
-		openpie
+		openpie-daemon
 	RUNTIME DESTINATION
 		${CMAKE_INSTALL_PREFIX}/bin
 )

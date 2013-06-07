@@ -19,6 +19,8 @@ include(ValaVersion)
 find_package(Vala)
 ensure_vala_version("0.11.0" MINIMUM)
 
+set(OUTPUT_DIR ${CMAKE_SOURCE_DIR}/build/output)
+
 
 # Configure and find libraries -------------------------------------------------
 find_package(PkgConfig)
@@ -82,6 +84,7 @@ set(LIB_PATHS
 	${X11_LIBRARY_DIRS}
 	${JSON_LIBRARY_DIRS}
 	${MODULE_LIBRARY_DIRS}
+	${OUTPUT_DIR}/lib/
 )
 link_directories(${LIB_PATHS})
 
@@ -97,6 +100,7 @@ set(INCLUDE_PATHS
 	${X11_INCLUDE_DIRS}
 	${JSON_INCLUDE_DIRS}
 	${MODULE_INCLUDE_DIRS}
+	${OUTPUT_DIR}/include/openpie/
 )
 include_directories(${INCLUDE_PATHS})
 
@@ -116,21 +120,17 @@ set(VALA_PKGS
   gmodule-2.0
 )
 
-# Add executable ---------------------------------------------------------------
-set(EXECUTABLE_OUTPUT_PATH ${openpie_SOURCE_DIR})
-add_subdirectory(src)
+
+# Add shared library -----------------------------------------------------------
+add_subdirectory(lib)
+
+
+# Add daemon executable --------------------------------------------------------
+add_subdirectory(daemon)
 
 
 # Add plugins ------------------------------------------------------------------
-message( "" )
-message( "Searching for plugins..." )
-
-file(GLOB _PLUGINS ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*)
-FOREACH(_PLUGIN ${_PLUGINS})
-  IF (EXISTS ${_PLUGIN}/CMakeLists.txt)
-    add_subdirectory(${_PLUGIN})
-  ENDIF()
-ENDFOREACH(_PLUGIN ${_PLUGINS})
+add_subdirectory(plugins)
 
 
 # Add uninstall option ---------------------------------------------------------
@@ -146,7 +146,6 @@ add_custom_target(uninstall
 # Print summary ----------------------------------------------------------------
 message( "" )
 message( "Summary:" )
-message( "  EXECUTABLE_OUTPUT_PATH = ${EXECUTABLE_OUTPUT_PATH}" )
 message( "  VALA_EXECUTABLE = ${VALA_EXECUTABLE}" )
 message( "Libs:" )
 message( "  GTK3_LIBRARIES = ${GTK3_LIBRARIES}" )
