@@ -1,28 +1,26 @@
-################################################################
-# Project Gnome-Pie
-################################################################
+################################################################################
+#                 Project OpenPie - Main CMakeLists file                       #
+################################################################################
 
 project("openpie" C)
 
+
+# Initialize CMake -------------------------------------------------------------
 cmake_minimum_required(VERSION 2.6)
 
-# Location where cmake first looks for modules.
+# Location where cmake first looks for modules 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/vala)
 
-################################################################
-# Find Vala
-################################################################
 
+# Find Vala --------------------------------------------------------------------
 include(ValaPrecompile)
 include(ValaVersion)
 
 find_package(Vala)
 ensure_vala_version("0.11.0" MINIMUM)
 
-################################################################
-# Configure and find libraries
-################################################################
 
+# Configure and find libraries -------------------------------------------------
 find_package(PkgConfig)
 
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
@@ -40,14 +38,14 @@ find_library(M_LIB m)
 find_library(GTHREAD_LIB gthread-2.0)
 
 set(CFLAGS
-    ${GIO_CFLAGS}
-    ${GTK3_CFLAGS} ${GTK3_CFLAGS_OTHER}
-    ${CAIRO_CFLAGS} ${CAIRO_CFLAGS_OTHER}
-    ${GEE_CFLAGS} ${CAIRO_CFLAGS_OTHER}
-    ${X11_CFLAGS} ${X11_CFLAGS_OTHER}
+  ${GIO_CFLAGS}
+  ${GTK3_CFLAGS} ${GTK3_CFLAGS_OTHER}
+  ${CAIRO_CFLAGS} ${CAIRO_CFLAGS_OTHER}
+  ${GEE_CFLAGS} ${CAIRO_CFLAGS_OTHER}
+  ${X11_CFLAGS} ${X11_CFLAGS_OTHER}
 	-DGMENU_I_KNOW_THIS_IS_UNSTABLE
 	-DWNCK_I_KNOW_THIS_IS_UNSTABLE
-    -DGETTEXT_PACKAGE="openpie"
+  -DGETTEXT_PACKAGE="openpie"
 	-s -O3 -w
 #	-g
 )
@@ -55,7 +53,7 @@ set(CFLAGS
 add_definitions(${CFLAGS})
 
 set(LIBS
-    ${GIO_LIBRARIES}
+  ${GIO_LIBRARIES}
 	${GTK3_LIBRARIES}
 	${CAIRO_LIBRARIES}
 	${GEE_LIBRARIES}
@@ -63,7 +61,7 @@ set(LIBS
 	${XTST_LIBRARIES}
 	${UNIQUE_LIBRARIES}
 	${X11_LIBRARIES}
-    ${CLUTTER_LIBRARIES}
+  ${CLUTTER_LIBRARIES}
 	${M_LIB}
 	${GTHREAD_LIB}
 	${JSON_LIBRARIES}
@@ -71,13 +69,13 @@ set(LIBS
 link_libraries(${LIBS})
 
 set(LIB_PATHS
-    ${GIO_LIBRARY_DIRS}
+  ${GIO_LIBRARY_DIRS}
 	${GTK3_LIBRARY_DIRS}
 	${CAIRO_LIBRARY_DIRS}
 	${GEE_LIBRARY_DIRS}
 	${XML_LIBRARY_DIRS}
 	${XTST_LIBRARY_DIRS}
-    ${CLUTTER_LIBRARY_DIRS}
+  ${CLUTTER_LIBRARY_DIRS}
 	${UNIQUE_LIBRARY_DIRS}
 	${X11_LIBRARY_DIRS}
 	${JSON_LIBRARY_DIRS}
@@ -85,12 +83,12 @@ set(LIB_PATHS
 link_directories(${LIB_PATHS})
 
 set(INCLUDE_PATHS
-    ${GIO_INCLUDE_DIRS}
+  ${GIO_INCLUDE_DIRS}
 	${GTK3_INCLUDE_DIRS}
 	${CAIRO_INCLUDE_DIRS}
 	${GEE_INCLUDE_DIRS}
 	${XML_INCLUDE_DIRS}
-    ${CLUTTER_INCLUDE_DIRS}
+  ${CLUTTER_INCLUDE_DIRS}
 	${XTST_INCLUDE_DIRS}	
 	${UNIQUE_INCLUDE_DIRS}
 	${X11_INCLUDE_DIRS}
@@ -113,41 +111,32 @@ set(VALA_PKGS
   clutter-gtk-1.0
 )
 
-################################################################
-# Add executable
-################################################################
-
+# Add executable ---------------------------------------------------------------
 set(EXECUTABLE_OUTPUT_PATH ${openpie_SOURCE_DIR})
 add_subdirectory(src)
 
-################################################################
-# Add plugins
-################################################################
 
+# Add plugins ------------------------------------------------------------------
 message( "" )
 message( "Searching for plugins..." )
 
 file(GLOB _PLUGINS ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*)
 FOREACH(_PLUGIN ${_PLUGINS})
-    add_subdirectory(${_PLUGIN})
+  add_subdirectory(${_PLUGIN})
 ENDFOREACH(_PLUGIN ${_PLUGINS})
 
-################################################################
-# Add uninstall option
-################################################################
 
+# Add uninstall option ---------------------------------------------------------
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/CMake_Uninstall.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/CMake_Uninstall.cmake"
-    IMMEDIATE @ONLY)
+  "${CMAKE_CURRENT_SOURCE_DIR}/CMake_Uninstall.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/CMake_Uninstall.cmake"
+  IMMEDIATE @ONLY)
 
 add_custom_target(uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/CMake_Uninstall.cmake)
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/CMake_Uninstall.cmake)
 
-################################################################
-# Summary
-################################################################
 
+# Print summary ----------------------------------------------------------------
 message( "" )
 message( "Summary:" )
 message( "  EXECUTABLE_OUTPUT_PATH = ${EXECUTABLE_OUTPUT_PATH}" )
@@ -162,3 +151,5 @@ message( "  UNIQUE_LIBRARIES = ${UNIQUE_LIBRARIES}" )
 message( "  X11_LIBRARIES = ${X11_LIBRARIES}" )
 message( "  CLUTTER_LIBRARIES = ${CLUTTER_LIBRARIES}" )
 message( "" )
+
+
