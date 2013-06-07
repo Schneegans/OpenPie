@@ -1,4 +1,9 @@
-class TraceMenu : GLib.Object, TestPlugin {
+
+namespace OpenPie {
+
+class TraceMenu : PluginInterface, GLib.Object {
+    
+ 
     
     public string print_name () {
         return "TraceMenu";
@@ -9,7 +14,11 @@ class TraceMenu : GLib.Object, TestPlugin {
     }
 }
 
-public Type register_plugin (Module module) {
-    // types are registered automatically
-    return typeof (TraceMenu);
 }
+
+public GLib.Type register_plugin (GLib.Module module) {
+    // types are registered automatically
+    return typeof (OpenPie.TraceMenu);
+}
+
+

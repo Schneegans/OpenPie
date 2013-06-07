@@ -1,9 +1,10 @@
+<<<<<<< HEAD
 ################################################################################
 #                     Project OpenPie - Plugin library                         #
 ################################################################################
 
 # Determine source files -------------------------------------------------------
-file(GLOB_RECURSE PLUGIN_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.vala)
+file(GLOB_RECURSE PLUGIN_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.vala ../../src/*.vala)
 
 # Use valac to compile sources to c files --------------------------------------
 vala_precompile(
@@ -26,7 +27,7 @@ message("  Found plugin: " ${_LIB_NAME})
 
 # Compile c-sources ------------------------------------------------------------
 ADD_LIBRARY( ${_LIB_NAME} SHARED
-    ${PLUGIN_SRC}
+    ${VALA_C}
 )
 
 SET_TARGET_PROPERTIES(${_LIB_NAME} PROPERTIES LINKER_LANGUAGE C)

@@ -29,12 +29,14 @@ public class Menu : GLib.Object {
   // emitted when the menu finally disappears from screen
   public signal void on_close(Menu menu);
   
-  public Menu(string menu_description, TransparentWindow window) {
-    window_ = window;
-  
+  public void set_content(string menu_description) {
     var loader   = new MenuLoader.from_string(menu_description);
     root_        = loader.root;
     root_.parent = window_.get_stage();
+  }
+  
+  public void set_window(TransparentWindow window) {
+    window_ = window;
   }
 
   public void display() {
