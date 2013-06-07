@@ -44,6 +44,9 @@ public class Deamon : GLib.Object {
     // connect SigHandlers
     Posix.signal(Posix.SIGINT, sig_handler_);
     Posix.signal(Posix.SIGTERM, sig_handler_);
+    
+    // search for resource directories
+    Paths.init();
   
     // finished loading... so run the prog!
     message("Started happily...");

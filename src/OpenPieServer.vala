@@ -33,17 +33,26 @@ public class OpenPieServer : GLib.Object {
   // emitted, when the users selects an item from the currently active menu
   public signal void on_select(int id, string item);
   
-  construct
-  {
-    window_ = new TransparentWindow();
+  construct {
+    window_ =         new TransparentWindow();
+    plugin_loader_ =  new PluginLoader();
+    
+    if (Paths.global_plugin_directory != "") 
+      plugin_loader_.load_from(Paths.global_plugin_directory);
+    if (Paths.local_plugin_directory != "") 
+      plugin_loader_.load_from(Paths.local_plugin_directory);
   }
   
   // opens a menu according to the given description 
   // and returns a newly assigned ID
   public int show_menu(string menu_description) {
-  
+    
+    const string menu_plugin = "TraceMenu";
+    
     // create a new menu
-    var menu = new Menu(menu_description, window_);
+    var menu = plugin_loader_.get_plugin(menu_plugin);
+    menu.set_window(window_);
+    menu.set_content(menu_description);
     
     // store it the open_menus_ map with an unique ID
     current_id_ +=1;
@@ -77,6 +86,9 @@ public class OpenPieServer : GLib.Object {
   
   // the fullscreen window onto which menus are drawn
   private TransparentWindow window_ = null;
+  
+  // loads all menu plugins
+  private PluginLoader plugin_loader_ = null;
   
   // stores all currently opened menus with their individual ID
   private Gee.HashMap<Menu, int> open_menus_ = new Gee.HashMap<Menu, int>();

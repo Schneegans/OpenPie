@@ -35,6 +35,7 @@ pkg_check_modules(XML REQUIRED libxml-2.0)
 pkg_check_modules(XTST REQUIRED xtst)
 pkg_check_modules(CLUTTER REQUIRED clutter-gtk-1.0)
 pkg_check_modules(JSON json-glib-1.0)
+pkg_check_modules(MODULE gmodule-2.0)
 
 find_library(M_LIB m)
 find_library(GTHREAD_LIB gthread-2.0)
@@ -67,6 +68,7 @@ set(LIBS
 	${M_LIB}
 	${GTHREAD_LIB}
 	${JSON_LIBRARIES}
+	${MODULE_LIBRARIES}
 )
 link_libraries(${LIBS})
 
@@ -81,6 +83,7 @@ set(LIB_PATHS
 	${UNIQUE_LIBRARY_DIRS}
 	${X11_LIBRARY_DIRS}
 	${JSON_LIBRARY_DIRS}
+	${MODULE_LIBRARY_DIRS}
 )
 link_directories(${LIB_PATHS})
 
@@ -95,6 +98,7 @@ set(INCLUDE_PATHS
 	${UNIQUE_INCLUDE_DIRS}
 	${X11_INCLUDE_DIRS}
 	${JSON_INCLUDE_DIRS}
+	${MODULE_INCLUDE_DIRS}
 )
 include_directories(${INCLUDE_PATHS})
 
@@ -111,6 +115,7 @@ set(VALA_PKGS
   xtst
   json-glib-1.0
   clutter-gtk-1.0
+  gmodule-2.0
 )
 
 ################################################################
@@ -129,7 +134,9 @@ message( "Searching for plugins..." )
 
 file(GLOB _PLUGINS ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*)
 FOREACH(_PLUGIN ${_PLUGINS})
+  IF (EXISTS ${_PLUGIN}/CMakeLists.txt)
     add_subdirectory(${_PLUGIN})
+  ENDIF()
 ENDFOREACH(_PLUGIN ${_PLUGINS})
 
 ################################################################
@@ -161,4 +168,5 @@ message( "  XTST_LIBRARIES = ${XTST_LIBRARIES}" )
 message( "  UNIQUE_LIBRARIES = ${UNIQUE_LIBRARIES}" )
 message( "  X11_LIBRARIES = ${X11_LIBRARIES}" )
 message( "  CLUTTER_LIBRARIES = ${CLUTTER_LIBRARIES}" )
+message( "  MODULE_LIBRARIES = ${MODULE_LIBRARIES}" )
 message( "" )
