@@ -27,7 +27,7 @@ namespace OpenPie {
 public class OpenPieServer : GLib.Object {
 
   //////////////////////////////////////////////////////////////////////////////
-  //              public interface                                            //        
+  //                         public interface                                 //        
   //////////////////////////////////////////////////////////////////////////////
   
   // emitted, when the users selects an item from the currently active menu
@@ -85,7 +85,7 @@ public class OpenPieServer : GLib.Object {
   } 
   
   //////////////////////////////////////////////////////////////////////////////
-  //              private stuff                                               //
+  //                           private stuff                                  //
   //////////////////////////////////////////////////////////////////////////////
   
   // the fullscreen window onto which menus are drawn

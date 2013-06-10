@@ -25,15 +25,14 @@ namespace OpenPie {
 public class Deamon : GLib.Object {
   
   //////////////////////////////////////////////////////////////////////////////
-  //              public interface                                            //        
+  //                         public interface                                 //        
   //////////////////////////////////////////////////////////////////////////////
   
   // The current version of OpenPie
   public static string version;
   
   // The beginning of everything
-  public static int main(string[] args) 
-  {
+  public static int main(string[] args) {
     version = "0.1";
     
     // init toolkits
@@ -60,15 +59,14 @@ public class Deamon : GLib.Object {
   }
 
   //////////////////////////////////////////////////////////////////////////////
-  //              private stuff                                               //
+  //                           private stuff                                  //
   //////////////////////////////////////////////////////////////////////////////
   
   // The class which listens for dbus-menu-open-requests
   private static DBusInterface dbus_interface_ = null;
   
   // Print a nifty message when the prog is killed.
-  private static void sig_handler_(int sig) 
-  {
+  private static void sig_handler_(int sig) {
     stdout.printf("\n");
     message("Caught signal (%d), bye!".printf(sig));
     dbus_interface_.unbind();

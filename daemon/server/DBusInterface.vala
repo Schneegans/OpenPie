@@ -24,32 +24,29 @@ namespace OpenPie {
 public class DBusInterface : GLib.Object {
   
   //////////////////////////////////////////////////////////////////////////////
-  //              public interface                                            //        
+  //                         public interface                                 //        
   //////////////////////////////////////////////////////////////////////////////
   
   // creates an OpenPieServer and makes it listen to incoming requests
-  public void bind() 
-  {
+  public void bind() {
     Bus.own_name(BusType.SESSION, "org.openpie.main", 
            BusNameOwnerFlags.NONE,
-           on_connection_, on_success_, on_fail_);
+           on_connection, on_success, on_fail);
     Clutter.main();
   }
   
   // stops listening
-  public void unbind() 
-  {
+  public void unbind() {
     Clutter.main_quit();
   }
   
   //////////////////////////////////////////////////////////////////////////////
-  //              private stuff                                               //
+  //                           private stuff                                  //
   //////////////////////////////////////////////////////////////////////////////
   
   // registers OpenPie on the DBus and creates an OpenPieServer which waits
   // for incoming menu requests
-  private void on_connection_(GLib.DBusConnection con) 
-  {
+  private void on_connection(GLib.DBusConnection con) {
     try {
       con.register_object("/org/openpie/main", new OpenPieServer());
     } catch (IOError e) {
@@ -58,14 +55,12 @@ public class DBusInterface : GLib.Object {
   }
   
   // print message on success
-  private void on_success_() 
-  {
+  private void on_success() {
     message("DBus name aquired!");
   }
   
   // print error on failure
-  private void on_fail_() 
-  {
+  private void on_fail() {
     error("Could not aquire DBus name! " +
         "(Maybe OpenPie deamon is already running?)");
   }

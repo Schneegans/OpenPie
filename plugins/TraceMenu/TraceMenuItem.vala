@@ -13,37 +13,22 @@
 //                                                                            //
 // You should have received a copy of the GNU General Public License along    //
 // with this program.  If not, see <http://www.gnu.org/licenses/>.            //
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////// 
 
 namespace OpenPie {
 
-class TraceMenu : PluginInterface, Menu {
-    
+public class TraceMenuItem : MenuItem {
+
   //////////////////////////////////////////////////////////////////////////////
-  //                         public interface                                 //        
+  //                          public interface                                //        
   //////////////////////////////////////////////////////////////////////////////
-    
-  public string print_name () {
-    return "TraceMenu";
-  }
+
   
-  public override void set_content(string menu_description) {
-    var loader = new MenuLoader.from_string(typeof(TraceMenuItem), 
-                                            menu_description);
-    set_root(loader.root);
-  }
-    
   //////////////////////////////////////////////////////////////////////////////
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
-}
+  
 
 }
-
-// this method is called by the OpenPie Daemon when it registers the 
-// plugin. Name and signature of this method cannot be changed.
-public GLib.Type register_plugin(GLib.Module module) {
-  return typeof (OpenPie.TraceMenu);
+  
 }
-
-

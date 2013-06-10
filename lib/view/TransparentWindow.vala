@@ -20,13 +20,13 @@ using GLib.Math;
 namespace OpenPie {
 
 //////////////////////////////////////////////////////////////////////////////// 
-///  An invisible window. Used to draw Pies onto.                             //
+//  An invisible window. Used to draw Pies onto.                              //
 //////////////////////////////////////////////////////////////////////////////// 
 
 public class TransparentWindow : Gtk.Window {
 
   //////////////////////////////////////////////////////////////////////////////
-  //              public interface                                            //        
+  //                         public interface                                 //        
   //////////////////////////////////////////////////////////////////////////////
   
   // those get emitted when the according action occurs
@@ -105,6 +105,7 @@ public class TransparentWindow : Gtk.Window {
     realize(); 
   }
   
+  // returns the mebedded Clutter.Stage
   public Clutter.Stage get_stage() {
     return stage_;
   }
@@ -126,7 +127,10 @@ public class TransparentWindow : Gtk.Window {
   
     Gtk.grab_add(this);
     FocusGrabber.grab(get_window(), true, true, true);
-    get_window().input_shape_combine_region(get_window().get_visible_region(), 0, 0);
+    
+    // make window responsive to click events
+    get_window().input_shape_combine_region(get_window().get_visible_region(), 
+                                            0, 0);
   }
   
   // releases the input focus
@@ -137,11 +141,13 @@ public class TransparentWindow : Gtk.Window {
   
     Gtk.grab_remove(this);
     FocusGrabber.ungrab();
+    
+    // make window click-through
     get_window().input_shape_combine_region(new Cairo.Region(), 0, 0);
   }
   
   //////////////////////////////////////////////////////////////////////////////
-  //              private stuff                                               //
+  //                         private stuff                                    //
   //////////////////////////////////////////////////////////////////////////////
   
   // The background image used for fake transparency if

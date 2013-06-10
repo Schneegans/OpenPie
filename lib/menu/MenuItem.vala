@@ -46,7 +46,7 @@ public class MenuItem : Clutter.Actor {
   }
   
   // shows the MenuItem and all of it's children on the screen
-  public void display() {
+  public virtual void display() {
     
     enter_event.connect(on_enter);
     leave_event.connect(on_leave);
@@ -65,8 +65,8 @@ public class MenuItem : Clutter.Actor {
     }
   }
   
-  // rmoves the MenuItem and all of it's children from the screen
-  public void close() {
+  // removes the MenuItem and all of it's children from the screen
+  public virtual void close() {
     enter_event.disconnect(on_enter);
     leave_event.disconnect(on_leave);
   
@@ -74,13 +74,14 @@ public class MenuItem : Clutter.Actor {
   }
   
   // for debugging purposes
-  public void print(int indent = 0) {
+  public virtual void print(int indent = 0) {
     string space = "";
     
     for (int i=0; i<indent; ++i)
       space += "  ";
       
-    debug(space + "\"" + this.text 
+    debug(space + get_type().name() + ":"
+                + "\"" + this.text 
                 + "\" (Icon: \"" + this.icon 
                 + "\", Angle: %f)".printf(this.angle));
     

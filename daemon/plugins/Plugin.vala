@@ -17,11 +17,22 @@
 
 namespace OpenPie {
 
-public class Plugin<T> : Object {
+//////////////////////////////////////////////////////////////////////////////// 
+// A generic plugin module. It loads a shared object (*.so), searches for a   //
+// function called "register_plugin" and calls it. Afterwards this class can  //
+// be used to instanciate objects of the registered type.                     //
+//////////////////////////////////////////////////////////////////////////////// 
 
-  public Plugin (string path) {
+public class Plugin<T> : Object {
+  
+  //////////////////////////////////////////////////////////////////////////////
+  //                          public interface                                //        
+  //////////////////////////////////////////////////////////////////////////////
+  
+  public Plugin(string path) {
     assert(GLib.Module.supported());
     
+    // load the shared object
     module_ = Module.open(path, GLib.ModuleFlags.BIND_LAZY);
     if (module_ == null) {
       warning("Failed to load plugin '%s'!\n", module_.name ());
@@ -29,21 +40,31 @@ public class Plugin<T> : Object {
     }
 
     message("Loaded plugin '%s'.\n", module_.name());
-
+    
+    // register the type of the contained plugin class
     void* f;
     module_.symbol("register_plugin", out f);
     unowned register_ register_plugin = (register_) f;
     
     type_ = register_plugin(module_);
   }
-
+  
+  // create an object of the loaded plugin class
   public T new_object () {
     return Object.new(type_);
   }
   
+  //////////////////////////////////////////////////////////////////////////////
+  //                          private stuff                                   //
+  //////////////////////////////////////////////////////////////////////////////
+  
+  // the type of the plugin class which has been loaded from file
   private GLib.Type type_;
+  
+  // a reference to the shared object file
   private GLib.Module module_;
-
+  
+  // function type of the plugin class registration method
   private delegate GLib.Type register_ (GLib.Module module);
 }
 

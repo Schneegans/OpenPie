@@ -1,102 +1,83 @@
-/* 
-Copyright (c) 2011 by Simon Schneegans
-
-This program is free software: you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the Free
-Software Foundation, either version 3 of the License, or (at your option)
-any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-more details.
-
-You should have received a copy of the GNU General Public License along with
-this program.  If not, see <http://www.gnu.org/licenses/>. 
-*/
+////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2011-2013 by Simon Schneegans                                //  
+//                                                                            //
+// This program is free software: you can redistribute it and/or modify it    //
+// under the terms of the GNU General Public License as published by the Free //
+// Software Foundation, either version 3 of the License, or (at your option)  //
+// any later version.                                                         //
+//                                                                            //
+// This program is distributed in the hope that it will be useful, but        //
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY //
+// or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License   //
+// for more details.                                                          //
+//                                                                            //
+// You should have received a copy of the GNU General Public License along    //
+// with this program.  If not, see <http://www.gnu.org/licenses/>.            //
+////////////////////////////////////////////////////////////////////////////////
 
 namespace OpenPie {
 
-/////////////////////////////////////////////////////////////////////////  
-/// This class represents a hotkey, used to open pies. It supports any
-/// combination of modifier keys with keyboard and mouse buttons.
-/////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// This class represents a hotkey, used to open menus. It supports any        //
+// combination of modifier keys with keyboard and mouse buttons.              //
+////////////////////////////////////////////////////////////////////////////////
 
 public class Key : GLib.Object {
-
-  /////////////////////////////////////////////////////////////////////
-  /// Returns a human-readable version of this key.
-  /////////////////////////////////////////////////////////////////////
-
+  
+  //////////////////////////////////////////////////////////////////////////////
+  //                          public interface                                //        
+  //////////////////////////////////////////////////////////////////////////////
+  
+  // Returns a human-readable version of this key.
   public string label { get; private set; default=""; }
   
-  /////////////////////////////////////////////////////////////////////
-  /// The key string. Like [delayed]<Control>button3
-  /////////////////////////////////////////////////////////////////////
-  
+  // The key string. Like [delayed]<Control>button3
   public string name { get; private set; default=""; }
   
-  /////////////////////////////////////////////////////////////////////
-  /// The key code of the hotkey or the button number of the mouse.
-  /////////////////////////////////////////////////////////////////////
-  
+  // The key code of the hotkey or the button number of the mouse.
   public int key_code { get; private set; default=0; }
   
-  /////////////////////////////////////////////////////////////////////
-  /// The keysym of the hotkey or the button number of the mouse.
-  /////////////////////////////////////////////////////////////////////
-  
+  // The keysym of the hotkey or the button number of the mouse.
   public uint key_sym { get; private set; default=0; }
   
-  /////////////////////////////////////////////////////////////////////
-  /// Modifier keys pressed for this hotkey.
-  /////////////////////////////////////////////////////////////////////
-  
+  // Modifier keys pressed for this hotkey.
   public Gdk.ModifierType modifiers { get; private set; default=0; }
   
-  /////////////////////////////////////////////////////////////////////
-  /// True if this hotkey involves the mouse.
-  /////////////////////////////////////////////////////////////////////
-  
+  // True if this hotkey involves the mouse.
   public bool with_mouse { get; private set; default=false; }
   
-  /////////////////////////////////////////////////////////////////////
-  /// C'tor, creates a new, "unbound" key.
-  /////////////////////////////////////////////////////////////////////
-  
+  // C'tor, creates a new, "unbound" key.
   public Key() {
     this.set_unbound();
   }
   
-  /////////////////////////////////////////////////////////////////////
-  /// C'tor, creates a new Key from a given key string. This is
-  /// in this format: "<modifier(s)>button" where
-  /// "<modifier>" is something like "<Alt>" or "<Control>", "button"
-  /// something like "s", "F4" or "button0".
-  /////////////////////////////////////////////////////////////////////
-  
+  // C'tor, creates a new Key from a given key string. This is
+  // in this format: "<modifier(s)>button" where
+  // "<modifier>" is something like "<Alt>" or "<Control>", "button"
+  // something like "s", "F4" or "button0".
   public Key.from_string(string key) {
     this.parse_string(key);
   }
   
+  // C'tor, creates a new Key from a given key_sym and some associated
+  // modifiers.
   public Key.from_keyboard(uint key_sym, Gdk.ModifierType modifiers) {
     string key = Gtk.accelerator_name(key_sym, modifiers);
     this.parse_string(key);
   }
   
+  // C'tor, creates a new Key from a given mouse button and some associated
+  // modifiers.
   public Key.from_mouse(uint button, Gdk.ModifierType modifiers) {
     string key = Gtk.accelerator_name(0, modifiers) + "button%u".printf(button);
     this.parse_string(key);
   }
   
-  /////////////////////////////////////////////////////////////////////
-  /// Parses a key string. This is
-  /// in this format: "[option(s)]<modifier(s)>button" where
-  /// "<modifier>" is something like "<Alt>" or "<Control>", "button"
-  /// something like "s", "F4" or "button0" and "[option]" is either
-  /// "[turbo]", "[centered]" or "["delayed"]".
-  /////////////////////////////////////////////////////////////////////
-  
+  // Parses a key string. This is
+  // in this format: "[option(s)]<modifier(s)>button" where
+  // "<modifier>" is something like "<Alt>" or "<Control>", "button"
+  // something like "s", "F4" or "button0" and "[option]" is either
+  // "[turbo]", "[centered]" or "["delayed"]".
   public void parse_string(string key) {
     if (this.is_valid(key)) {
       // copy string
@@ -140,10 +121,11 @@ public class Key : GLib.Object {
     }
   }
   
-  /////////////////////////////////////////////////////////////////////
-  /// Resets all member variables to their defaults.
-  /////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+  //                          private stuff                                   //
+  //////////////////////////////////////////////////////////////////////////////
   
+  // Resets all member variables to their defaults.
   private void set_unbound() {
     this.label = "Not bound";
     this.name = "";
@@ -153,10 +135,7 @@ public class Key : GLib.Object {
     this.with_mouse = false;
   }
   
-  /////////////////////////////////////////////////////////////////////
-  /// Returns true, if the key string is in a valid format.
-  /////////////////////////////////////////////////////////////////////
-  
+  // Returns true, if the key string is in a valid format.
   private bool is_valid(string key) {
     // copy string
     string check_string = key;
@@ -178,11 +157,8 @@ public class Key : GLib.Object {
     return true; 
   }
   
-  /////////////////////////////////////////////////////////////////////
-  /// Returns the mouse button number of the given key string. 
-  /// Returns -1 if it is not a mouse key.
-  /////////////////////////////////////////////////////////////////////
-  
+  // Returns the mouse button number of the given key string. 
+  // Returns -1 if it is not a mouse key.
   private int get_mouse_button(string key) {
     if (key.contains("button")) {
       // it seems to be a mouse-key so check the button part.

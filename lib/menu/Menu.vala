@@ -17,7 +17,7 @@
 
 namespace OpenPie {
 
-public class Menu : GLib.Object {
+public abstract class Menu : GLib.Object {
   
   //////////////////////////////////////////////////////////////////////////////
   //                          public interface                                //        
@@ -30,11 +30,7 @@ public class Menu : GLib.Object {
   public signal void on_close(Menu menu);
   
   // sets the menu content which shall be displayed
-  public void set_content(string menu_description) {
-    var loader   = new MenuLoader.from_string(menu_description);
-    root_        = loader.root;
-    root_.parent = window_.get_stage();
-  }
+  public abstract void set_content(string menu_description); 
   
   // sets the window onto which the menu should be drawn
   public void set_window(TransparentWindow window) {
@@ -48,6 +44,21 @@ public class Menu : GLib.Object {
     window_.on_mouse_move.connect(on_mouse_move_);
     
     root_.display();
+  }
+  
+  // for debugging purposes
+  public void print() {
+    debug(get_type().name() + ":");
+    root_.print();
+  }
+  
+  //////////////////////////////////////////////////////////////////////////////
+  //                        protected stuff                                   //
+  //////////////////////////////////////////////////////////////////////////////
+  
+  protected void set_root(MenuItem root) {
+    root_        = root;
+    root_.parent = window_.get_stage();
   }
   
   //////////////////////////////////////////////////////////////////////////////

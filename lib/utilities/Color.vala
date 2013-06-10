@@ -20,13 +20,13 @@ using GLib.Math;
 namespace OpenPie {
 
 ////////////////////////////////////////////////////////////////////////////////  
-/// A Color class with full rgb/hsv support and some useful utility methods.  //
+// A Color class with full rgb/hsv support and some useful utility methods.   //
 ////////////////////////////////////////////////////////////////////////////////
 
 public class Color: GLib.Object {
 
   //////////////////////////////////////////////////////////////////////////////
-  //              public interface                                            //        
+  //                          public interface                                //        
   //////////////////////////////////////////////////////////////////////////////
   
   // Creates a white Color.
@@ -203,7 +203,7 @@ public class Color: GLib.Object {
   }
   
   //////////////////////////////////////////////////////////////////////////////
-  //              private stuff                                               //
+  //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
   
   // Private members, storing the actual color information.

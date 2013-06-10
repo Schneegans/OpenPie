@@ -17,6 +17,12 @@
 
 namespace OpenPie {
 
+//////////////////////////////////////////////////////////////////////////////// 
+// This class tries to load all shared objects from a given directoy as       //
+// plugins. It stores a map of plugin names and their associated plugins. It  //
+// can be used to create instances of the loaded plugins.                     //
+//////////////////////////////////////////////////////////////////////////////// 
+
 public class PluginLoader : GLib.Object {
   
   //////////////////////////////////////////////////////////////////////////////
@@ -32,24 +38,26 @@ public class PluginLoader : GLib.Object {
   public void load_from(string directory) {
     try {
     
-      var plugin_dirs = GLib.File.new_for_path(directory);
-      var files = plugin_dirs.enumerate_children(FileAttribute.STANDARD_NAME, 0);
+      var dir = GLib.File.new_for_path(directory);
+      var files = dir.enumerate_children(FileAttribute.STANDARD_NAME, 0);
 
       FileInfo info;
       while ((info = files.next_file ()) != null) {
         
         if (info.get_file_type() == GLib.FileType.DIRECTORY) {
           
-          var dir = plugin_dirs.get_child(info.get_name());
-          var plugin_files = dir.enumerate_children(FileAttribute.STANDARD_NAME, 0);
+          var sub_dir = dir.get_child(info.get_name());
+          var sub_files = sub_dir.enumerate_children(
+                                                FileAttribute.STANDARD_NAME, 0);
           
           FileInfo plugin_info;
-          while ((plugin_info = plugin_files.next_file ()) != null) {
-            load_plugin(plugin_info, dir.get_child(plugin_info.get_name()).get_path());
+          while ((plugin_info = sub_files.next_file ()) != null) {
+            load_plugin(plugin_info, sub_dir.get_child(
+                                            plugin_info.get_name()).get_path());
           }
           
         } else  {
-          load_plugin(info, plugin_dirs.get_child(info.get_name()).get_path());
+          load_plugin(info, dir.get_child(info.get_name()).get_path());
         }
       }
 
@@ -64,7 +72,8 @@ public class PluginLoader : GLib.Object {
     if (plugin != null)
       return plugin.new_object();
       
-    warning("Failed to create menu: No plugin named \"%s\" found!", plugin_name);
+    warning("Failed to create menu: No plugin named \"%s\" found!", 
+            plugin_name);
     return null;
   }
   

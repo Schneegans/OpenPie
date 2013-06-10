@@ -26,14 +26,12 @@ public class MenuLoader : GLib.Object {
   // the root item of the menu tree
   public MenuItem root { public get; private set; default = null; }
   
-  construct {
-    root = new MenuItem();
-  }
-  
   // initializes this loader with a menu representing 
   // the given menu description string
-  public MenuLoader.from_string(string data) {
+  public MenuLoader.from_string(GLib.Type item_type, string data) {
     var parser = new Json.Parser();
+    
+    root = GLib.Object.new(item_type) as MenuItem;
     
     try {
       parser.load_from_data(data);
@@ -49,6 +47,7 @@ public class MenuLoader : GLib.Object {
   
   // parses the menu description recursively
   private void load_from_json(MenuItem current, Json.Reader reader) {
+  
     foreach (var member in reader.list_members()) {
       reader.read_member(member);
     
@@ -56,7 +55,7 @@ public class MenuLoader : GLib.Object {
         if (reader.is_array()) {
           for (int i=0; i<reader.count_elements(); ++i) {
             reader.read_element(i);
-            var child = new MenuItem();
+            var child = GLib.Object.new(this.root.get_type()) as MenuItem;
             
             // recursion!
             this.load_from_json(child, reader);

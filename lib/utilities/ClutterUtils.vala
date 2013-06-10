@@ -20,14 +20,13 @@ namespace OpenPie {
 public class ClutterUtils : GLib.Object {
   
   //////////////////////////////////////////////////////////////////////////////
-  //              public interface                                            //        
+  //                          public interface                                //        
   //////////////////////////////////////////////////////////////////////////////
   
   // smoothly animates a property of the given actor
   public static void animate(Clutter.Actor actor, string property_name, 
                  Value val, Clutter.AnimationMode mode, 
-                 uint duration, uint delay = 0) 
-  {
+                 uint duration, uint delay = 0) {
     actor.save_easing_state();
     actor.set_easing_mode(mode);
     actor.set_easing_duration(duration);

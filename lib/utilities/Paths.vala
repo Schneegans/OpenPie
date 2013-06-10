@@ -18,8 +18,8 @@
 namespace OpenPie {
 
 ////////////////////////////////////////////////////////////////////////////////  
-/// A static class which stores all relevant paths used by OpenPie.           //
-/// These depend upon the location from which the program was launched.       //
+// A static class which stores all relevant paths used by OpenPie.            //
+// These depend upon the location from which the program was launched.        //
 ////////////////////////////////////////////////////////////////////////////////
 
 public class Paths : GLib.Object {
@@ -42,7 +42,8 @@ public class Paths : GLib.Object {
   
     // get path of executable
     try {
-      executable = GLib.File.new_for_path(GLib.FileUtils.read_link("/proc/self/exe")).get_path();
+      executable = GLib.File.new_for_path(
+                         GLib.FileUtils.read_link("/proc/self/exe")).get_path();
     } catch (GLib.FileError e) {
       warning("Failed to get path of executable!");
     }
@@ -75,7 +76,8 @@ public class Paths : GLib.Object {
     // fallback mode, openpie seems not to be installed
     if(global_dir == "" && local_dir == "") {
       var exe = GLib.File.new_for_path(GLib.Path.get_dirname(executable));
-      local_dir = exe.get_parent().get_child("share").get_child("openpie").get_path();
+      local_dir = exe.get_parent().get_child("share").get_child("openpie")
+                                                                    .get_path();
     }
     
     
