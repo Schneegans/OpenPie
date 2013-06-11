@@ -15,7 +15,24 @@
 // with this program.  If not, see <http://www.gnu.org/licenses/>.            //
 ////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+// this method is called by the OpenPie Daemon when it registers the          //
+// plugin. Name and signature of this method cannot be changed.               //
+////////////////////////////////////////////////////////////////////////////////
+
+public GLib.Type register_plugin(GLib.Module module) {
+  return typeof (OpenPie.TraceMenu);
+}
+
+
 namespace OpenPie {
+
+////////////////////////////////////////////////////////////////////////////////  
+// A TraceMenu is a special marking menu. When the user selects an item, a    //
+// unique path is created on screen. The user may "draw" this path really     //
+// quickly in order to select the according entry. That's not only fast ---   //
+// that's also fun!                                                           //
+////////////////////////////////////////////////////////////////////////////////
 
 class TraceMenu : PluginInterface, Menu {
     
@@ -31,19 +48,19 @@ class TraceMenu : PluginInterface, Menu {
     var loader = new MenuLoader.from_string(typeof(TraceMenuItem), 
                                             menu_description);
     set_root(loader.root);
+    
+    root_ = loader.root as TraceMenuItem;
   }
     
   //////////////////////////////////////////////////////////////////////////////
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
+  
+  private TraceMenuItem root_;
 }
 
 }
 
-// this method is called by the OpenPie Daemon when it registers the 
-// plugin. Name and signature of this method cannot be changed.
-public GLib.Type register_plugin(GLib.Module module) {
-  return typeof (OpenPie.TraceMenu);
-}
+
 
 

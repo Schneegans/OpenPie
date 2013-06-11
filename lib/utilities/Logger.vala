@@ -61,7 +61,7 @@ public class Logger {
   private static const bool log_time = true; 
   
   // If true, the origin of the message is shown. In form file:line
-  private static const bool display_file = false; 
+  private static const bool display_file = true; 
   private static const bool log_file = false; 
   
   // A regex, used to format the standard message.

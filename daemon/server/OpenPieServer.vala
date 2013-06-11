@@ -70,6 +70,7 @@ public class OpenPieServer : GLib.Object {
     if (!window_.visible)
       window_.show_all();
     
+    // make sure that the window is displayed
     while(Gtk.events_pending() || Gdk.events_pending()) {
       Gtk.main_iteration_do(true);
     }
@@ -77,7 +78,10 @@ public class OpenPieServer : GLib.Object {
     // focus all input on the big window
     window_.add_grab();
     
-    // display the menu
+    // initialize menu
+    menu.on_init();
+    
+    // display menu
     menu.display();
     
     // report the new menu's ID over the dbus

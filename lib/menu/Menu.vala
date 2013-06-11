@@ -17,6 +17,11 @@
 
 namespace OpenPie {
 
+////////////////////////////////////////////////////////////////////////////////  
+// A base class for all menus. Derived classes have to implement it's         //
+// behaviour and a derived class for its items.                               //
+////////////////////////////////////////////////////////////////////////////////
+
 public abstract class Menu : GLib.Object {
   
   //////////////////////////////////////////////////////////////////////////////
@@ -28,9 +33,6 @@ public abstract class Menu : GLib.Object {
   
   // emitted when the menu finally disappears from screen
   public signal void on_close(Menu menu);
-  
-  // sets the menu content which shall be displayed
-  public abstract void set_content(string menu_description); 
   
   // sets the window onto which the menu should be drawn
   public void set_window(TransparentWindow window) {
@@ -51,6 +53,18 @@ public abstract class Menu : GLib.Object {
     debug(get_type().name() + ":");
     root_.print();
   }
+  
+  // called before the menu is displayed
+  public virtual void on_init() {
+    root_.on_init();
+  }
+  
+  //////////////////////////////////////////////////////////////////////////////
+  //                    abstract public interface                             //        
+  //////////////////////////////////////////////////////////////////////////////
+  
+  // sets the menu content which shall be displayed
+  public abstract void set_content(string menu_description); 
   
   //////////////////////////////////////////////////////////////////////////////
   //                        protected stuff                                   //

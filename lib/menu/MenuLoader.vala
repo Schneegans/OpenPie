@@ -17,6 +17,28 @@
 
 namespace OpenPie {
 
+////////////////////////////////////////////////////////////////////////////////  
+// Loads a menu from a given JSON string. Format looks líke that:             //
+//   {                                                                        //
+//    "subs":[{                                                               //
+//      "text":"Title",                                                       //
+//      "icon":"Icon",                                                        //
+//      "subs":[{                                                             //
+//        "text":"Title",                                                     //
+//        "icon":"Icon"                                                       //
+//        },{                                                                 //
+//        "text":"Title",                                                     //
+//        "icon":"Icon"                                                       //
+//      }]},{                                                                 //
+//      "text":"Title",                                                       //
+//      "icon":"Icon"                                                         //
+//      },{                                                                   //
+//      "text":"Title",                                                       //
+//      "icon":"Icon"                                                         //
+//      }]                                                                    //
+//    }                                                                       //
+////////////////////////////////////////////////////////////////////////////////
+
 public class MenuLoader : GLib.Object {
 
   //////////////////////////////////////////////////////////////////////////////
@@ -29,6 +51,7 @@ public class MenuLoader : GLib.Object {
   // initializes this loader with a menu representing 
   // the given menu description string
   public MenuLoader.from_string(GLib.Type item_type, string data) {
+  
     var parser = new Json.Parser();
     
     root = GLib.Object.new(item_type) as MenuItem;
@@ -56,11 +79,11 @@ public class MenuLoader : GLib.Object {
           for (int i=0; i<reader.count_elements(); ++i) {
             reader.read_element(i);
             var child = GLib.Object.new(this.root.get_type()) as MenuItem;
+            current.add_sub_menu(child);
             
             // recursion!
             this.load_from_json(child, reader);
-            
-            current.add_sub_menu(child);
+      
             reader.end_element();
           }
           

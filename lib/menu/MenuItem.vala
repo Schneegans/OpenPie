@@ -17,56 +17,50 @@
 
 namespace OpenPie {
 
-public class MenuItem : Clutter.Actor {
+////////////////////////////////////////////////////////////////////////////////  
+// A base class for all menu items. It's derived from a Clutter.Actor and can //
+// be shown directly on stage. Derived classes have to implement its          //
+// appearance and behaviour.                                                  //
+////////////////////////////////////////////////////////////////////////////////
+
+public abstract class MenuItem : Clutter.Actor {
 
   //////////////////////////////////////////////////////////////////////////////
   //                          public interface                                //        
   //////////////////////////////////////////////////////////////////////////////
 
-  public string text  { public get; public set; default = "Unnamed Item"; }
-  public string icon  { public get; public set; default = "none"; }
-  public double angle { public get; public set; default = 0.0; }
+  public string text  { public get; public set;  default = "Unnamed Item"; }
+  public string icon  { public get; public set;  default = "none"; }
+  public double angle { public get; public set;  default = 0.0; }
    
-  public Gee.ArrayList<MenuItem>  children { public get; 
-                                             private set; 
-                                             default = null; }
   public weak Clutter.Actor       parent   { public get; 
                                              public set; 
                                              default = null; }
   
   construct {
-    children = new Gee.ArrayList<MenuItem>();
     reactive = true;
   }
   
-  // adds a child to this MenuItem
-  public void add_sub_menu(MenuItem item) {
-    children.add(item);
-    item.parent = this;
-  }
+  public abstract Gee.ArrayList<MenuItem> get_sub_menus();
+  public abstract void add_sub_menu(MenuItem item);
   
-  // shows the MenuItem and all of it's children on the screen
-  public virtual void display() {
+  public virtual void on_init() {}
+  
+  // shows the MenuItem and all of it's sub menus on the screen
+  public void display() {
     
     enter_event.connect(on_enter);
     leave_event.connect(on_leave);
-    
-    width = 100;
-    height = 100;
-    x = 100;
-    y = 100;
-    
-    background_color = Clutter.Color.from_string("red");
   
     parent.add_child(this);
     
-    foreach (var child in children) {
-      child.display();
+    foreach (var menu in get_sub_menus()) {
+      menu.display();
     }
   }
   
-  // removes the MenuItem and all of it's children from the screen
-  public virtual void close() {
+  // removes the MenuItem and all of it's sub menus from the screen
+  public void close() {
     enter_event.disconnect(on_enter);
     leave_event.disconnect(on_leave);
   
@@ -85,25 +79,16 @@ public class MenuItem : Clutter.Actor {
                 + "\" (Icon: \"" + this.icon 
                 + "\", Angle: %f)".printf(this.angle));
     
-    foreach (var child in this.children)
-      child.print(indent + 1);
+    foreach (var menu in get_sub_menus())
+      menu.print(indent + 1);
   }
   
   //////////////////////////////////////////////////////////////////////////////
-  //                          private stuff                                   //
+  //                         protected stuff                                  //
   //////////////////////////////////////////////////////////////////////////////
   
-  // called when the mouse starts hovering the MenuItem
-  private bool on_enter(Clutter.CrossingEvent e) {
-    background_color = Clutter.Color.from_string("blue");
-    return true;
-  }
-  
-  // called when the mouse stops hovering the MenuItem
-  private bool on_leave(Clutter.CrossingEvent e) {
-    background_color = Clutter.Color.from_string("red");
-    return true;
-  }
+  protected virtual bool on_enter(Clutter.CrossingEvent e) { return false; } 
+  protected virtual bool on_leave(Clutter.CrossingEvent e) { return false; } 
 }
   
 }
