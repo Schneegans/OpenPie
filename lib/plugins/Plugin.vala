@@ -17,26 +17,8 @@
 
 namespace OpenPie {
 
-public class ClutterUtils : GLib.Object {
-  
-  //////////////////////////////////////////////////////////////////////////////
-  //                          public interface                                // 
-  //////////////////////////////////////////////////////////////////////////////
-  
-  // smoothly animates a property of the given actor
-  public static void animate(Clutter.Actor actor, string property_name, 
-                 Value val, Clutter.AnimationMode mode, 
-                 uint duration, uint delay = 0) {
-    actor.save_easing_state();
-    actor.set_easing_mode(mode);
-    actor.set_easing_duration(duration);
-    actor.set_easing_delay(delay);
-    
-    actor.set_property(property_name, val);
-    
-    actor.restore_easing_state();
-  }
-  
-}   
-  
+public interface Plugin : Menu {
+  public abstract string print_name();
+}
+
 }

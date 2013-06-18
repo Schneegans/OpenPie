@@ -24,10 +24,10 @@ namespace OpenPie {
 public class DBusInterface : GLib.Object {
   
   //////////////////////////////////////////////////////////////////////////////
-  //                         public interface                                 //        
+  //                         public interface                                 //
   //////////////////////////////////////////////////////////////////////////////
   
-  // creates an OpenPieServer and makes it listen to incoming requests
+  // creates an OpenPieServer and makes it listen to incoming requests ---------
   public void bind() {
     Bus.own_name(BusType.SESSION, "org.openpie.main", 
            BusNameOwnerFlags.NONE,
@@ -35,7 +35,7 @@ public class DBusInterface : GLib.Object {
     Clutter.main();
   }
   
-  // stops listening
+  // stops listening -----------------------------------------------------------
   public void unbind() {
     Clutter.main_quit();
   }
@@ -45,7 +45,7 @@ public class DBusInterface : GLib.Object {
   //////////////////////////////////////////////////////////////////////////////
   
   // registers OpenPie on the DBus and creates an OpenPieServer which waits
-  // for incoming menu requests
+  // for incoming menu requests ------------------------------------------------
   private void on_connection(GLib.DBusConnection con) {
     try {
       con.register_object("/org/openpie/main", new OpenPieServer());
@@ -54,12 +54,12 @@ public class DBusInterface : GLib.Object {
     }
   }
   
-  // print message on success
+  // print message on success --------------------------------------------------
   private void on_success() {
     message("DBus name aquired!");
   }
   
-  // print error on failure
+  // print error on failure ----------------------------------------------------
   private void on_fail() {
     error("Could not aquire DBus name! " +
         "(Maybe OpenPie deamon is already running?)");

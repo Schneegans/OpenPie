@@ -34,12 +34,12 @@ namespace OpenPie {
 // that's also fun!                                                           //
 ////////////////////////////////////////////////////////////////////////////////
 
-class TraceMenu : PluginInterface, Menu {
+class TraceMenu : Plugin, Menu {
     
   //////////////////////////////////////////////////////////////////////////////
-  //                         public interface                                 //        
+  //                         public interface                                 //
   //////////////////////////////////////////////////////////////////////////////
-    
+  
   public string print_name () {
     return "TraceMenu";
   }
@@ -47,16 +47,13 @@ class TraceMenu : PluginInterface, Menu {
   public override void set_content(string menu_description) {
     var loader = new MenuLoader.from_string(typeof(TraceMenuItem), 
                                             menu_description);
-    set_root(loader.root);
-    
-    root_ = loader.root as TraceMenuItem;
+    root = loader.root;
   }
     
   //////////////////////////////////////////////////////////////////////////////
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
   
-  private TraceMenuItem root_;
 }
 
 }

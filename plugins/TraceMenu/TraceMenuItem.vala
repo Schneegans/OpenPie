@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011-2013 by Simon Schneegans                                //  
+// Copyright (c) 2011-2013 by Simon Schneegans                                //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify it    //
 // under the terms of the GNU General Public License as published by the Free //
@@ -24,36 +24,69 @@ namespace OpenPie {
 // That's not only fast --- that's also fun!                                  //
 ////////////////////////////////////////////////////////////////////////////////
 
-public class TraceMenuItem : MenuItem {
+public class TraceMenuItem : MenuItem, Clutter.Actor {
 
   //////////////////////////////////////////////////////////////////////////////
-  //                          public interface                                //        
+  //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
   
+  public string text  { public get; public set;  default = "Unnamed Item"; }
+  public string icon  { public get; public set;  default = "none"; }
+  public double angle { public get; public set;  default = 0.0; }  
+    
   construct {
-    sub_menus_ = new Gee.ArrayList<TraceMenuItem>();
-  }
-  
-  public override void on_init() {
-    width = 100;
-    height = 100;
     x = 100;
     y = 100;
     
-    background_color = Clutter.Color.from_string("red");
+    width = 100;
+    height = 100;
     
-    foreach (var item in sub_menus_)
-      item.on_init();
+    background_color = Clutter.Color.from_string("red");
+  
+    sub_menus_ = new Gee.ArrayList<TraceMenuItem>();
+    reactive = true;
   }
   
-  public override Gee.ArrayList<MenuItem> get_sub_menus() {
+  
+  // returns all sub menus of this item ----------------------------------------
+  public Gee.ArrayList<MenuItem> get_sub_menus() {
     return sub_menus_;
   }
   
-  // adds a child to this MenuItem
-  public override void add_sub_menu(MenuItem item) {
-    sub_menus_.add(item as TraceMenuItem);
-    item.parent = this;
+  // adds a child to this MenuItem ---------------------------------------------
+  public void add_sub_menu(MenuItem item) {
+    var trace_item = item as TraceMenuItem;
+    sub_menus_.add(trace_item);
+    trace_item.parent_ = this;
+    add_child(trace_item);
+  }
+  
+  // called prior to display() -------------------------------------------------
+  public void init() {
+    
+    
+    foreach (var item in sub_menus_)
+      item.init();
+  }
+  
+  // shows the MenuItem and all of it's sub menus on the screen ----------------
+  public void display() {
+    
+    enter_event.connect(on_enter);
+    leave_event.connect(on_leave);
+    
+    foreach (var item in sub_menus_)
+      item.display();
+  }
+  
+  // removes the MenuItem and all of it's sub menus from the screen ------------
+  public void close() {
+    
+    enter_event.disconnect(on_enter);
+    leave_event.disconnect(on_leave);
+    
+    foreach (var item in sub_menus_)
+      item.close();
   }
   
   //////////////////////////////////////////////////////////////////////////////
@@ -61,13 +94,15 @@ public class TraceMenuItem : MenuItem {
   //////////////////////////////////////////////////////////////////////////////
   
   // called when the mouse starts hovering the MenuItem
-  protected override bool on_enter(Clutter.CrossingEvent e) {
+  private bool on_enter(Clutter.CrossingEvent e) {
+    //add_effect(new Clutter.DesaturateEffect(1.0));
     background_color = Clutter.Color.from_string("blue");
     return true;
   }
   
   // called when the mouse stops hovering the MenuItem
-  protected override bool on_leave(Clutter.CrossingEvent e) {
+  private bool on_leave(Clutter.CrossingEvent e) {
+    //clear_effects();
     background_color = Clutter.Color.from_string("red");
     return true;
   }
@@ -76,9 +111,8 @@ public class TraceMenuItem : MenuItem {
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
   
-  public Gee.ArrayList<TraceMenuItem> sub_menus_;
-  
-  
+  private Gee.ArrayList<TraceMenuItem>  sub_menus_ = null;
+  private TraceMenuItem                 parent_    = null;
 
 }
   

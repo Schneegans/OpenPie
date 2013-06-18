@@ -23,13 +23,13 @@ namespace OpenPie {
 // be used to instanciate objects of the registered type.                     //
 //////////////////////////////////////////////////////////////////////////////// 
 
-public class Plugin<T> : Object {
+public class PluginModule<T> : Object {
   
   //////////////////////////////////////////////////////////////////////////////
   //                          public interface                                //        
   //////////////////////////////////////////////////////////////////////////////
   
-  public Plugin(string path) {
+  public PluginModule(string path) {
     assert(GLib.Module.supported());
     
     // load the shared object

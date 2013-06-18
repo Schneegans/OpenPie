@@ -30,7 +30,7 @@ public class PluginLoader : GLib.Object {
   //////////////////////////////////////////////////////////////////////////////
   
   construct {
-    plugins_ = new Gee.HashMap<string, Plugin<PluginInterface>>();
+    plugins_ = new Gee.HashMap<string, PluginModule<Plugin>>();
   }
   
   // loads all plugin shared objects from the given directory and it's sub
@@ -82,7 +82,7 @@ public class PluginLoader : GLib.Object {
   //////////////////////////////////////////////////////////////////////////////
   
   // stores a list of plugins with their corresponding names
-  private Gee.HashMap<string, Plugin<PluginInterface>> plugins_; 
+  private Gee.HashMap<string, PluginModule<Plugin>> plugins_; 
   
   // loads a plugin from a shared object
   private void load_plugin(GLib.FileInfo file_info, string path) {
@@ -91,7 +91,7 @@ public class PluginLoader : GLib.Object {
       var name_parts = file_info.get_name().split(".");
       
       if (name_parts[name_parts.length-1] == "so") {
-        var plugin = new Plugin<PluginInterface>(path);
+        var plugin = new PluginModule<Plugin>(path);
         var plugin_object = plugin.new_object();
         plugins_.set(plugin_object.print_name(), plugin);
       }    

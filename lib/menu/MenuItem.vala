@@ -18,56 +18,37 @@
 namespace OpenPie {
 
 ////////////////////////////////////////////////////////////////////////////////  
-// A base class for all menu items. It's derived from a Clutter.Actor and can //
+// An interface for all menu items. It's derived from a Clutter.Actor and can //
 // be shown directly on stage. Derived classes have to implement its          //
 // appearance and behaviour.                                                  //
 ////////////////////////////////////////////////////////////////////////////////
 
-public abstract class MenuItem : Clutter.Actor {
+public interface MenuItem : Clutter.Actor {
 
   //////////////////////////////////////////////////////////////////////////////
-  //                          public interface                                //        
+  //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
 
-  public string text  { public get; public set;  default = "Unnamed Item"; }
-  public string icon  { public get; public set;  default = "none"; }
-  public double angle { public get; public set;  default = 0.0; }
-   
-  public weak Clutter.Actor       parent   { public get; 
-                                             public set; 
-                                             default = null; }
+  public abstract string text  { public get; public set; }
+  public abstract string icon  { public get; public set; }
+  public abstract double angle { public get; public set; }
   
-  construct {
-    reactive = true;
-  }
-  
+  // returns all sub menus of this item ----------------------------------------
   public abstract Gee.ArrayList<MenuItem> get_sub_menus();
+  
+  // adds a child to this MenuItem --------------------------------------------
   public abstract void add_sub_menu(MenuItem item);
   
-  public virtual void on_init() {}
+  // called prior to display() -------------------------------------------------
+  public abstract void init();
   
-  // shows the MenuItem and all of it's sub menus on the screen
-  public void display() {
-    
-    enter_event.connect(on_enter);
-    leave_event.connect(on_leave);
+  // shows the MenuItem and all of it's sub menus on the screen ----------------
+  public abstract void display();
   
-    parent.add_child(this);
-    
-    foreach (var menu in get_sub_menus()) {
-      menu.display();
-    }
-  }
+  // removes the MenuItem and all of it's sub menus from the screen ------------
+  public abstract void close();
   
-  // removes the MenuItem and all of it's sub menus from the screen
-  public void close() {
-    enter_event.disconnect(on_enter);
-    leave_event.disconnect(on_leave);
-  
-    parent.remove_child(this);
-  }
-  
-  // for debugging purposes
+  // for debugging purposes ----------------------------------------------------
   public virtual void print(int indent = 0) {
     string space = "";
     
@@ -82,13 +63,6 @@ public abstract class MenuItem : Clutter.Actor {
     foreach (var menu in get_sub_menus())
       menu.print(indent + 1);
   }
-  
-  //////////////////////////////////////////////////////////////////////////////
-  //                         protected stuff                                  //
-  //////////////////////////////////////////////////////////////////////////////
-  
-  protected virtual bool on_enter(Clutter.CrossingEvent e) { return false; } 
-  protected virtual bool on_leave(Clutter.CrossingEvent e) { return false; } 
 }
   
 }

@@ -27,12 +27,13 @@ namespace OpenPie {
 public class OpenPieServer : GLib.Object {
 
   //////////////////////////////////////////////////////////////////////////////
-  //                         public interface                                 //        
+  //                         public interface                                 //
   //////////////////////////////////////////////////////////////////////////////
   
   // emitted, when the users selects an item from the currently active menu
   public signal void on_select(int id, string item);
   
+  // initializes members and loads plugins -------------------------------------
   construct {
     window_ =         new TransparentWindow();
     plugin_loader_ =  new PluginLoader();
@@ -43,7 +44,7 @@ public class OpenPieServer : GLib.Object {
       plugin_loader_.load_from(Paths.local_plugin_directory);
   }
   
-  // opens a menu according to the given description 
+  // opens a menu according to the given description ---------------------------
   // and returns a newly assigned ID
   public int show_menu(string menu_description) {
     
@@ -55,7 +56,7 @@ public class OpenPieServer : GLib.Object {
     if (menu == null) 
       return -1;
       
-    menu.set_window(window_);
+    menu.window = window_;
     menu.set_content(menu_description);
     
     // store it the open_menus_ map with an unique ID
@@ -79,7 +80,7 @@ public class OpenPieServer : GLib.Object {
     window_.add_grab();
     
     // initialize menu
-    menu.on_init();
+    menu.init();
     
     // display menu
     menu.display();
@@ -98,21 +99,21 @@ public class OpenPieServer : GLib.Object {
   // loads all menu plugins
   private PluginLoader plugin_loader_ = null;
   
-  // stores all currently opened menus with their individual ID
+  // stores all currently opened menus with their individual ID 
   private Gee.HashMap<Menu, int> open_menus_ = new Gee.HashMap<Menu, int>();
   
   // stores the ID of the lastly opened menu
   private int current_id_ = 0;
   
-  // callback gets called when the user selects an item
-  // in the currently active menu
+  // callback gets called when the user selects an item ------------------------
+  // in the currently active menu 
   private void on_menu_select_(Menu menu, string item) {
     window_.remove_grab();
     menu.on_select.disconnect(on_menu_select_);
     on_select(this.open_menus_.get(menu), item);
   }
   
-  // callback gets called when the currently active menu is closed
+  // callback gets called when the currently active menu is closed -------------
   private void on_menu_close_(Menu menu) {
     menu.on_close.disconnect(on_menu_close_);
     this.open_menus_.unset(menu);
