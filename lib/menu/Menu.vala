@@ -30,7 +30,6 @@ public abstract class Menu : GLib.Object {
   
   // the window onto which the menu should be drawn
   public TransparentWindow window { public get; public set; default=null; }
-  public MenuItem          root   { public get; public set; default=null; }
   
   // emitted when some item is selected (occurs prior to on_close)
   public signal void on_select(Menu menu, string item);
@@ -38,59 +37,27 @@ public abstract class Menu : GLib.Object {
   // emitted when the menu finally disappears from screen
   public signal void on_close(Menu menu);
   
+  
   // shows the menu on screen --------------------------------------------------
-  public virtual void display() {
-    window.on_key_up.connect(on_key_up);
-    window.on_key_down.connect(on_key_down);
-    window.on_mouse_move.connect(on_mouse_move);
-    
-    window.get_stage().add_child(root);
+  public virtual void display(Vector position) {
+    window.get_stage().add_child(get_root());
      
-    root.display();
+    get_root().display(position);
   }
   
   // for debugging purposes ----------------------------------------------------
   public void print() {
-    root.print();
+    get_root().print();
   }
   
   // called before the menu is displayed ---------------------------------------
   public virtual void init() {
-    root.init();
+    get_root().init();
   }
   
-  //////////////////////////////////////////////////////////////////////////////
-  //                    abstract public interface                             //
-  //////////////////////////////////////////////////////////////////////////////
-  
-  // sets the menu content which shall be displayed
-  public abstract void set_content(string menu_description); 
-  
-  //////////////////////////////////////////////////////////////////////////////
-  //                          private stuff                                   //
-  //////////////////////////////////////////////////////////////////////////////
-  
-  private void on_mouse_move(float x, float y) {
-
-  }
-  
-  private void on_key_down(Key key) {
-
-  }
-  
-  private void on_key_up(Key key) {
-
-  
-    if (key.with_mouse)
-      select("test");
-  }
-  
-  private void select(string item) {
-    window.on_key_up.disconnect(on_key_up);
-    window.on_key_down.disconnect(on_key_down);
-    window.on_mouse_move.disconnect(on_mouse_move);
-    
-    on_select(this, item);
+  // notifies the client that an item has been selected and closes the menu ----
+  public void select(MenuItem item) {
+    on_select(this, item.get_path());
     
     GLib.Timeout.add(1000, () => {
       close();
@@ -98,9 +65,23 @@ public abstract class Menu : GLib.Object {
     });
   }
   
+  //////////////////////////////////////////////////////////////////////////////
+  //                    abstract public interface                             //
+  //////////////////////////////////////////////////////////////////////////////
+  
+  // returns the root MenuItem of the Menu -------------------------------------
+  public abstract MenuItem get_root();
+  
+  // sets the menu content which shall be displayed ----------------------------
+  public abstract void set_content(string menu_description); 
+  
+  //////////////////////////////////////////////////////////////////////////////
+  //                          private stuff                                   //
+  //////////////////////////////////////////////////////////////////////////////
+  
   private void close() {
-    root.close();
-    window.get_stage().remove_child(root);
+    get_root().close();
+    window.get_stage().remove_child(get_root());
   
     on_close(this);
   }

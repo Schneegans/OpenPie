@@ -24,96 +24,153 @@ namespace OpenPie {
 // That's not only fast --- that's also fun!                                  //
 ////////////////////////////////////////////////////////////////////////////////
 
-public class TraceMenuItem : MenuItem, Clutter.Actor {
+public class TraceMenuItem : MenuItem, Animatable, Clutter.Group {
 
   //////////////////////////////////////////////////////////////////////////////
   //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
   
-  public string text  { public get; public set;  default = "Unnamed Item"; }
-  public string icon  { public get; public set;  default = "none"; }
-  public double angle { public get; public set;  default = 0.0; }  
-    
+  public string text  { get; set;  default = "Unnamed Item"; }
+  public string icon  { get; set;  default = "none"; }
+  public float  angle { get; set;  default = 0.0f; }  
+  
+  public weak TraceMenuItem           parent_item { get; set; default=null; }
+  public Gee.ArrayList<TraceMenuItem> sub_menus   { get; set; default=null; }
+  
+  // initializes all members ---------------------------------------------------
   construct {
-    x = 100;
-    y = 100;
+    texture_ = new Clutter.Texture.from_file("/home/simon/Bilder/Selbst erstellt/avatar128.png");
     
-    width = 100;
-    height = 100;
+    texture_.reactive = true;
+    texture_.pick_with_alpha = true;
     
-    background_color = Clutter.Color.from_string("red");
+    add_child(texture_);
   
-    sub_menus_ = new Gee.ArrayList<TraceMenuItem>();
-    reactive = true;
+    sub_menus = new Gee.ArrayList<TraceMenuItem>();
   }
-  
   
   // returns all sub menus of this item ----------------------------------------
   public Gee.ArrayList<MenuItem> get_sub_menus() {
-    return sub_menus_;
+    return sub_menus;
+  }
+  
+  // returns the parent of this item -------------------------------------------
+  public MenuItem get_parent_item() {
+    return parent_item;
   }
   
   // adds a child to this MenuItem ---------------------------------------------
   public void add_sub_menu(MenuItem item) {
+
     var trace_item = item as TraceMenuItem;
-    sub_menus_.add(trace_item);
-    trace_item.parent_ = this;
-    add_child(trace_item);
+    trace_item.parent_item = this;
+    sub_menus.add(trace_item);
   }
   
   // called prior to display() -------------------------------------------------
   public void init() {
+
+    texture_.set_pivot_point(0.5f, 0.5f);
+    texture_.scale_x = 0.8;
+    texture_.scale_y = 0.8;
     
+    scale_x = 0.7;
+    scale_y = 0.7;
+    set_pivot_point(0.5f, 0.5f);
     
-    foreach (var item in sub_menus_)
+    width = texture_.width;
+    height = texture_.height;
+    
+    if (!isRoot()) {
+      var radius = 150;
+      set_position(GLib.Math.sinf(angle) * radius, GLib.Math.cosf(angle) * radius);
+    }
+    
+    foreach (var item in sub_menus) {
       item.init();
+      add_child(item);
+    }
+    
+    queue_relayout();
   }
   
   // shows the MenuItem and all of it's sub menus on the screen ----------------
-  public void display() {
+  public void display(Vector position) {
     
-    enter_event.connect(on_enter);
-    leave_event.connect(on_leave);
+    if (isRoot()) {
+      set_position(position.x - width/2, position.y - height/2);
+    }
     
-    foreach (var item in sub_menus_)
-      item.display();
+    texture_.enter_event.connect(on_enter);
+    texture_.leave_event.connect(on_leave);
+    texture_.button_press_event.connect(on_button_press);
+    texture_.button_release_event.connect(on_button_release);
+    
+    foreach (var item in sub_menus)
+      item.display(position);
   }
   
   // removes the MenuItem and all of it's sub menus from the screen ------------
   public void close() {
     
-    enter_event.disconnect(on_enter);
-    leave_event.disconnect(on_leave);
+    texture_.enter_event.disconnect(on_enter);
+    texture_.leave_event.disconnect(on_leave);
+    texture_.button_press_event.disconnect(on_button_press);
+    texture_.button_release_event.disconnect(on_button_release);
     
-    foreach (var item in sub_menus_)
+    foreach (var item in sub_menus)
       item.close();
+  }
+  
+  // sets the parent menu of this TraceMenuItem --------------------------------
+  public void set_parent_menu(TraceMenu menu) {
+    parent_menu_ = menu;
+    foreach (var item in sub_menus)
+      item.set_parent_menu(menu);
+  }
+  
+  // returns true if this TraceMenuItem is not a child of any other item -------
+  public bool isRoot() {
+    return parent_item == null;
   }
   
   //////////////////////////////////////////////////////////////////////////////
   //                         protected stuff                                  //
   //////////////////////////////////////////////////////////////////////////////
   
-  // called when the mouse starts hovering the MenuItem
+  // the menu of which this TraceMenuItem is a member
+  private TraceMenu       parent_menu_ = null;
+  private Clutter.Texture texture_     = null;
+  
+  // called when the mouse starts hovering the MenuItem ------------------------
   private bool on_enter(Clutter.CrossingEvent e) {
-    //add_effect(new Clutter.DesaturateEffect(1.0));
-    background_color = Clutter.Color.from_string("blue");
-    return true;
+    animate(this, "scale_x", 1.0, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
+    animate(this, "scale_y", 1.0, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
+    animate(texture_, "scale_x", 1.0, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
+    animate(texture_, "scale_y", 1.0, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
+    return false;
   }
   
-  // called when the mouse stops hovering the MenuItem
+  // called when the mouse stops hovering the MenuItem -------------------------
   private bool on_leave(Clutter.CrossingEvent e) {
-    //clear_effects();
-    background_color = Clutter.Color.from_string("red");
-    return true;
+    animate(this, "scale_x", 0.7, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
+    animate(this, "scale_y", 0.7, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
+    animate(texture_, "scale_x", 0.8, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
+    animate(texture_, "scale_y", 0.8, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
+    return false;
   }
   
-  //////////////////////////////////////////////////////////////////////////////
-  //                          private stuff                                   //
-  //////////////////////////////////////////////////////////////////////////////
+  // called when a mouse button is pressed hovering the MenuItem ---------------
+  private bool on_button_press(Clutter.ButtonEvent e) {
+    animate(texture_, "opacity", 0, 500, Clutter.AnimationMode.EASE_IN_OUT);
+    parent_menu_.select(this);
+    return false;
+  }
   
-  private Gee.ArrayList<TraceMenuItem>  sub_menus_ = null;
-  private TraceMenuItem                 parent_    = null;
-
+  // called when a mouse button is released hovering the MenuItem --------------
+  private bool on_button_release(Clutter.ButtonEvent e) {
+    return false;
+  }
 }
   
 }

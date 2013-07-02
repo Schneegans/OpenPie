@@ -98,7 +98,7 @@ public class MenuLoader : GLib.Object {
         current.text = reader.get_string_value();
         
       } else if (member == "angle") {  
-        current.angle = reader.get_double_value();
+        current.angle = (float)reader.get_double_value();
 
       } else {
         warning("Invalid element \"" + member + "\" in menu description!");

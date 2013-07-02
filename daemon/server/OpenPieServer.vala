@@ -83,7 +83,7 @@ public class OpenPieServer : GLib.Object {
     menu.init();
     
     // display menu
-    menu.display();
+    menu.display(window_.get_pointer_pos());
     
     // report the new menu's ID over the dbus
     return current_id_;

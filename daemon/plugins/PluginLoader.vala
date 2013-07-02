@@ -93,7 +93,7 @@ public class PluginLoader : GLib.Object {
       if (name_parts[name_parts.length-1] == "so") {
         var plugin = new PluginModule<Plugin>(path);
         var plugin_object = plugin.new_object();
-        plugins_.set(plugin_object.print_name(), plugin);
+        plugins_.set(plugin_object.name, plugin);
       }    
     }
   

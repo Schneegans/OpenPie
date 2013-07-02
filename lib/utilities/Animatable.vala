@@ -17,17 +17,27 @@
 
 namespace OpenPie {
 
-////////////////////////////////////////////////////////////////////////////////  
-// An interface for menu plugins. It declares all necessary info fields       //
-////////////////////////////////////////////////////////////////////////////////
-
-public interface Plugin : Menu {
-  public abstract string name        { get; construct set; }
-  public abstract string version     { get; construct set; }
-  public abstract string author      { get; construct set; }
-  public abstract string email       { get; construct set; }
-  public abstract string homepage    { get; construct set; }
-  public abstract string description { get; construct set; }
-}
-
+public interface Animatable {
+  
+  //////////////////////////////////////////////////////////////////////////////
+  //                          public interface                                // 
+  //////////////////////////////////////////////////////////////////////////////
+  
+  // smoothly animates a property of the actor ---------------------------------
+  public static void animate(Clutter.Actor actor, 
+                      string property_name, Value val, uint duration, 
+                      Clutter.AnimationMode mode = Clutter.AnimationMode.LINEAR,
+                      uint delay = 0) {
+                             
+    actor.save_easing_state();
+    actor.set_easing_mode(mode);
+    actor.set_easing_duration(duration);
+    actor.set_easing_delay(delay);
+    
+    actor.set_property(property_name, val);
+    
+    actor.restore_easing_state();
+  }
+}   
+  
 }

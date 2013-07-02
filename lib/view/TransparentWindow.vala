@@ -35,7 +35,7 @@ public class TransparentWindow : Gtk.Window {
   public signal void on_key_up(Key key);
   public signal void on_draw(Cairo.Context ctx, double time);
   
-  // C'tor, sets up the window.
+  // C'tor, sets up the window -------------------------------------------------
   public TransparentWindow() {
     set_skip_taskbar_hint(true);
     set_skip_pager_hint(true);
@@ -105,12 +105,12 @@ public class TransparentWindow : Gtk.Window {
     realize(); 
   }
   
-  // returns the mebedded Clutter.Stage
+  // returns the mebedded Clutter.Stage ----------------------------------------
   public Clutter.Stage get_stage() {
     return stage_;
   }
   
-  // Gets the center position of the window.
+  // Gets the center position of the window ------------------------------------
   public Vector get_center_pos() {
     int x=0, y=0, width=0, height=0;
     get_position(out x, out y);
@@ -119,11 +119,41 @@ public class TransparentWindow : Gtk.Window {
     return new Vector(x + width/2, y + height/2);
   }
   
-  // grabs the input focus
+  // Gets the current pointer position -----------------------------------------
+  public Vector get_pointer_pos() {
+    int x=0, y=0;
+    
+    var display = Gdk.Display.get_default();
+    var manager = display.get_device_manager();
+    
+    #if VALA_0_16
+      GLib.List<weak Gdk.Device?> list = manager.list_devices(
+                                                         Gdk.DeviceType.MASTER);
+    #else
+      unowned GLib.List<weak Gdk.Device?> list = manager.list_devices(
+                                                         Gdk.DeviceType.MASTER);
+    #endif
+    
+    foreach(var device in list) {
+      if (device.input_source != Gdk.InputSource.KEYBOARD) {
+        device.get_position(null, out x, out y);
+        break;
+      }
+    }
+    
+    return new Vector(x, y);
+  }
+  
+  // grabs the input focus -----------------------------------------------------
   public void add_grab() {
-    ClutterUtils.animate(stage_, "background_color", 
-               Clutter.Color() {red = 0, green = 0, blue = 0, alpha = 128},
-               Clutter.AnimationMode.LINEAR, 500);
+    
+    // fade out background
+    stage_.save_easing_state();
+    stage_.set_easing_mode(Clutter.AnimationMode.LINEAR);
+    stage_.set_easing_duration(500);
+    stage_.set_property("background_color", Clutter.Color() {red = 0, green = 0, 
+                                                        blue = 0, alpha = 128});
+    stage_.restore_easing_state();
   
     Gtk.grab_add(this);
     FocusGrabber.grab(get_window(), true, true, true);
@@ -133,11 +163,16 @@ public class TransparentWindow : Gtk.Window {
                                             0, 0);
   }
   
-  // releases the input focus
+  // releases the input focus --------------------------------------------------
   public void remove_grab() { 
-    ClutterUtils.animate(stage_, "background_color", 
-               Clutter.Color() {red = 0, green = 0, blue = 0, alpha = 0},
-               Clutter.AnimationMode.LINEAR, 1000);
+  
+    // fade out background
+    stage_.save_easing_state();
+    stage_.set_easing_mode(Clutter.AnimationMode.LINEAR);
+    stage_.set_easing_duration(1000);
+    stage_.set_property("background_color", Clutter.Color() {red = 0, green = 0, 
+                                                          blue = 0, alpha = 0});
+    stage_.restore_easing_state();
   
     Gtk.grab_remove(this);
     FocusGrabber.ungrab();

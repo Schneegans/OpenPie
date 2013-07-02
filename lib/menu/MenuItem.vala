@@ -29,9 +29,9 @@ public interface MenuItem : Clutter.Actor {
   //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
 
-  public abstract string text  { public get; public set; }
-  public abstract string icon  { public get; public set; }
-  public abstract double angle { public get; public set; }
+  public abstract string text  { get; set; }
+  public abstract string icon  { get; set; }
+  public abstract float  angle { get; set; }
   
   // returns all sub menus of this item ----------------------------------------
   public abstract Gee.ArrayList<MenuItem> get_sub_menus();
@@ -39,14 +39,26 @@ public interface MenuItem : Clutter.Actor {
   // adds a child to this MenuItem --------------------------------------------
   public abstract void add_sub_menu(MenuItem item);
   
+  // returns the parent of this item -------------------------------------------
+  public abstract MenuItem get_parent_item();
+  
   // called prior to display() -------------------------------------------------
   public abstract void init();
   
   // shows the MenuItem and all of it's sub menus on the screen ----------------
-  public abstract void display();
+  public abstract void display(Vector position);
   
   // removes the MenuItem and all of it's sub menus from the screen ------------
   public abstract void close();
+  
+  // returns the path to this menu item ----------------------------------------
+  public string get_path() {
+    if (get_parent_item() != null) {
+      return get_parent_item().get_path() + "/" + text;
+    }
+    
+    return "/" + text;
+  }
   
   // for debugging purposes ----------------------------------------------------
   public virtual void print(int indent = 0) {
