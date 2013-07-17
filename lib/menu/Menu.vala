@@ -65,6 +65,13 @@ public abstract class Menu : GLib.Object {
     });
   }
   
+  public virtual void close() {
+    get_root().close();
+    window.get_stage().remove_child(get_root());
+  
+    on_close(this);
+  }
+  
   //////////////////////////////////////////////////////////////////////////////
   //                    abstract public interface                             //
   //////////////////////////////////////////////////////////////////////////////
@@ -79,12 +86,7 @@ public abstract class Menu : GLib.Object {
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
   
-  private void close() {
-    get_root().close();
-    window.get_stage().remove_child(get_root());
   
-    on_close(this);
-  }
 }   
   
 }

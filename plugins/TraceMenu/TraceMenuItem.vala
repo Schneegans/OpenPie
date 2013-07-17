@@ -39,13 +39,9 @@ public class TraceMenuItem : MenuItem, Animatable, Clutter.Group {
   
   // initializes all members ---------------------------------------------------
   construct {
-    texture_ = new Clutter.Texture.from_file("/home/simon/Bilder/Selbst erstellt/avatar128.png");
     
-    texture_.reactive = true;
-    texture_.pick_with_alpha = true;
-    
-    add_child(texture_);
-  
+    //pick_with_alpha = true;
+
     sub_menus = new Gee.ArrayList<TraceMenuItem>();
   }
   
@@ -70,16 +66,31 @@ public class TraceMenuItem : MenuItem, Animatable, Clutter.Group {
   // called prior to display() -------------------------------------------------
   public void init() {
 
-    texture_.set_pivot_point(0.5f, 0.5f);
-    texture_.scale_x = 0.8;
-    texture_.scale_y = 0.8;
+    canvas_     = new Clutter.Canvas();
+    canvas_.set_size(64, 64);
+    canvas_.draw.connect(draw_background);
+    canvas_.invalidate();
     
+    background_ = new Clutter.Actor();
+    background_.width = canvas_.width;
+    background_.height = canvas_.height;
+    background_.set_content(canvas_);
+    background_.reactive = true;
+    add_child(background_);
+    
+    text_       = new Clutter.Text.full("ubuntu", text, Clutter.Color.from_string("black"));
+    text_.set_pivot_point(0.5f, 0.5f);
+    text_.scale_x = 0.8;
+    text_.scale_y = 0.8;
+    add_child(text_);
+    
+    reactive = true;
     scale_x = 0.7;
     scale_y = 0.7;
     set_pivot_point(0.5f, 0.5f);
     
-    width = texture_.width;
-    height = texture_.height;
+    width = canvas_.width;
+    height = canvas_.height;
     
     if (!isRoot()) {
       var radius = 150;
@@ -90,8 +101,6 @@ public class TraceMenuItem : MenuItem, Animatable, Clutter.Group {
       item.init();
       add_child(item);
     }
-    
-    queue_relayout();
   }
   
   // shows the MenuItem and all of it's sub menus on the screen ----------------
@@ -101,10 +110,10 @@ public class TraceMenuItem : MenuItem, Animatable, Clutter.Group {
       set_position(position.x - width/2, position.y - height/2);
     }
     
-    texture_.enter_event.connect(on_enter);
-    texture_.leave_event.connect(on_leave);
-    texture_.button_press_event.connect(on_button_press);
-    texture_.button_release_event.connect(on_button_release);
+    background_.enter_event.connect(on_enter);
+    background_.leave_event.connect(on_leave);
+    background_.button_press_event.connect(on_button_press);
+    background_.button_release_event.connect(on_button_release);
     
     foreach (var item in sub_menus)
       item.display(position);
@@ -113,10 +122,10 @@ public class TraceMenuItem : MenuItem, Animatable, Clutter.Group {
   // removes the MenuItem and all of it's sub menus from the screen ------------
   public void close() {
     
-    texture_.enter_event.disconnect(on_enter);
-    texture_.leave_event.disconnect(on_leave);
-    texture_.button_press_event.disconnect(on_button_press);
-    texture_.button_release_event.disconnect(on_button_release);
+    background_.enter_event.disconnect(on_enter);
+    background_.leave_event.disconnect(on_leave);
+    background_.button_press_event.disconnect(on_button_press);
+    background_.button_release_event.disconnect(on_button_release);
     
     foreach (var item in sub_menus)
       item.close();
@@ -135,19 +144,39 @@ public class TraceMenuItem : MenuItem, Animatable, Clutter.Group {
   }
   
   //////////////////////////////////////////////////////////////////////////////
-  //                         protected stuff                                  //
+  //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
   
   // the menu of which this TraceMenuItem is a member
-  private TraceMenu       parent_menu_ = null;
-  private Clutter.Texture texture_     = null;
+  private weak TraceMenu  parent_menu_ = null;
+  private Clutter.Text    text_        = null;
+  private Clutter.Actor   background_  = null;
+  private Clutter.Canvas  canvas_      = null;
+  
+  private bool draw_background(Cairo.Context ctx, int width, int height) {
+
+    ctx.set_operator (Cairo.Operator.CLEAR);
+    ctx.paint();
+    ctx.set_operator (Cairo.Operator.OVER);
+    
+    ctx.set_source_rgb(1, 1, 1);
+    ctx.arc(width/2, height/2, width/2, 0, Math.PI*2.0);
+    
+    
+    ctx.fill_preserve();
+    
+    ctx.set_source_rgb(0, 0, 0);
+    ctx.stroke();
+    
+    return true;
+  }
   
   // called when the mouse starts hovering the MenuItem ------------------------
   private bool on_enter(Clutter.CrossingEvent e) {
     animate(this, "scale_x", 1.0, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
     animate(this, "scale_y", 1.0, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
-    animate(texture_, "scale_x", 1.0, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
-    animate(texture_, "scale_y", 1.0, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
+    animate(text_, "scale_x", 1.0, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
+    animate(text_, "scale_y", 1.0, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
     return false;
   }
   
@@ -155,14 +184,14 @@ public class TraceMenuItem : MenuItem, Animatable, Clutter.Group {
   private bool on_leave(Clutter.CrossingEvent e) {
     animate(this, "scale_x", 0.7, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
     animate(this, "scale_y", 0.7, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
-    animate(texture_, "scale_x", 0.8, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
-    animate(texture_, "scale_y", 0.8, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
+    animate(text_, "scale_x", 0.8, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
+    animate(text_, "scale_y", 0.8, 500, Clutter.AnimationMode.EASE_IN_OUT_BACK);
     return false;
   }
   
   // called when a mouse button is pressed hovering the MenuItem ---------------
   private bool on_button_press(Clutter.ButtonEvent e) {
-    animate(texture_, "opacity", 0, 500, Clutter.AnimationMode.EASE_IN_OUT);
+    animate(text_, "opacity", 0, 500, Clutter.AnimationMode.EASE_IN_OUT);
     parent_menu_.select(this);
     return false;
   }
