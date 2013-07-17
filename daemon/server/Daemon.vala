@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011-2013 by Simon Schneegans                                //  
+// Copyright (c) 2011-2013 by Simon Schneegans                                //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify it    //
 // under the terms of the GNU General Public License as published by the Free //
@@ -23,36 +23,36 @@ namespace OpenPie {
 ////////////////////////////////////////////////////////////////////////////////
 
 public class Deamon : GLib.Object {
-  
+
   //////////////////////////////////////////////////////////////////////////////
   //                         public interface                                 //
   //////////////////////////////////////////////////////////////////////////////
-  
+
   // The current version of OpenPie
   public static string version;
-  
+
   // The beginning of everything -----------------------------------------------
   public static int main(string[] args) {
     version = "0.1";
-    
+
     // init toolkits
     Logger.init();
     GtkClutter.init(ref args);
-    
+
     // be friendly
     message("Welcome to OpenPie " + version + "!");
 
     // connect SigHandlers
     Posix.signal(Posix.SIGINT, sig_handler_);
     Posix.signal(Posix.SIGTERM, sig_handler_);
-    
+
     // search for resource directories
     Paths.init();
-  
+
     // finished loading... so run the prog!
     message("Started happily...");
-    
-    dbus_interface_ = new DBusInterface();  
+
+    dbus_interface_ = new DBusInterface();
     dbus_interface_.bind();
 
     return 0;
@@ -61,10 +61,10 @@ public class Deamon : GLib.Object {
   //////////////////////////////////////////////////////////////////////////////
   //                           private stuff                                  //
   //////////////////////////////////////////////////////////////////////////////
-  
+
   // The class which listens for dbus-menu-open-requests
   private static DBusInterface dbus_interface_ = null;
-  
+
   // Print a nifty message when the prog is killed -----------------------------
   private static void sig_handler_(int sig) {
     stdout.printf("\n");

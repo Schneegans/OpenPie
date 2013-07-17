@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011-2013 by Simon Schneegans                                //  
+// Copyright (c) 2011-2013 by Simon Schneegans                                //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify it    //
 // under the terms of the GNU General Public License as published by the Free //
@@ -17,7 +17,7 @@
 
 namespace OpenPie {
 
-////////////////////////////////////////////////////////////////////////////////  
+////////////////////////////////////////////////////////////////////////////////
 // An interface for menu plugins. It declares all necessary info fields       //
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011-2013 by Simon Schneegans                                //  
+// Copyright (c) 2011-2013 by Simon Schneegans                                //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify it    //
 // under the terms of the GNU General Public License as published by the Free //
@@ -18,26 +18,26 @@
 namespace OpenPie {
 
 public interface Animatable {
-  
+
   //////////////////////////////////////////////////////////////////////////////
-  //                          public interface                                // 
+  //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
-  
+
   // smoothly animates a property of the actor ---------------------------------
-  public static void animate(Clutter.Actor actor, 
-                      string property_name, Value val, uint duration, 
+  public static void animate(Clutter.Actor actor,
+                      string property_name, Value val, uint duration,
                       Clutter.AnimationMode mode = Clutter.AnimationMode.LINEAR,
                       uint delay = 0) {
-                             
+
     actor.save_easing_state();
     actor.set_easing_mode(mode);
     actor.set_easing_duration(duration);
     actor.set_easing_delay(delay);
-    
+
     actor.set_property(property_name, val);
-    
+
     actor.restore_easing_state();
   }
-}   
-  
+}
+
 }

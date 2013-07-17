@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011-2013 by Simon Schneegans                                //  
+// Copyright (c) 2011-2013 by Simon Schneegans                                //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify it    //
 // under the terms of the GNU General Public License as published by the Free //
@@ -17,21 +17,21 @@
 
 namespace OpenPie {
 
-//////////////////////////////////////////////////////////////////////////////// 
+////////////////////////////////////////////////////////////////////////////////
 // A generic plugin module. It loads a shared object (*.so), searches for a   //
 // function called "register_plugin" and calls it. Afterwards this class can  //
 // be used to instanciate objects of the registered type.                     //
-//////////////////////////////////////////////////////////////////////////////// 
+////////////////////////////////////////////////////////////////////////////////
 
 public class PluginModule<T> : Object {
-  
+
   //////////////////////////////////////////////////////////////////////////////
-  //                          public interface                                //        
+  //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
-  
+
   public PluginModule(string path) {
     assert(GLib.Module.supported());
-    
+
     // load the shared object
     module_ = Module.open(path, GLib.ModuleFlags.BIND_LAZY);
     if (module_ == null) {
@@ -40,30 +40,30 @@ public class PluginModule<T> : Object {
     }
 
     message("Loaded plugin '%s'.\n", module_.name());
-    
+
     // register the type of the contained plugin class
     void* f;
     module_.symbol("register_plugin", out f);
     unowned register_ register_plugin = (register_) f;
-    
+
     type_ = register_plugin(module_);
   }
-  
+
   // create an object of the loaded plugin class
   public T new_object () {
     return Object.new(type_);
   }
-  
+
   //////////////////////////////////////////////////////////////////////////////
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
-  
+
   // the type of the plugin class which has been loaded from file
   private GLib.Type type_;
-  
+
   // a reference to the shared object file
   private GLib.Module module_;
-  
+
   // function type of the plugin class registration method
   private delegate GLib.Type register_ (GLib.Module module);
 }

@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011-2013 by Simon Schneegans                                //  
+// Copyright (c) 2011-2013 by Simon Schneegans                                //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify it    //
 // under the terms of the GNU General Public License as published by the Free //
@@ -25,13 +25,13 @@ namespace OpenPie {
 public class Style : GLib.Object {
 
   //////////////////////////////////////////////////////////////////////////////
-  //              public interface                                            //        
+  //              public interface                                            //
   //////////////////////////////////////////////////////////////////////////////
 
   public Color background_color         { get; set; default = new Color.from_rgb(0.1f, 0.1f, 0.1f);}
   public Color background_color_hover   { get; set; default = new Color.from_rgb(0.8f, 0.8f, 0.8f);}
   public Color background_color_active  { get; set; default = new Color.from_rgb(1.0f, 1.0f, 1.0f);}
-  
+
   public Color font_color               { get; set; default = new Color.from_rgb(0.8f, 0.8f, 0.8f);}
   public Color font_color_hover         { get; set; default = new Color.from_rgb(0.1f, 0.1f, 0.1f);}
   public Color font_color_active        { get; set; default = new Color.from_rgb(0.0f, 0.0f, 0.0f);}
@@ -40,23 +40,23 @@ public class Style : GLib.Object {
   {
     return default_style_;
   }
-  
-  static construct 
+
+  static construct
   {
     default_style_ = new Style();
   }
-  
+
   public Style() {
 
   }
-  
+
 
   //////////////////////////////////////////////////////////////////////////////
   //              private stuff                                               //
   //////////////////////////////////////////////////////////////////////////////
-  
+
   private static Style default_style_;
-   
-}   
-  
+
+}
+
 }

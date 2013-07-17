@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011-2013 by Simon Schneegans                                //  
+// Copyright (c) 2011-2013 by Simon Schneegans                                //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify it    //
 // under the terms of the GNU General Public License as published by the Free //
@@ -17,76 +17,76 @@
 
 namespace OpenPie {
 
-////////////////////////////////////////////////////////////////////////////////  
+////////////////////////////////////////////////////////////////////////////////
 // A base class for all menus. Derived classes have to implement it's         //
 // behaviour.                                                                 //
 ////////////////////////////////////////////////////////////////////////////////
 
 public abstract class Menu : GLib.Object {
-  
+
   //////////////////////////////////////////////////////////////////////////////
   //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
-  
+
   // the window onto which the menu should be drawn
   public TransparentWindow window { public get; public set; default=null; }
-  
+
   // emitted when some item is selected (occurs prior to on_close)
   public signal void on_select(Menu menu, string item);
-  
+
   // emitted when the menu finally disappears from screen
   public signal void on_close(Menu menu);
-  
-  
+
+
   // shows the menu on screen --------------------------------------------------
   public virtual void display(Vector position) {
     window.get_stage().add_child(get_root());
-     
+
     get_root().display(position);
   }
-  
+
   // for debugging purposes ----------------------------------------------------
   public void print() {
     get_root().print();
   }
-  
+
   // called before the menu is displayed ---------------------------------------
   public virtual void init() {
     get_root().init();
   }
-  
+
   // notifies the client that an item has been selected and closes the menu ----
   public void select(MenuItem item) {
     on_select(this, item.get_path());
-    
+
     GLib.Timeout.add(1000, () => {
       close();
       return false;
     });
   }
-  
+
   public virtual void close() {
     get_root().close();
     window.get_stage().remove_child(get_root());
-  
+
     on_close(this);
   }
-  
+
   //////////////////////////////////////////////////////////////////////////////
   //                    abstract public interface                             //
   //////////////////////////////////////////////////////////////////////////////
-  
+
   // returns the root MenuItem of the Menu -------------------------------------
   public abstract MenuItem get_root();
-  
+
   // sets the menu content which shall be displayed ----------------------------
-  public abstract void set_content(string menu_description); 
-  
+  public abstract void set_content(string menu_description);
+
   //////////////////////////////////////////////////////////////////////////////
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
-  
-  
-}   
-  
+
+
+}
+
 }

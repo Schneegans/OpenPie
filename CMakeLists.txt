@@ -8,7 +8,7 @@ project("openpie" C)
 # Initialize CMake -------------------------------------------------------------
 cmake_minimum_required(VERSION 2.6)
 
-# Location where cmake first looks for modules 
+# Location where cmake first looks for modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/third-party/cmake)
 
 
@@ -95,7 +95,7 @@ set(INCLUDE_PATHS
 	${GEE_INCLUDE_DIRS}
 	${XML_INCLUDE_DIRS}
   ${CLUTTER_INCLUDE_DIRS}
-	${XTST_INCLUDE_DIRS}	
+	${XTST_INCLUDE_DIRS}
 	${UNIQUE_INCLUDE_DIRS}
 	${X11_INCLUDE_DIRS}
 	${JSON_INCLUDE_DIRS}

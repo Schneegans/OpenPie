@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011-2013 by Simon Schneegans                                //  
+// Copyright (c) 2011-2013 by Simon Schneegans                                //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify it    //
 // under the terms of the GNU General Public License as published by the Free //
@@ -22,28 +22,28 @@ namespace OpenPie {
 ////////////////////////////////////////////////////////////////////////////////
 
 public class DBusInterface : GLib.Object {
-  
+
   //////////////////////////////////////////////////////////////////////////////
   //                         public interface                                 //
   //////////////////////////////////////////////////////////////////////////////
-  
+
   // creates an OpenPieServer and makes it listen to incoming requests ---------
   public void bind() {
-    Bus.own_name(BusType.SESSION, "org.openpie.main", 
+    Bus.own_name(BusType.SESSION, "org.openpie.main",
            BusNameOwnerFlags.NONE,
            on_connection, on_success, on_fail);
     Clutter.main();
   }
-  
+
   // stops listening -----------------------------------------------------------
   public void unbind() {
     Clutter.main_quit();
   }
-  
+
   //////////////////////////////////////////////////////////////////////////////
   //                           private stuff                                  //
   //////////////////////////////////////////////////////////////////////////////
-  
+
   // registers OpenPie on the DBus and creates an OpenPieServer which waits
   // for incoming menu requests ------------------------------------------------
   private void on_connection(GLib.DBusConnection con) {
@@ -53,12 +53,12 @@ public class DBusInterface : GLib.Object {
       error("Could not register service");
     }
   }
-  
+
   // print message on success --------------------------------------------------
   private void on_success() {
     message("DBus name aquired!");
   }
-  
+
   // print error on failure ----------------------------------------------------
   private void on_fail() {
     error("Could not aquire DBus name! " +
