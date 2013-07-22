@@ -1,0 +1,15 @@
+<schemalist>
+  <schema id="org.gnome.openpie"
+   path="/org/gnome/openpie/"
+   gettext-domain="openpie">
+
+    <key name="active-plugin" type="s">
+      <default l10n="messages">"TraceMenu"</default>
+      <summary>The current menu plugin.</summary>
+      <description>
+        The name of the current menu plugin of OpenPie.
+      </description>
+    </key>
+
+  </schema>
+</schemalist>

@@ -23,7 +23,7 @@ namespace OpenPie {
 // currently active menu.                                                     //
 ////////////////////////////////////////////////////////////////////////////////
 
-[DBus (name = "org.openpie.main")]
+[DBus (name = "org.gnome.openpie")]
 public class OpenPieServer : GLib.Object {
 
   //////////////////////////////////////////////////////////////////////////////
@@ -52,13 +52,19 @@ public class OpenPieServer : GLib.Object {
   // and returns a newly assigned ID
   public int show_menu(string menu_description) {
 
-    const string menu_plugin = "TraceMenu";
+    var settings = new GLib.Settings("org.gnome.openpie");
+
+    // getting menu plugin name
+    var menu_plugin = settings.get_string ("active-plugin");
 
     // create a new menu
     var menu = plugin_loader_.get_plugin(menu_plugin);
 
-    if (menu == null)
+    if (menu == null) {
+      warning("""Failed to display menu: """+
+              """There is no menu plugin $menu_plugin loaded!""");
       return -1;
+    }
 
     menu.window = window_;
     menu.set_content(menu_description);

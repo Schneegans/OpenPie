@@ -74,8 +74,6 @@ public class PluginLoader : GLib.Object {
     if (plugin != null)
       return plugin.new_object();
 
-    warning("Failed to create menu: No plugin named \"%s\" found!",
-            plugin_name);
     return null;
   }
 

@@ -31,7 +31,7 @@ public class DBusInterface : GLib.Object {
 
   // creates an OpenPieServer and makes it listen to incoming requests ---------
   public void bind() {
-    Bus.own_name(BusType.SESSION, "org.openpie.main",
+    Bus.own_name(BusType.SESSION, "org.gnome.openpie",
            BusNameOwnerFlags.NONE,
            on_connection, on_success, on_fail);
     Clutter.main();
@@ -52,7 +52,7 @@ public class DBusInterface : GLib.Object {
   // for incoming menu requests ------------------------------------------------
   private void on_connection(GLib.DBusConnection con) {
     try {
-      con.register_object("/org/openpie/main", new OpenPieServer());
+      con.register_object("/org/gnome/openpie", new OpenPieServer());
     } catch (IOError e) {
       error("Could not register service");
     }
