@@ -61,8 +61,8 @@ public class OpenPieServer : GLib.Object {
     var menu = plugin_loader_.get_plugin(menu_plugin);
 
     if (menu == null) {
-      warning("""Failed to display menu: """+
-              """There is no menu plugin $menu_plugin loaded!""");
+      warning("Failed to display menu: "+
+              @"There is no menu plugin '$menu_plugin' loaded!");
       return -1;
     }
 

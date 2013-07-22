@@ -18,13 +18,13 @@
 namespace OpenPie {
 
 ////////////////////////////////////////////////////////////////////////////////
-// This is an item of a TouchMenu. A TouchMenu is a 180-degree-spherical      //
+// This is an item of a LinearMenu. A LinearMenu is a 180-degree-spherical      //
 // marking menu. When the user selects an item, a unique path is created on   //
 // screen. The user may "draw" this path really quickly in order to selects   //
 // the according entry. That's not only fast --- that's also fun!             //
 ////////////////////////////////////////////////////////////////////////////////
 
-public class TouchMenuItem : MenuItem, Animatable, Clutter.Group {
+public class LinearMenuItem : MenuItem, Animatable, Clutter.Group {
 
   //////////////////////////////////////////////////////////////////////////////
   //                          public interface                                //
@@ -36,14 +36,14 @@ public class TouchMenuItem : MenuItem, Animatable, Clutter.Group {
   public string icon  { get; set;  default = "none"; }
   public float  angle { get; set;  default = 0.0f; }
 
-  public weak TouchMenuItem           parent_item { get; set; default=null; }
-  public Gee.ArrayList<TouchMenuItem> sub_menus   { get; set; default=null; }
+  public weak LinearMenuItem           parent_item { get; set; default=null; }
+  public Gee.ArrayList<LinearMenuItem> sub_menus   { get; set; default=null; }
 
   //////////////////////////// public methods //////////////////////////////////
 
   // initializes all members ---------------------------------------------------
   construct {
-    sub_menus = new Gee.ArrayList<TouchMenuItem>();
+    sub_menus = new Gee.ArrayList<LinearMenuItem>();
   }
 
   // returns all sub menus of this item ----------------------------------------
@@ -59,27 +59,29 @@ public class TouchMenuItem : MenuItem, Animatable, Clutter.Group {
   // adds a child to this MenuItem ---------------------------------------------
   public void add_sub_menu(MenuItem item) {
 
-    var touch_item = item as TouchMenuItem;
-    touch_item.parent_item = this;
-    sub_menus.add(touch_item);
+    var linear_item = item as LinearMenuItem;
+    linear_item.parent_item = this;
+
+    linear_item.y = 20 * sub_menus.size;
+
+    if (parent_item != null) {
+      linear_item.x = 200;
+    }
+
+    sub_menus.add(linear_item);
   }
 
   // called prior to display() -------------------------------------------------
   public void init() {
 
-    canvas_ = new Clutter.Canvas();
-    canvas_.set_size(64, 64);
-    canvas_.draw.connect(draw_background);
-    canvas_.invalidate();
-
     background_ = new Clutter.Actor();
-    background_.width = canvas_.width;
-    background_.height = canvas_.height;
-    background_.set_content(canvas_);
+    background_.width = 200;
+    background_.height = 20;
     background_.reactive = true;
+    background_.background_color = Clutter.Color.from_string("white");
     add_child(background_);
 
-    text_ = new Clutter.Text.full("ubuntu", text,
+    text_ = new Clutter.Text.full("ubuntu 12", text,
                                   Clutter.Color.from_string("black"));
     text_.set_pivot_point(0.5f, 0.5f);
     text_.scale_x = 0.8;
@@ -87,24 +89,11 @@ public class TouchMenuItem : MenuItem, Animatable, Clutter.Group {
     add_child(text_);
 
     reactive = true;
-    scale_x = 0.7;
-    scale_y = 0.7;
-    z_position = -0.01f;
-    set_pivot_point(0.5f, 0.5f);
+    z_position = 0.01f;
+    // set_pivot_point(0.5f, 0.5f);
 
-    width = canvas_.width;
-    height = canvas_.height;
-
-    if (parent_item != null && parent_item.isRoot()) {
-      var radius = 30;
-      set_position(GLib.Math.sinf(angle)*radius, GLib.Math.cosf(angle)*radius);
-    } else if (!isRoot()) {
-      var radius = 0;
-      set_position(GLib.Math.sinf(angle)*radius, GLib.Math.cosf(angle)*radius);
-    }
-
-
-
+    width = 200;
+    height = 20;
 
     foreach (var item in sub_menus) {
       item.init();
@@ -116,9 +105,11 @@ public class TouchMenuItem : MenuItem, Animatable, Clutter.Group {
   public void display(Vector position) {
 
     if (isRoot()) {
-      set_position(position.x - width/2, position.y - height/2);
+      set_position(position.x, position.y);
     }
 
+    background_.enter_event.connect(on_enter);
+    background_.leave_event.connect(on_leave);
     background_.button_press_event.connect(on_button_press);
     background_.button_release_event.connect(on_button_release);
 
@@ -129,6 +120,8 @@ public class TouchMenuItem : MenuItem, Animatable, Clutter.Group {
   // removes the MenuItem and all of it's sub menus from the screen ------------
   public void close() {
 
+    background_.enter_event.disconnect(on_enter);
+    background_.leave_event.disconnect(on_leave);
     background_.button_press_event.disconnect(on_button_press);
     background_.button_release_event.disconnect(on_button_release);
 
@@ -136,14 +129,14 @@ public class TouchMenuItem : MenuItem, Animatable, Clutter.Group {
       item.close();
   }
 
-  // sets the parent menu of this TouchMenuItem --------------------------------
-  public void set_parent_menu(TouchMenu menu) {
+  // sets the parent menu of this LinearMenuItem --------------------------------
+  public void set_parent_menu(LinearMenu menu) {
     parent_menu_ = menu;
     foreach (var item in sub_menus)
       item.set_parent_menu(menu);
   }
 
-  // returns true if this TouchMenuItem is not a child of any other item -------
+  // returns true if this LinearMenuItem is not a child of any other item -------
   public bool isRoot() {
     return parent_item == null;
   }
@@ -154,8 +147,8 @@ public class TouchMenuItem : MenuItem, Animatable, Clutter.Group {
 
   ////////////////////////// member variables //////////////////////////////////
 
-  // the menu of which this TouchMenuItem is a member
-  private weak TouchMenu  parent_menu_ = null;
+  // the menu of which this LinearMenuItem is a member
+  private weak LinearMenu parent_menu_ = null;
 
   // text written on the item
   private Clutter.Text text_ = null;
@@ -163,29 +156,43 @@ public class TouchMenuItem : MenuItem, Animatable, Clutter.Group {
   // background of this actor
   private Clutter.Actor background_ = null;
 
-  // this is drawn on the background actor
-  private Clutter.Canvas canvas_ = null;
-
   ////////////////////////// private methods ///////////////////////////////////
 
-  private bool draw_background(Cairo.Context ctx, int width, int height) {
-    ctx.set_operator (Cairo.Operator.CLEAR);
-    ctx.paint();
-    ctx.set_operator (Cairo.Operator.OVER);
+  public void hide_sub_menu() {
+    animate(background_, "background_color", Clutter.Color.from_string("#ffffff00"), 50, Clutter.AnimationMode.LINEAR);
+    animate(text_, "color", Clutter.Color.from_string("#00000000"), 50, Clutter.AnimationMode.LINEAR);
 
-    ctx.set_source_rgb(1, 1, 1);
-    ctx.arc(width/2, height/2, width/2-2, 0, Math.PI*2.0);
+    foreach (var item in sub_menus)
+      item.hide_sub_menu();
+  }
 
-    ctx.fill_preserve();
-    ctx.set_source_rgb(0, 0, 0);
-    ctx.stroke();
+  public void show_sub_menu() {
+    animate(background_, "background_color", Clutter.Color.from_string("#ffffffff"), 50, Clutter.AnimationMode.LINEAR);
+    animate(text_, "color", Clutter.Color.from_string("#000000ff"), 50, Clutter.AnimationMode.LINEAR);
+  }
 
-    return true;
+  // called when the mouse starts hovering the MenuItem ------------------------
+  private bool on_enter(Clutter.CrossingEvent e) {
+    animate(background_, "background_color", Clutter.Color.from_string("red"), 50, Clutter.AnimationMode.LINEAR);
+
+    foreach (var item in sub_menus)
+      item.show_sub_menu();
+
+    return false;
+  }
+
+  // called when the mouse stops hovering the MenuItem -------------------------
+  private bool on_leave(Clutter.CrossingEvent e) {
+    animate(background_, "background_color", Clutter.Color.from_string("white"), 500, Clutter.AnimationMode.LINEAR);
+
+    foreach (var item in sub_menus)
+      item.hide_sub_menu();
+
+    return false;
   }
 
   // called when a mouse button is pressed hovering the MenuItem ---------------
   private bool on_button_press(Clutter.ButtonEvent e) {
-    animate(text_, "opacity", 0, 500, Clutter.AnimationMode.EASE_IN_OUT);
     parent_menu_.select(this);
     return false;
   }

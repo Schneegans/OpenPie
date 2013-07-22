@@ -83,6 +83,7 @@ public class TouchMenu : Plugin, Menu {
     window.get_size(out w, out h);
     background_.width = w;
     background_.height = h;
+    background_.z_position = -1.0f;
 
     var background_canvas = new Clutter.Canvas();
     background_canvas.set_size(w, h);
@@ -182,7 +183,3 @@ public class TouchMenu : Plugin, Menu {
 }
 
 }
-
-
-
-
