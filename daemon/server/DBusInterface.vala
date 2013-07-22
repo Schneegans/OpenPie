@@ -27,6 +27,8 @@ public class DBusInterface : GLib.Object {
   //                         public interface                                 //
   //////////////////////////////////////////////////////////////////////////////
 
+  //////////////////////////// public methods //////////////////////////////////
+
   // creates an OpenPieServer and makes it listen to incoming requests ---------
   public void bind() {
     Bus.own_name(BusType.SESSION, "org.openpie.main",
@@ -43,6 +45,8 @@ public class DBusInterface : GLib.Object {
   //////////////////////////////////////////////////////////////////////////////
   //                           private stuff                                  //
   //////////////////////////////////////////////////////////////////////////////
+
+  ////////////////////////// private methods ///////////////////////////////////
 
   // registers OpenPie on the DBus and creates an OpenPieServer which waits
   // for incoming menu requests ------------------------------------------------

@@ -22,6 +22,9 @@ namespace OpenPie {
 ////////////////////////////////////////////////////////////////////////////////
 
 public interface Plugin : Menu {
+
+  /////////////////////////// public variables /////////////////////////////////
+
   public abstract string name        { get; construct set; }
   public abstract string version     { get; construct set; }
   public abstract string author      { get; construct set; }

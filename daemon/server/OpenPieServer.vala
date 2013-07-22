@@ -30,8 +30,12 @@ public class OpenPieServer : GLib.Object {
   //                         public interface                                 //
   //////////////////////////////////////////////////////////////////////////////
 
-  // emitted, when the users selects an item from the currently active menu
+  /////////////////////////////// signals //////////////////////////////////////
+
+  // emitted, when the users selects an item from the currently active menu ----
   public signal void on_select(int id, string item);
+
+  //////////////////////////// public methods //////////////////////////////////
 
   // initializes members and loads plugins -------------------------------------
   construct {
@@ -93,17 +97,21 @@ public class OpenPieServer : GLib.Object {
   //                           private stuff                                  //
   //////////////////////////////////////////////////////////////////////////////
 
-  // the fullscreen window onto which menus are drawn
+  ////////////////////////// member variables //////////////////////////////////
+
+  // the fullscreen window onto which menus are drawn --------------------------
   private TransparentWindow window_ = null;
 
-  // loads all menu plugins
+  // loads all menu plugins ----------------------------------------------------
   private PluginLoader plugin_loader_ = null;
 
-  // stores all currently opened menus with their individual ID
+  // stores all currently opened menus with their individual ID ----------------
   private Gee.HashMap<Menu, int> open_menus_ = new Gee.HashMap<Menu, int>();
 
-  // stores the ID of the lastly opened menu
+  // stores the ID of the lastly opened menu -----------------------------------
   private int current_id_ = 0;
+
+  ////////////////////////// private methods ///////////////////////////////////
 
   // callback gets called when the user selects an item ------------------------
   // in the currently active menu

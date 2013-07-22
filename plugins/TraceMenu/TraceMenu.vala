@@ -39,6 +39,8 @@ public class TraceMenu : Plugin, Menu {
   //                         public interface                                 //
   //////////////////////////////////////////////////////////////////////////////
 
+  /////////////////////////// public variables /////////////////////////////////
+
   public string name        { get; construct set; }
   public string version     { get; construct set; }
   public string author      { get; construct set; }
@@ -47,6 +49,8 @@ public class TraceMenu : Plugin, Menu {
   public string description { get; construct set; }
 
   public TraceMenuItem root { public get; public set; default=null; }
+
+  //////////////////////////// public methods //////////////////////////////////
 
   construct {
     name        = "TraceMenu";
@@ -103,8 +107,12 @@ public class TraceMenu : Plugin, Menu {
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
 
+  ////////////////////////// member variables //////////////////////////////////
+
   private Clutter.Actor background_ = null;
   private Vector[]      mouse_path_ = {};
+
+  ////////////////////////// private methods ///////////////////////////////////
 
   private void on_mouse_move(float x, float y) {
     mouse_path_ += new Vector(x, y);

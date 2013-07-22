@@ -29,17 +29,19 @@ public class Color: GLib.Object {
   //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
 
-  // Creates a white Color.
+  //////////////////////////// public methods //////////////////////////////////
+
+  // Creates a white Color. ----------------------------------------------------
   public Color() {
     Color.from_rgb(1.0f, 1.0f, 1.0f);
   }
 
-  // Creates a solid color with the given RGB values.
+  // Creates a solid color with the given RGB values. --------------------------
   public Color.from_rgb(float red, float green, float blue) {
     Color.from_rgba(red, green, blue, 1.0f);
   }
 
-  // Creates a translucient color with the given RGBA values.
+  // Creates a translucient color with the given RGBA values. ------------------
   public Color.from_rgba(float red, float green, float blue, float alpha) {
     r = red;
     g = green;
@@ -47,7 +49,7 @@ public class Color: GLib.Object {
     a = alpha;
   }
 
-  // Creates a color from the given Gdk.Color
+  // Creates a color from the given Gdk.Color ----------------------------------
   public Color.from_gdk(Gdk.Color color) {
     Color.from_rgb(
       (float)color.red/65535.0f,
@@ -56,14 +58,14 @@ public class Color: GLib.Object {
     );
   }
 
-  // Creates a color, parsed from a string, such as #22EE33
+  // Creates a color, parsed from a string, such as #22EE33 --------------------
   public Color.from_string(string hex_string) {
     Gdk.Color color;
     Gdk.Color.parse(hex_string, out color);
     Color.from_gdk(color);
   }
 
-  // Gets the main color from an Image. Code from Unity.
+  // Gets the main color from an Image. Code from Unity. -----------------------
   public Color.from_icon(Image icon) {
     unowned uchar[] data = icon.surface.get_data();
 
@@ -102,7 +104,7 @@ public class Color: GLib.Object {
     v = 1.0f;
   }
 
-  // The reddish part of the color.
+  // The reddish part of the color. --------------------------------------------
   public float r {
     get {
       return _r;
@@ -114,7 +116,7 @@ public class Color: GLib.Object {
     }
   }
 
-  // The greenish part of the color.
+  // The greenish part of the color. -------------------------------------------
   public float g {
     get {
       return _g;
@@ -126,7 +128,7 @@ public class Color: GLib.Object {
     }
   }
 
-  // The blueish part of the color.
+  // The blueish part of the color. --------------------------------------------
   public float b {
     get {
       return _b;
@@ -138,7 +140,7 @@ public class Color: GLib.Object {
     }
   }
 
-  // The transparency of the color.
+  // The transparency of the color. --------------------------------------------
   public float a {
     get {
       return _a;
@@ -150,7 +152,7 @@ public class Color: GLib.Object {
     }
   }
 
-  // The hue of the color.
+  // The hue of the color. -----------------------------------------------------
   public float h {
     get {
       if (s > 0.0f) {
@@ -171,7 +173,7 @@ public class Color: GLib.Object {
     }
   }
 
-  // The saturation of the color.
+  // The saturation of the color. ----------------------------------------------
   public float s {
     get {
       if (v == 0.0f) return 0.0f;
@@ -184,7 +186,7 @@ public class Color: GLib.Object {
     }
   }
 
-  // The value of the color.
+  // The value of the color. ---------------------------------------------------
   public float v {
     get {
       return fmaxf(fmaxf(r, g), b);
@@ -196,7 +198,7 @@ public class Color: GLib.Object {
     }
   }
 
-  // Inverts the color.
+  // Inverts the color. --------------------------------------------------------
   public void invert() {
     h += 180.0f;
     v = 1.0f - v;
@@ -206,14 +208,18 @@ public class Color: GLib.Object {
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
 
-  // Private members, storing the actual color information.
+  ////////////////////////// member variables //////////////////////////////////
+
+  // Private members, storing the actual color information. --------------------
   // In range 0 .. 1
   private float _r;
   private float _g;
   private float _b;
   private float _a;
 
-  // Private member, used to apply color changes.
+  ////////////////////////// private methods ///////////////////////////////////
+
+  // Private member, used to apply color changes. ------------------------------
   private void setHSV(float hue, float saturation, float val) {
     if(saturation == 0) {
 	    r = val;

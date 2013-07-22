@@ -28,6 +28,8 @@ public class Paths : GLib.Object {
   //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
 
+  /////////////////////////// public variables /////////////////////////////////
+
   // The global plugin directory, usually /usr/share/openpie/plugins
   public static string global_plugin_directory { get; private set; default=""; }
 
@@ -36,6 +38,8 @@ public class Paths : GLib.Object {
 
   // The path to the executable.
   public static string executable { get; private set; default=""; }
+
+  //////////////////////////// public methods //////////////////////////////////
 
   // Initializes all values above.
   public static void init() {
@@ -105,6 +109,8 @@ public class Paths : GLib.Object {
   //////////////////////////////////////////////////////////////////////////////
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
+
+  ////////////////////// private static methods ////////////////////////////////
 
   // creates an empty directory if it does not exist already
   private static void create_directory(string name) {

@@ -25,8 +25,15 @@ namespace OpenPie {
 public class Vector : GLib.Object {
 
   //////////////////////////////////////////////////////////////////////////////
-  //                          static interface                                //
+  //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
+
+  /////////////////////////// public variables /////////////////////////////////
+
+  public float x {get; set; default=0;}
+  public float y {get; set; default=0;}
+
+  //////////////////////// public static methods ///////////////////////////////
 
   // Creates a new vector between two points.
   public static Vector direction(Vector from, Vector to) {
@@ -53,12 +60,7 @@ public class Vector : GLib.Object {
     return a.x*b.x + a.y*b.y;
   }
 
-  //////////////////////////////////////////////////////////////////////////////
-  //                          public interface                                //
-  //////////////////////////////////////////////////////////////////////////////
-
-  public float x {get; set; default=0;}
-  public float y {get; set; default=0;}
+  //////////////////////////// public methods //////////////////////////////////
 
   // Constructs a new vector.
   public Vector(float x = 0, float y = 0) {

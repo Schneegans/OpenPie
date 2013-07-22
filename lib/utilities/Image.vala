@@ -28,10 +28,12 @@ public class Image : GLib.Object {
   //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
 
-  // The internally used surface.
+  // The internally used surface. ----------------------------------------------
   public Cairo.ImageSurface surface { public get; protected set; default=null; }
 
-  // Creates an empty Image.
+  //////////////////////////// public methods //////////////////////////////////
+
+  // Creates an empty Image. ---------------------------------------------------
   public Image.empty(int width, int height, Color? color = null) {
     this.surface = new Cairo.ImageSurface(Cairo.Format.ARGB32, width, height);
 
@@ -42,31 +44,36 @@ public class Image : GLib.Object {
     }
   }
 
-  // Creates an image from the the given filename.
+  // Creates an image from the the given filename. -----------------------------
   public Image.from_file(string filename) {
     this.load_file(filename);
   }
 
-  // Creates an image from the the given filename at a given size.
+  // Creates an image from the the given filename at a given size. -------------
   public Image.from_file_at_size(string filename, int width, int height) {
     this.load_file_at_size(filename, width, height);
   }
 
-  // Creates an image from the the given Gdk.Pixbuf.
+  // Creates an image from the the given Gdk.Pixbuf. ---------------------------
   public Image.from_pixbuf(Gdk.Pixbuf pixbuf) {
-    if (pixbuf != null) this.load_pixbuf(pixbuf);
-    else        this.surface = new Cairo.ImageSurface(Cairo.Format.ARGB32, 1, 1);
+    if (pixbuf != null)
+      this.load_pixbuf(pixbuf);
+    else
+      this.surface = new Cairo.ImageSurface(Cairo.Format.ARGB32, 1, 1);
   }
 
-  // Captures a part of the screen.
-  public Image.capture_screen(int posx, int posy, int width, int height, bool hide_pies = true) {
-    Gdk.Window root = Gdk.get_default_root_window();
-    Gdk.Pixbuf pixbuf = Gdk.pixbuf_get_from_window(root, posx, posy, width, height);
+  // Captures a part of the screen. --------------------------------------------
+  public Image.capture_screen(int posx, int posy, int width,
+                              int height, bool hide_pies = true) {
 
+    Gdk.Window root = Gdk.get_default_root_window();
+
+    Gdk.Pixbuf pixbuf = Gdk.pixbuf_get_from_window(root, posx, posy,
+                                                   width, height);
     this.load_pixbuf(pixbuf);
   }
 
-  // Loads an image from the the given filename.
+  // Loads an image from the the given filename. -------------------------------
   public void load_file(string filename) {
     try {
       var pixbuf = new Gdk.Pixbuf.from_file(filename);
@@ -83,7 +90,7 @@ public class Image : GLib.Object {
     }
   }
 
-  // Loads an image from the the given filename at a given size.
+  // Loads an image from the the given filename at a given size. ---------------
   public void load_file_at_size(string filename, int width, int height) {
     try {
       var pixbuf = new Gdk.Pixbuf.from_file_at_size(filename, width, height);
@@ -100,7 +107,7 @@ public class Image : GLib.Object {
     }
   }
 
-  // Loads an image from the the given Gdk.Pixbuf.
+  // Loads an image from the the given Gdk.Pixbuf. -----------------------------
   public void load_pixbuf(Gdk.Pixbuf pixbuf) {
     this.surface = new Cairo.ImageSurface(Cairo.Format.ARGB32, pixbuf.width, pixbuf.height);
 
@@ -109,14 +116,14 @@ public class Image : GLib.Object {
     ctx.paint();
   }
 
-  // Paints the image onto the given Cairo.Context
+  // Paints the image onto the given Cairo.Context -----------------------------
   public void paint_on(Cairo.Context ctx, double alpha = 1.0) {
     ctx.set_source_surface(this.surface, (int)(-0.5*this.width()-1), (int)(-0.5*this.height()-1));
     if (alpha >= 1.0) ctx.paint();
     else        ctx.paint_with_alpha(alpha);
   }
 
-  // Converts the image to a Gdk.Pixbuf.
+  // Converts the image to a Gdk.Pixbuf. ---------------------------------------
   public Gdk.Pixbuf to_pixbuf() {
     if (this.surface == null || this.surface.get_data().length <= 0)
       return new Gdk.Pixbuf(Gdk.Colorspace.RGB, true, 8, 1, 1);
@@ -138,19 +145,19 @@ public class Image : GLib.Object {
 		return pixbuf;
   }
 
-  // Returns a Cairo.Context for the Image.
+  // Returns a Cairo.Context for the Image. ------------------------------------
   public Cairo.Context context() {
     return new Cairo.Context(this.surface);
   }
 
-  // Returns the width of the image in pixels.
+  // Returns the width of the image in pixels. ---------------------------------
   public int width() {
     if (this.surface != null)
       return this.surface.get_width();
     return 0;
   }
 
-  // Returns the height of the image in pixels.
+  // Returns the height of the image in pixels. --------------------------------
   public int height() {
     if (this.surface != null)
       return this.surface.get_height();

@@ -51,6 +51,8 @@ public interface MenuItem : Clutter.Actor {
   // removes the MenuItem and all of it's sub menus from the screen ------------
   public abstract void close();
 
+  //////////////////////////// public methods //////////////////////////////////
+
   // returns the path to this menu item ----------------------------------------
   public string get_path() {
     if (get_parent_item() != null) {

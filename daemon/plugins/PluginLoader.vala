@@ -29,6 +29,8 @@ public class PluginLoader : GLib.Object {
   //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
 
+  //////////////////////////// public methods //////////////////////////////////
+
   construct {
     plugins_ = new Gee.HashMap<string, PluginModule<Plugin>>();
   }
@@ -81,8 +83,12 @@ public class PluginLoader : GLib.Object {
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
 
+  ////////////////////////// member variables //////////////////////////////////
+
   // stores a list of plugins with their corresponding names
   private Gee.HashMap<string, PluginModule<Plugin>> plugins_;
+
+  ////////////////////////// private methods ///////////////////////////////////
 
   // loads a plugin from a shared object
   private void load_plugin(GLib.FileInfo file_info, string path) {

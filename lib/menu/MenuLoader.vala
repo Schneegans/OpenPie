@@ -48,6 +48,8 @@ public class MenuLoader : GLib.Object {
   // the root item of the menu tree
   public MenuItem root { public get; private set; default = null; }
 
+  //////////////////////////// public methods //////////////////////////////////
+
   // initializes this loader with a menu representing --------------------------
   // the given menu description string
   public MenuLoader.from_string(GLib.Type item_type, string data) {
@@ -67,6 +69,8 @@ public class MenuLoader : GLib.Object {
   //////////////////////////////////////////////////////////////////////////////
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
+
+  ////////////////////////// private methods ///////////////////////////////////
 
   // parses the menu description recursively -----------------------------------
   private void load_from_json(MenuItem current, Json.Reader reader) {

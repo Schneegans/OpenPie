@@ -29,6 +29,8 @@ public class Logger {
   //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
 
+  //////////////////////// public static methods ///////////////////////////////
+
   // Creates the regex and binds the handler.
   public static void init() {
     log_length = -1;
@@ -43,6 +45,8 @@ public class Logger {
   //////////////////////////////////////////////////////////////////////////////
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
+
+  ////////////////////////// member variables //////////////////////////////////
 
   // If these are set to false, the according messages are not shown
   private static const bool display_debug = true;
@@ -71,6 +75,8 @@ public class Logger {
   private static const int max_log_length = 1000000;
 
   private static int log_length;
+
+  ////////////////////////// private methods ///////////////////////////////////
 
   // Possible terminal colors.
   private enum Color {

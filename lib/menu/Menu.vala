@@ -37,6 +37,7 @@ public abstract class Menu : GLib.Object {
   // emitted when the menu finally disappears from screen
   public signal void on_close(Menu menu);
 
+  //////////////////////////// public methods //////////////////////////////////
 
   // shows the menu on screen --------------------------------------------------
   public virtual void display(Vector position) {
@@ -65,6 +66,7 @@ public abstract class Menu : GLib.Object {
     });
   }
 
+  // removes the menu from the screen ------------------------------------------
   public virtual void close() {
     get_root().close();
     window.get_stage().remove_child(get_root());
@@ -72,21 +74,13 @@ public abstract class Menu : GLib.Object {
     on_close(this);
   }
 
-  //////////////////////////////////////////////////////////////////////////////
-  //                    abstract public interface                             //
-  //////////////////////////////////////////////////////////////////////////////
+  /////////////////////// public abstract methods //////////////////////////////
 
   // returns the root MenuItem of the Menu -------------------------------------
   public abstract MenuItem get_root();
 
   // sets the menu content which shall be displayed ----------------------------
   public abstract void set_content(string menu_description);
-
-  //////////////////////////////////////////////////////////////////////////////
-  //                          private stuff                                   //
-  //////////////////////////////////////////////////////////////////////////////
-
-
 }
 
 }

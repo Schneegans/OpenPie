@@ -28,6 +28,8 @@ public class Key : GLib.Object {
   //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
 
+  /////////////////////////// public variables /////////////////////////////////
+
   // Returns a human-readable version of this key.
   public string label { get; private set; default=""; }
 
@@ -46,12 +48,14 @@ public class Key : GLib.Object {
   // True if this hotkey involves the mouse.
   public bool with_mouse { get; private set; default=false; }
 
-  // C'tor, creates a new, "unbound" key.
+  //////////////////////////// public methods //////////////////////////////////
+
+  // C'tor, creates a new, "unbound" key. --------------------------------------
   public Key() {
     this.set_unbound();
   }
 
-  // C'tor, creates a new Key from a given key string. This is
+  // C'tor, creates a new Key from a given key string. This is -----------------
   // in this format: "<modifier(s)>button" where
   // "<modifier>" is something like "<Alt>" or "<Control>", "button"
   // something like "s", "F4" or "button0".
@@ -59,21 +63,21 @@ public class Key : GLib.Object {
     this.parse_string(key);
   }
 
-  // C'tor, creates a new Key from a given key_sym and some associated
+  // C'tor, creates a new Key from a given key_sym and some associated ---------
   // modifiers.
   public Key.from_keyboard(uint key_sym, Gdk.ModifierType modifiers) {
     string key = Gtk.accelerator_name(key_sym, modifiers);
     this.parse_string(key);
   }
 
-  // C'tor, creates a new Key from a given mouse button and some associated
+  // C'tor, creates a new Key from a given mouse button and some associated ----
   // modifiers.
   public Key.from_mouse(uint button, Gdk.ModifierType modifiers) {
     string key = Gtk.accelerator_name(0, modifiers) + "button%u".printf(button);
     this.parse_string(key);
   }
 
-  // Parses a key string. This is
+  // Parses a key string. This is ----------------------------------------------
   // in this format: "[option(s)]<modifier(s)>button" where
   // "<modifier>" is something like "<Alt>" or "<Control>", "button"
   // something like "s", "F4" or "button0" and "[option]" is either
@@ -125,7 +129,9 @@ public class Key : GLib.Object {
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
 
-  // Resets all member variables to their defaults.
+  ////////////////////////// private methods ///////////////////////////////////
+
+  // Resets all member variables to their defaults. ----------------------------
   private void set_unbound() {
     this.label = "Not bound";
     this.name = "";
@@ -135,7 +141,7 @@ public class Key : GLib.Object {
     this.with_mouse = false;
   }
 
-  // Returns true, if the key string is in a valid format.
+  // Returns true, if the key string is in a valid format. ---------------------
   private bool is_valid(string key) {
     // copy string
     string check_string = key;
@@ -157,7 +163,7 @@ public class Key : GLib.Object {
     return true;
   }
 
-  // Returns the mouse button number of the given key string.
+  // Returns the mouse button number of the given key string. ------------------
   // Returns -1 if it is not a mouse key.
   private int get_mouse_button(string key) {
     if (key.contains("button")) {

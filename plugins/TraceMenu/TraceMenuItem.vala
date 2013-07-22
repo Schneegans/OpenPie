@@ -30,12 +30,16 @@ public class TraceMenuItem : MenuItem, Animatable, Clutter.Group {
   //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
 
+  /////////////////////////// public variables /////////////////////////////////
+
   public string text  { get; set;  default = "Unnamed Item"; }
   public string icon  { get; set;  default = "none"; }
   public float  angle { get; set;  default = 0.0f; }
 
   public weak TraceMenuItem           parent_item { get; set; default=null; }
   public Gee.ArrayList<TraceMenuItem> sub_menus   { get; set; default=null; }
+
+  //////////////////////////// public methods //////////////////////////////////
 
   // initializes all members ---------------------------------------------------
   construct {
@@ -147,11 +151,15 @@ public class TraceMenuItem : MenuItem, Animatable, Clutter.Group {
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
 
+  ////////////////////////// member variables //////////////////////////////////
+
   // the menu of which this TraceMenuItem is a member
   private weak TraceMenu  parent_menu_ = null;
   private Clutter.Text    text_        = null;
   private Clutter.Actor   background_  = null;
   private Clutter.Canvas  canvas_      = null;
+
+  ////////////////////////// private methods ///////////////////////////////////
 
   private bool draw_background(Cairo.Context ctx, int width, int height) {
 

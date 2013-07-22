@@ -28,8 +28,12 @@ public class Deamon : GLib.Object {
   //                         public interface                                 //
   //////////////////////////////////////////////////////////////////////////////
 
+  /////////////////////////// public variables /////////////////////////////////
+
   // The current version of OpenPie
   public static string version;
+
+  //////////////////////// public static methods ///////////////////////////////
 
   // The beginning of everything -----------------------------------------------
   public static int main(string[] args) {
@@ -62,8 +66,12 @@ public class Deamon : GLib.Object {
   //                           private stuff                                  //
   //////////////////////////////////////////////////////////////////////////////
 
+  ////////////////////// static member variables ///////////////////////////////
+
   // The class which listens for dbus-menu-open-requests
   private static DBusInterface dbus_interface_ = null;
+
+  ////////////////////// private static methods ////////////////////////////////
 
   // Print a nifty message when the prog is killed -----------------------------
   private static void sig_handler_(int sig) {

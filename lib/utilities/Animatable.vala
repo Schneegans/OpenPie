@@ -23,6 +23,8 @@ public interface Animatable {
   //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
 
+  //////////////////////// public static methods ///////////////////////////////
+
   // smoothly animates a property of the actor ---------------------------------
   public static void animate(Clutter.Actor actor,
                       string property_name, Value val, uint duration,

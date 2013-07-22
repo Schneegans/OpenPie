@@ -29,11 +29,15 @@ public class TransparentWindow : Gtk.Window {
   //                         public interface                                 //
   //////////////////////////////////////////////////////////////////////////////
 
+  /////////////////////////////// signals //////////////////////////////////////
+
   // those get emitted when the according action occurs
   public signal void on_mouse_move(float x, float y);
   public signal void on_key_down(Key key);
   public signal void on_key_up(Key key);
   public signal void on_draw(Cairo.Context ctx, double time);
+
+  //////////////////////////// public methods //////////////////////////////////
 
   // C'tor, sets up the window -------------------------------------------------
   public TransparentWindow() {
@@ -184,6 +188,8 @@ public class TransparentWindow : Gtk.Window {
   //////////////////////////////////////////////////////////////////////////////
   //                         private stuff                                    //
   //////////////////////////////////////////////////////////////////////////////
+
+  ////////////////////////// member variables //////////////////////////////////
 
   // The background image used for fake transparency if
   // has_compositing_ is false.
