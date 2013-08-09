@@ -23,7 +23,7 @@ namespace OpenPie {
 // appearance and behaviour.                                                  //
 ////////////////////////////////////////////////////////////////////////////////
 
-public interface MenuItem : Clutter.Actor {
+public interface MenuItem : GLib.Object {
 
   //////////////////////////////////////////////////////////////////////////////
   //                          public interface                                //

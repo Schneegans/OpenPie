@@ -23,7 +23,7 @@ vala_precompile(
 get_filename_component(_LIB_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
 # Set plugin output directory to it's source directory -------------------------
-set(LIBRARY_OUTPUT_PATH ${OUTPUT_DIR}/share/openpie/plugins/)
+set(LIBRARY_OUTPUT_PATH ${OUTPUT_DIR}/share/openpie/plugins/${_LIB_NAME}/)
 message("  Found plugin: " ${_LIB_NAME})
 
 # Compile c-sources ------------------------------------------------------------
@@ -33,3 +33,7 @@ add_library( ${_LIB_NAME} SHARED
 
 set_target_properties(${_LIB_NAME} PROPERTIES LINKER_LANGUAGE C)
 add_dependencies(${_LIB_NAME} openpie)
+
+add_custom_command(TARGET ${_LIB_NAME} PRE_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${CMAKE_CURRENT_SOURCE_DIR}/data $<TARGET_FILE_DIR:${_LIB_NAME}>/data)

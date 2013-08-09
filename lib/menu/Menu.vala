@@ -34,6 +34,9 @@ public abstract class Menu : GLib.Object {
   // emitted when some item is selected (occurs prior to on_close)
   public signal void on_select(Menu menu, string item);
 
+  // emitted when no item has been selected (occurs prior to on_close)
+  public signal void on_cancel(Menu menu);
+
   // emitted when the menu finally disappears from screen
   public signal void on_close(Menu menu);
 
@@ -41,8 +44,6 @@ public abstract class Menu : GLib.Object {
 
   // shows the menu on screen --------------------------------------------------
   public virtual void display(Vector position) {
-    window.get_stage().add_child(get_root());
-
     get_root().display(position);
   }
 
@@ -66,10 +67,19 @@ public abstract class Menu : GLib.Object {
     });
   }
 
+  // notifies the client that no item has been selected and closes the menu ----
+  public void cancel() {
+    on_cancel(this);
+
+    GLib.Timeout.add(1000, () => {
+      close();
+      return false;
+    });
+  }
+
   // removes the menu from the screen ------------------------------------------
   public virtual void close() {
     get_root().close();
-    window.get_stage().remove_child(get_root());
 
     on_close(this);
   }

@@ -31,8 +31,10 @@ public class PluginModule<T> : Object {
 
   //////////////////////////// public methods //////////////////////////////////
 
-  public PluginModule(string path) {
+  public PluginModule(string path, string directory) {
     assert(GLib.Module.supported());
+
+    plugin_directory_ = directory;
 
     // load the shared object
     module_ = Module.open(path, GLib.ModuleFlags.BIND_LAZY);
@@ -53,7 +55,9 @@ public class PluginModule<T> : Object {
 
   // create an object of the loaded plugin class
   public T new_object () {
-    return Object.new(type_);
+    var t = Object.new(type_);
+    (t as MenuPlugin).plugin_directory = plugin_directory_;
+    return t;
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -64,6 +68,8 @@ public class PluginModule<T> : Object {
 
   // the type of the plugin class which has been loaded from file
   private GLib.Type type_;
+
+  private string plugin_directory_;
 
   // a reference to the shared object file
   private GLib.Module module_;

@@ -33,7 +33,7 @@ namespace OpenPie {
 // that's also fun!                                                           //
 ////////////////////////////////////////////////////////////////////////////////
 
-public class TouchMenu : Plugin, Menu {
+public class TouchMenu : MenuPlugin, Menu {
 
   //////////////////////////////////////////////////////////////////////////////
   //                         public interface                                 //
@@ -48,7 +48,13 @@ public class TouchMenu : Plugin, Menu {
   public string homepage    { get; construct set; }
   public string description { get; construct set; }
 
-  public TouchMenuItem root { public get; public set; default=null; }
+  public string plugin_directory    { get; set; }
+
+  public TouchMenuItem root         { public get; public set; default=null; }
+
+  public Clutter.Actor background   { get; construct set; }
+  public Clutter.Actor foreground   { get; construct set; }
+  public Clutter.Actor text         { get; construct set; }
 
   //////////////////////////// public methods //////////////////////////////////
 
@@ -64,7 +70,10 @@ public class TouchMenu : Plugin, Menu {
                    the according entry. That's not only fast --- that's also
                    fun!";
 
-    background_ = new Clutter.Actor();
+    mouse_layer_  = new Clutter.Actor();
+    background    = new Clutter.Actor();
+    foreground    = new Clutter.Actor();
+    text          = new Clutter.Actor();
   }
 
   public override MenuItem get_root() {
@@ -81,26 +90,33 @@ public class TouchMenu : Plugin, Menu {
   public override void display(Vector position) {
     int w=0, h=0;
     window.get_size(out w, out h);
-    background_.width = w;
-    background_.height = h;
-    background_.z_position = -1.0f;
+    mouse_layer_.width = w;
+    mouse_layer_.height = h;
+    mouse_layer_.z_position = -1.0f;
 
-    var background_canvas = new Clutter.Canvas();
-    background_canvas.set_size(w, h);
-    background_canvas.draw.connect(draw_background);
-    background_.set_content(background_canvas);
-    background_canvas.invalidate();
+    var mouse_layer_canvas = new Clutter.Canvas();
+    mouse_layer_canvas.set_size(w, h);
+    mouse_layer_canvas.draw.connect(draw_background);
+    mouse_layer_.set_content(mouse_layer_canvas);
+    mouse_layer_canvas.invalidate();
 
     window.on_mouse_move.connect(on_mouse_move);
 
-    window.get_stage().add_child(background_);
+    window.get_stage().add_child(mouse_layer_);
+    window.get_stage().add_child(background);
+    window.get_stage().add_child(foreground);
+    window.get_stage().add_child(text);
 
     base.display(position);
   }
 
   public override void close() {
     window.on_mouse_move.disconnect(on_mouse_move);
-    window.get_stage().remove_child(background_);
+
+    window.get_stage().remove_child(mouse_layer_);
+    window.get_stage().remove_child(background);
+    window.get_stage().remove_child(foreground);
+    window.get_stage().remove_child(text);
 
     base.close();
   }
@@ -111,14 +127,14 @@ public class TouchMenu : Plugin, Menu {
 
   ////////////////////////// member variables //////////////////////////////////
 
-  private Clutter.Actor background_ = null;
+  private Clutter.Actor mouse_layer_ = null;
   private Vector[]      mouse_path_ = {};
 
   ////////////////////////// private methods ///////////////////////////////////
 
   private void on_mouse_move(float x, float y) {
     mouse_path_ += new Vector(x, y);
-    background_.content.invalidate();
+    mouse_layer_.content.invalidate();
   }
 
   private bool draw_background(Cairo.Context ctx, int width, int height) {
@@ -147,8 +163,8 @@ public class TouchMenu : Plugin, Menu {
     int item_count = root_item.sub_menus.size;
 
     for (int i=0; i<item_count; ++i) {
-      root_item.sub_menus.get(i).angle = (float)(i*GLib.Math.PI/(item_count-1) +
-                                         GLib.Math.PI*0.5);
+      root_item.sub_menus.get(i).angle = (float)(i*GLib.Math.PI/(item_count-1) -
+                                         GLib.Math.PI);
 
       if (root_item.sub_menus.get(i).sub_menus.size > 0)
         adjust_child_angles(root_item.sub_menus.get(i));
@@ -174,7 +190,7 @@ public class TouchMenu : Plugin, Menu {
 
     for (int i=0; i<item.sub_menus.size; ++i) {
       item.sub_menus.get(i).angle = (float)((i + start_item)*GLib.Math.PI/
-                                            (item_count-1) + GLib.Math.PI*0.5);
+                                            (item_count-1) - GLib.Math.PI);
 
       adjust_child_angles(item.sub_menus.get(i));
     }

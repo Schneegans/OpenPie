@@ -104,6 +104,11 @@ public class Vector : GLib.Object {
     }
   }
 
+  // returns true if self is on the CW side of to
+  public bool clock_wise(Vector to) {
+    return x*to.y - y*to.x > 0.0f;
+  }
+
   // Returns a string representation of the vector.
   public string to_string() {
     return "(%f, %f)".printf(x, y);

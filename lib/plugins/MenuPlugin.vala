@@ -21,7 +21,7 @@ namespace OpenPie {
 // An interface for menu plugins. It declares all necessary info fields       //
 ////////////////////////////////////////////////////////////////////////////////
 
-public interface Plugin : Menu {
+public interface MenuPlugin : Menu {
 
   /////////////////////////// public variables /////////////////////////////////
 
@@ -31,6 +31,9 @@ public interface Plugin : Menu {
   public abstract string email       { get; construct set; }
   public abstract string homepage    { get; construct set; }
   public abstract string description { get; construct set; }
+
+  public abstract string plugin_directory { get; set; }
+
 }
 
 }

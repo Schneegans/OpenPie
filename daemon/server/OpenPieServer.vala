@@ -73,8 +73,9 @@ public class OpenPieServer : GLib.Object {
     current_id_ +=1;
     open_menus_.set(menu, current_id_);
 
-    // connect close and selection handlers
+    // connect close, cancel and selection handlers
     menu.on_select.connect(on_menu_select_);
+    menu.on_cancel.connect(on_menu_cancel_);
     menu.on_close.connect(on_menu_close_);
 
     // open the fullscreen window if necessary
@@ -124,7 +125,17 @@ public class OpenPieServer : GLib.Object {
   private void on_menu_select_(Menu menu, string item) {
     window_.remove_grab();
     menu.on_select.disconnect(on_menu_select_);
+    menu.on_cancel.disconnect(on_menu_cancel_);
     on_select(this.open_menus_.get(menu), item);
+  }
+
+  // callback gets called when the user cancels the menu selection -------------
+  // in the currently active menu
+  private void on_menu_cancel_(Menu menu) {
+    window_.remove_grab();
+    menu.on_select.disconnect(on_menu_select_);
+    menu.on_cancel.disconnect(on_menu_cancel_);
+    on_select(this.open_menus_.get(menu), "");
   }
 
   // callback gets called when the currently active menu is closed -------------

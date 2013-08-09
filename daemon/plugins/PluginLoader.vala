@@ -32,7 +32,7 @@ public class PluginLoader : GLib.Object {
   //////////////////////////// public methods //////////////////////////////////
 
   construct {
-    plugins_ = new Gee.HashMap<string, PluginModule<Plugin>>();
+    plugins_ = new Gee.HashMap<string, PluginModule<MenuPlugin>>();
   }
 
   // loads all plugin shared objects from the given directory and it's sub
@@ -55,11 +55,11 @@ public class PluginLoader : GLib.Object {
           FileInfo plugin_info;
           while ((plugin_info = sub_files.next_file ()) != null) {
             load_plugin(plugin_info, sub_dir.get_child(
-                                            plugin_info.get_name()).get_path());
+                                            plugin_info.get_name()).get_path(), sub_dir.get_path());
           }
 
         } else  {
-          load_plugin(info, dir.get_child(info.get_name()).get_path());
+          load_plugin(info, dir.get_child(info.get_name()).get_path(), directory);
         }
       }
 
@@ -84,18 +84,18 @@ public class PluginLoader : GLib.Object {
   ////////////////////////// member variables //////////////////////////////////
 
   // stores a list of plugins with their corresponding names
-  private Gee.HashMap<string, PluginModule<Plugin>> plugins_;
+  private Gee.HashMap<string, PluginModule<MenuPlugin>> plugins_;
 
   ////////////////////////// private methods ///////////////////////////////////
 
   // loads a plugin from a shared object
-  private void load_plugin(GLib.FileInfo file_info, string path) {
+  private void load_plugin(GLib.FileInfo file_info, string path, string directory) {
 
     if (file_info.get_file_type() == GLib.FileType.REGULAR) {
       var name_parts = file_info.get_name().split(".");
 
       if (name_parts[name_parts.length-1] == "so") {
-        var plugin = new PluginModule<Plugin>(path);
+        var plugin = new PluginModule<MenuPlugin>(path, directory);
         var plugin_object = plugin.new_object();
         plugins_.set(plugin_object.name, plugin);
       }
