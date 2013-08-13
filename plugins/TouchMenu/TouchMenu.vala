@@ -58,6 +58,7 @@ public class TouchMenu : MenuPlugin, Menu {
 
   //////////////////////////// public methods //////////////////////////////////
 
+  // initializes all members ---------------------------------------------------
   construct {
     name        = "TouchMenu";
     version     = "0.1";
@@ -76,10 +77,12 @@ public class TouchMenu : MenuPlugin, Menu {
     text          = new Clutter.Actor();
   }
 
+  // ---------------------------------------------------------------------------
   public override MenuItem get_root() {
     return root;
   }
 
+  // ---------------------------------------------------------------------------
   public override void set_content(string menu_description) {
     var loader = new MenuLoader.from_string(typeof(TouchMenuItem),
                                             menu_description);
@@ -87,6 +90,7 @@ public class TouchMenu : MenuPlugin, Menu {
     root.set_parent_menu(this);
   }
 
+  // ---------------------------------------------------------------------------
   public override void display(Vector position) {
     int w=0, h=0;
     window.get_size(out w, out h);
@@ -110,6 +114,7 @@ public class TouchMenu : MenuPlugin, Menu {
     base.display(position);
   }
 
+  // ---------------------------------------------------------------------------
   public override void close() {
     window.on_mouse_move.disconnect(on_mouse_move);
 
@@ -132,11 +137,13 @@ public class TouchMenu : MenuPlugin, Menu {
 
   ////////////////////////// private methods ///////////////////////////////////
 
+  // ---------------------------------------------------------------------------
   private void on_mouse_move(float x, float y) {
     mouse_path_ += new Vector(x, y);
     mouse_layer_.content.invalidate();
   }
 
+  // ---------------------------------------------------------------------------
   private bool draw_background(Cairo.Context ctx, int width, int height) {
 
     ctx.set_operator (Cairo.Operator.CLEAR);
@@ -163,7 +170,7 @@ public class TouchMenu : MenuPlugin, Menu {
     int item_count = root_item.sub_menus.size;
 
     for (int i=0; i<item_count; ++i) {
-      root_item.sub_menus.get(i).angle = (float)(i*GLib.Math.PI/(item_count-1) -
+      root_item.sub_menus.get(i).angle = (float)(i*GLib.Math.PI/(item_count-1) +
                                          GLib.Math.PI);
 
       if (root_item.sub_menus.get(i).sub_menus.size > 0)
@@ -190,12 +197,11 @@ public class TouchMenu : MenuPlugin, Menu {
 
     for (int i=0; i<item.sub_menus.size; ++i) {
       item.sub_menus.get(i).angle = (float)((i + start_item)*GLib.Math.PI/
-                                            (item_count-1) - GLib.Math.PI);
+                                            (item_count-1) + GLib.Math.PI);
 
       adjust_child_angles(item.sub_menus.get(i));
     }
   }
-
 }
 
 }

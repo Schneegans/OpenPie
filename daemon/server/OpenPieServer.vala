@@ -145,8 +145,9 @@ public class OpenPieServer : GLib.Object {
 
     // necessary? Maybe we can leave the window opened... nobody will notice,
     // and everything will be flicker-free...
-    //if (open_menus_.size == 0)
-    //  window_.hide();
+
+    // if (open_menus_.size == 0)
+    //   window_.hide();
   }
 }
 
