@@ -31,7 +31,7 @@ public class TouchTrace : GLib.Object {
 
   /////////////////////////////// signals //////////////////////////////////////
 
-  public signal void on_decision_point();
+  public signal void on_decision_point(Vector position);
 
   //////////////////////////// public methods //////////////////////////////////
 
@@ -43,6 +43,7 @@ public class TouchTrace : GLib.Object {
   // ---------------------------------------------------------------------------
   public void reset() {
     stroke_ = {};
+    debug("reset");
   }
 
   // ---------------------------------------------------------------------------
@@ -53,7 +54,8 @@ public class TouchTrace : GLib.Object {
       return;
     }
 
-    float dist = Vector.distance(mouse, stroke_[stroke_.length-1]);
+    var last_position = stroke_[stroke_.length-1];
+    float dist = Vector.distance(mouse, last_position);
 
     if (dist > SAMPLING_DISTANCE) {
       var insert_samples = (int)(dist/SAMPLING_DISTANCE);
@@ -75,7 +77,7 @@ public class TouchTrace : GLib.Object {
         if (length == stroke_.length &&
             Vector.distance(stroke_[0], mouse) > MINIMUM_DISTANCE) {
 
-          on_decision_point();
+          on_decision_point(mouse);
           reset();
         }
 
@@ -93,7 +95,7 @@ public class TouchTrace : GLib.Object {
       if (angle > THRESHOLD_ANGLE &&
           Vector.distance(stroke_[0], mouse) > MINIMUM_DISTANCE) {
 
-        on_decision_point();
+        on_decision_point(last_position);
         reset();
         return;
       }

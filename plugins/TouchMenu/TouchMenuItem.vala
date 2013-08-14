@@ -267,6 +267,9 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
   // ---------------------------------------------------------------------------
   private void on_key_up(Key key) {
+
+    cancel_preview();
+
     if (sub_menus.size > 0) {
       parent_menu_.cancel();
     } else {
@@ -312,53 +315,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   // ---------------------------------------------------------------------------
   private bool on_leave(Clutter.CrossingEvent event) {
 
-    if (sub_menus.size > 0) {
 
-      if (state == State.BIG_ACTIVE || state == State.BIG_PREVIEW) {
-        float rel_x = 0.0f;
-        float rel_y = 0.0f;
-
-        foreground_.transform_stage_point(event.x, event.y, out rel_x, out rel_y);
-
-        var rel_dir = new Vector(
-          (float)(foreground_.width/2 - rel_x),
-          (float)(foreground_.height/2 - rel_y)
-        );
-
-        var rel_angle = Vector.angle(rel_dir, new Vector(-1, 0));
-        if (rel_dir.y > 0)
-          rel_angle = (float)(2*GLib.Math.PI) - rel_angle;
-
-        if (rel_angle < GLib.Math.PI*0.5)
-          rel_angle += (float)(GLib.Math.PI*2.0);
-
-        var child_angle = (float)(GLib.Math.PI/(sub_menus.size-1));
-        var children_start = (float)(GLib.Math.PI - child_angle/2);
-
-        float child_index = (rel_angle - children_start) / child_angle;
-        int child_index_clamped = (int)(child_index);
-
-        if (child_index < 0.0f || child_index_clamped >= sub_menus.size) {
-          debug("leave");
-        } else {
-
-          state = State.BIG_INACTIVE;
-
-          for (int i=0; i<sub_menus.size; ++i) {
-            if (i==child_index_clamped) {
-              sub_menus[i].state = State.BIG_ATTACHED;
-
-              foreach (var child in sub_menus[i].sub_menus) {
-                child.state = State.SMALL_INACTIVE;
-              }
-
-            } else {
-              sub_menus[i].state = State.SMALL_INACTIVE;
-            }
-          }
-        }
-      }
-    }
 
     return true;
   }
@@ -374,18 +331,76 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   private void on_mouse_move(float x, float y) {
 
     if (state == State.BIG_ATTACHED) {
-      touch_trace_.update(new Vector(x, y));
 
       var parent_pos = parent_item.get_absolute_position();
       var rel_pos = new Vector(x - parent_pos.x, y - parent_pos.y);
 
-      set_relative_position(rel_pos);
+      int child_index = get_hovered_menu(rel_pos, parent_item);
+
+      if (child_index >= 0 && parent_item.sub_menus.index_of(this) != child_index) {
+
+        state = State.SMALL_INACTIVE;
+        parent_item.sub_menus[child_index].state = State.BIG_ATTACHED;
+        parent_item.sub_menus[child_index].set_relative_position(rel_pos);
+
+      } else {
+        set_relative_position(rel_pos);
+        touch_trace_.update(new Vector(x, y));
+      }
+
+
+    } else if (state == State.BIG_ACTIVE || state == State.BIG_PREVIEW) {
+
+      if (sub_menus.size > 0) {
+
+        float rel_x = 0.0f;
+        float rel_y = 0.0f;
+
+        foreground_.transform_stage_point(x, y, out rel_x, out rel_y);
+
+        var rel_dir = new Vector(
+          (float)(rel_x - foreground_.width/2),
+          (float)(rel_y - foreground_.height/2)
+        );
+
+        if (rel_dir.length_sqr() > Math.powf(foreground_.width*0.5f, 2.0f)) {
+
+          int child_index = get_hovered_menu(rel_dir, this);
+
+          if (child_index >= 0) {
+
+            state = State.BIG_INACTIVE;
+
+            for (int i=0; i<sub_menus.size; ++i) {
+              if (i==child_index) {
+                sub_menus[i].state = State.BIG_ATTACHED;
+
+                foreach (var child in sub_menus[i].sub_menus) {
+                  child.state = State.SMALL_INACTIVE;
+                }
+
+              } else {
+                sub_menus[i].state = State.SMALL_INACTIVE;
+              }
+            }
+          }
+        }
+      }
     }
   }
 
   // ---------------------------------------------------------------------------
-  private void on_decision_point() {
+  private void on_decision_point(Vector position) {
     if (sub_menus.size > 0) {
+
+      if (!isRoot()) {
+        var rel_pos = Vector.direction(
+          parent_item.get_absolute_position(), position
+        );
+
+        set_relative_position(rel_pos);
+      }
+
       state = State.BIG_ACTIVE;
 
       foreach (var item in sub_menus)
@@ -404,14 +419,20 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
         set_highlighted(true);
         set_scale(0.4f, animation_ease_);
         grab_global_mouse_events(true);
+
         touch_trace_.reset();
+
+        if (!isRoot()) {
+          var pos = parent_item.get_absolute_position();
+          touch_trace_.update(pos);
+        }
         break;
 
       case State.BIG_ACTIVE:
         set_text_visible(false);
         set_highlighted(true);
         set_scale(0.4f, animation_ease_);
-        grab_global_mouse_events(false);
+        grab_global_mouse_events(true);
         request_preview();
         break;
 
@@ -426,7 +447,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
         set_text_visible(false);
         set_highlighted(true);
         set_scale(1.0f, animation_ease_);
-        grab_global_mouse_events(false);
+        grab_global_mouse_events(true);
         break;
 
       case State.SMALL_ACTIVE:
@@ -599,6 +620,56 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
     animate(text_, "x", absolute_position.x - text_.width/2, config);
     animate(text_, "y", absolute_position.y - text_.height/2, config);
+  }
+
+  // ---------------------------------------------------------------------------
+  private int get_hovered_menu(Vector direction, TouchMenuItem parent) {
+
+    int children_count = parent.sub_menus.size;
+    bool has_empty_sector = false;
+    bool first_is_empty = false;
+
+    if (!parent.isRoot()) {
+      var siblings = parent.parent_item.sub_menus;
+      if (siblings.last() == parent) {
+        has_empty_sector = true;
+        first_is_empty = true;
+      } else if (siblings.first() == parent) {
+        has_empty_sector = true;
+      }
+    }
+
+    if (has_empty_sector) {
+      children_count += 1;
+    }
+
+    var angle = Vector.angle(direction, new Vector(1, 0));
+
+    if (direction.y < 0)
+      angle = (float)(2*GLib.Math.PI) - angle;
+
+    if (angle < GLib.Math.PI*0.5)
+      angle += (float)(GLib.Math.PI*2.0);
+
+    var child_angle = (float)(GLib.Math.PI/(children_count-1));
+    var children_start = (float)(GLib.Math.PI - child_angle/2);
+
+    float child_index = (angle - children_start) / child_angle;
+    int child_index_clamped = (int)(child_index);
+
+    if (child_index < 0.0f || child_index_clamped >= children_count) {
+      return -1;
+    }
+
+    if (first_is_empty) {
+      child_index_clamped -= 1;
+    }
+
+    if (child_index_clamped > parent.sub_menus.size - 1) {
+      return -1;
+    }
+
+    return child_index_clamped;
   }
 
   // ---------------------------------------------------------------------------

@@ -58,7 +58,7 @@ public abstract class Menu : GLib.Object {
   }
 
   // notifies the client that an item has been selected and closes the menu ----
-  public void select(MenuItem item) {
+  public virtual void select(MenuItem item) {
     on_select(this, item.get_path());
 
     GLib.Timeout.add(1000, () => {
@@ -68,7 +68,7 @@ public abstract class Menu : GLib.Object {
   }
 
   // notifies the client that no item has been selected and closes the menu ----
-  public void cancel() {
+  public virtual void cancel() {
     on_cancel(this);
 
     GLib.Timeout.add(1000, () => {

@@ -115,6 +115,14 @@ public class TouchMenu : MenuPlugin, Menu {
   }
 
   // ---------------------------------------------------------------------------
+  public override void select(MenuItem item) {
+    selected_ = true;
+    mouse_layer_.content.invalidate();
+
+    base.select(item);
+  }
+
+  // ---------------------------------------------------------------------------
   public override void close() {
     window.on_mouse_move.disconnect(on_mouse_move);
 
@@ -134,6 +142,7 @@ public class TouchMenu : MenuPlugin, Menu {
 
   private Clutter.Actor mouse_layer_ = null;
   private Vector[]      mouse_path_ = {};
+  private bool          selected_ = false;
 
   ////////////////////////// private methods ///////////////////////////////////
 
@@ -150,8 +159,10 @@ public class TouchMenu : MenuPlugin, Menu {
     ctx.paint();
     ctx.set_operator (Cairo.Operator.OVER);
 
-    ctx.set_source_rgb(0.2, 0.2, 0.2);
-    ctx.set_line_width(10.0);
+    if (selected_)  ctx.set_source_rgb(0.78, 0.78, 0.78);
+    else            ctx.set_source_rgb(0.58, 0.58, 0.58);
+
+    ctx.set_line_width(20.0);
     ctx.set_line_join(Cairo.LineJoin.ROUND);
     ctx.set_line_cap(Cairo.LineCap.ROUND);
 
