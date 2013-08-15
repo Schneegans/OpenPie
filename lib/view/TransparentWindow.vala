@@ -77,12 +77,18 @@ public class TransparentWindow : Gtk.Window {
                                                blue = 0, alpha = 0};
 
     button_press_event.connect((e) => {
-      on_key_down(new Key.from_mouse(e.button, e.state));
+      // if (!button_down_) {
+        button_down_ = true;
+        on_key_down(new Key.from_mouse(e.button, e.state));
+      // }
       return true;
     });
 
     button_release_event.connect((e) => {
-      on_key_up(new Key.from_mouse(e.button, e.state));
+      // if (button_down_) {
+        button_down_ = false;
+        on_key_up(new Key.from_mouse(e.button, e.state));
+      // }
       return true;
     });
 
@@ -197,6 +203,8 @@ public class TransparentWindow : Gtk.Window {
 
   // True, if the screen supports compositing.
   private bool has_compositing_ = false;
+
+  private bool button_down_ = false;
 
   // The embedded clutter stage
   private Clutter.Stage     stage_ = null;

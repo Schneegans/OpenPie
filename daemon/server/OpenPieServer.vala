@@ -55,7 +55,7 @@ public class OpenPieServer : GLib.Object {
     var settings = new GLib.Settings("org.gnome.openpie");
 
     // getting menu plugin name
-    var menu_plugin = settings.get_string ("active-plugin");
+    var menu_plugin = settings.get_string("active-plugin");
 
     // create a new menu
     var menu = plugin_loader_.get_plugin(menu_plugin);

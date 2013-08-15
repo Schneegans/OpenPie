@@ -56,6 +56,8 @@ public class TouchMenu : MenuPlugin, Menu {
   public Clutter.Actor foreground   { get; construct set; }
   public Clutter.Actor text         { get; construct set; }
 
+  public bool          schematize   { get; construct set; }
+
   //////////////////////////// public methods //////////////////////////////////
 
   // initializes all members ---------------------------------------------------
@@ -75,6 +77,9 @@ public class TouchMenu : MenuPlugin, Menu {
     background    = new Clutter.Actor();
     foreground    = new Clutter.Actor();
     text          = new Clutter.Actor();
+
+    var settings  = new GLib.Settings("org.gnome.openpie.touchmenu");
+    schematize    = settings.get_boolean("schematize");
   }
 
   // ---------------------------------------------------------------------------
@@ -102,29 +107,40 @@ public class TouchMenu : MenuPlugin, Menu {
     mouse_layer_canvas.set_size(w, h);
     mouse_layer_canvas.draw.connect(draw_background);
     mouse_layer_.set_content(mouse_layer_canvas);
-    mouse_layer_canvas.invalidate();
+    mouse_layer_.content.invalidate();
+
+    Clutter.FrameSource.add(60, () => {
+      mouse_layer_.content.invalidate();
+      return !selected_ && window.visible;
+    });
 
     window.on_mouse_move.connect(on_mouse_move);
+    window.on_key_up.connect(on_key_up);
 
     window.get_stage().add_child(mouse_layer_);
     window.get_stage().add_child(background);
     window.get_stage().add_child(foreground);
     window.get_stage().add_child(text);
 
-    base.display(position);
+    var start = new Vector(w * 0.5f, h - 150.0f);
+
+    mouse_path_ += start;
+    mouse_path_ += start;
+
+    base.display(start);
   }
 
   // ---------------------------------------------------------------------------
-  public override void select(MenuItem item) {
+  public override void select(MenuItem item, uint close_delay) {
     selected_ = true;
-    mouse_layer_.content.invalidate();
 
-    base.select(item);
+    base.select(item, close_delay);
   }
 
   // ---------------------------------------------------------------------------
   public override void close() {
     window.on_mouse_move.disconnect(on_mouse_move);
+    window.on_key_up.disconnect(on_key_up);
 
     window.get_stage().remove_child(mouse_layer_);
     window.get_stage().remove_child(background);
@@ -132,6 +148,12 @@ public class TouchMenu : MenuPlugin, Menu {
     window.get_stage().remove_child(text);
 
     base.close();
+  }
+
+  // ---------------------------------------------------------------------------
+  public void on_decision_point(Vector position) {
+    // mouse_path_[mouse_path_.length-1] = position;
+    // mouse_path_ += position;
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -148,8 +170,31 @@ public class TouchMenu : MenuPlugin, Menu {
 
   // ---------------------------------------------------------------------------
   private void on_mouse_move(float x, float y) {
-    mouse_path_ += new Vector(x, y);
-    mouse_layer_.content.invalidate();
+    if (root.activated) {
+      if (schematize) {
+        mouse_path_[mouse_path_.length-1] = new Vector(x, y);
+      } else {
+        mouse_path_ += new Vector(x, y);
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  private void on_key_up(Key key) {
+    if (!key.with_mouse) {
+      cancel(1000);
+      window.hide();
+    }
+  }
+
+  private void draw_line_to_item(TouchMenuItem item, Cairo.Context ctx)  {
+    var pos = item.get_absolute_position();
+    ctx.line_to(pos.x, pos.y);
+
+    var child = item.get_selected_child();
+    if (child != null) {
+      draw_line_to_item(child, ctx);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -166,8 +211,22 @@ public class TouchMenu : MenuPlugin, Menu {
     ctx.set_line_join(Cairo.LineJoin.ROUND);
     ctx.set_line_cap(Cairo.LineCap.ROUND);
 
-    foreach (var pos in mouse_path_) {
-      ctx.line_to(pos.x, pos.y);
+    if (mouse_path_.length > 0) {
+      if (schematize) {
+
+
+
+        draw_line_to_item(root, ctx);
+
+        ctx.line_to(
+          mouse_path_[mouse_path_.length-1].x, mouse_path_[mouse_path_.length-1].y
+        );
+
+      } else {
+        foreach (var pos in mouse_path_) {
+          ctx.line_to(pos.x, pos.y);
+        }
+      }
     }
 
     ctx.stroke();

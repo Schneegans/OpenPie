@@ -43,7 +43,6 @@ public class TouchTrace : GLib.Object {
   // ---------------------------------------------------------------------------
   public void reset() {
     stroke_ = {};
-    debug("reset");
   }
 
   // ---------------------------------------------------------------------------
@@ -108,8 +107,8 @@ public class TouchTrace : GLib.Object {
 
   ////////////////////////////// constants /////////////////////////////////////
 
-  private const int    MINIMUM_DISTANCE = 75;
-  private const int    SAMPLING_DISTANCE = 5;
+  private const int    MINIMUM_DISTANCE = 150;
+  private const int    SAMPLING_DISTANCE = 10;
   private const uint   PAUSE_DELAY = 100;
   private const double THRESHOLD_ANGLE = GLib.Math.PI/30.0;
 
