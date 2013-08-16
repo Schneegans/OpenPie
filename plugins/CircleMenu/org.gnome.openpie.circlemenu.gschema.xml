@@ -11,13 +11,5 @@
       </description>
     </key>
 
-    <key name="hidemouse" type="b">
-      <default l10n="messages">true</default>
-      <summary>Hides the mouse.</summary>
-      <description>
-        Hides the mouse.
-      </description>
-    </key>
-
   </schema>
 </schemalist>

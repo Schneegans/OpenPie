@@ -18,13 +18,13 @@
 namespace OpenPie {
 
 ////////////////////////////////////////////////////////////////////////////////
-// This is an item of a TouchMenu. A TouchMenu is a 180-degree-spherical      //
+// This is an item of a CircleMenu. A CircleMenu is a 180-degree-spherical      //
 // marking menu. When the user selects an item, a unique path is created on   //
 // screen. The user may "draw" this path really quickly in order to selects   //
 // the according entry. That's not only fast --- that's also fun!             //
 ////////////////////////////////////////////////////////////////////////////////
 
-public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
+public class CircleMenuItem : MenuItem, Animatable, GLib.Object {
 
   //////////////////////////////////////////////////////////////////////////////
   //                          public interface                                //
@@ -51,15 +51,15 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   public string icon  { get; set; default = "none"; }
   public float  angle { get; set; default = 0.0f; }
 
-  public weak TouchMenuItem           parent_item { get; set; default=null; }
-  public Gee.ArrayList<TouchMenuItem> sub_menus   { get; set; default=null; }
-  public bool                         activated   { get; set; default=false; }
+  public weak CircleMenuItem           parent_item { get; set; default=null; }
+  public Gee.ArrayList<CircleMenuItem> sub_menus   { get; set; default=null; }
+  public bool                          activated   { get; set; default=false; }
 
   //////////////////////////// public methods //////////////////////////////////
 
   // initializes all members ---------------------------------------------------
   construct {
-    sub_menus = new Gee.ArrayList<TouchMenuItem>();
+    sub_menus = new Gee.ArrayList<CircleMenuItem>();
 
     background_ = new Clutter.Texture();
     foreground_ = new Clutter.Texture();
@@ -86,7 +86,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   // adds a child to this MenuItem ---------------------------------------------
   public void add_sub_menu(MenuItem item) {
 
-    var touch_item = item as TouchMenuItem;
+    var touch_item = item as CircleMenuItem;
     touch_item.parent_item = this;
     sub_menus.add(touch_item);
   }
@@ -150,8 +150,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
     foreground_.leave_event.connect(on_leave);
     foreground_.motion_event.connect(on_motion);
 
-    touch_trace_.on_decision_point.connect(on_decision_point);
-
     foreach (var item in sub_menus) {
       item.display(position);
     }
@@ -171,26 +169,24 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
     foreground_.leave_event.disconnect(on_leave);
     foreground_.motion_event.disconnect(on_motion);
 
-    touch_trace_.on_decision_point.disconnect(on_decision_point);
-
     foreach (var item in sub_menus)
       item.close();
   }
 
-  // sets the parent menu of this TouchMenuItem --------------------------------
-  public void set_parent_menu(TouchMenu menu) {
+  // sets the parent menu of this CircleMenuItem --------------------------------
+  public void set_parent_menu(CircleMenu menu) {
     parent_menu_ = menu;
     foreach (var item in sub_menus)
       item.set_parent_menu(menu);
   }
 
-  // returns true if this TouchMenuItem is not a child of any other item -------
+  // returns true if this CircleMenuItem is not a child of any other item -------
   public bool isRoot() {
     return parent_item == null;
   }
 
   // ---------------------------------------------------------------------------
-  public TouchMenuItem? get_selected_child() {
+  public CircleMenuItem? get_selected_child() {
     foreach (var child in sub_menus) {
       if (child.state == State.BIG_PREVIEW || child.state == State.BIG_ACTIVE ||
           child.state == State.BIG_INACTIVE || child.state == State.BIG_ATTACHED ||
@@ -201,13 +197,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
     }
 
     return null;
-  }
-
-  // ---------------------------------------------------------------------------
-  public Vector get_absolute_position_animated() {
-    return new Vector(
-      foreground_.x + foreground_.width/2, foreground_.y + foreground_.height/2
-    );
   }
 
   // ---------------------------------------------------------------------------
@@ -229,8 +218,8 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
   ////////////////////////// member variables //////////////////////////////////
 
-  // the menu of which this TouchMenuItem is a member
-  private weak TouchMenu parent_menu_ = null;
+  // the menu of which this CircleMenuItem is a member
+  private weak CircleMenu parent_menu_ = null;
 
   // text written on the item
   private Clutter.Text text_ = null;
@@ -262,10 +251,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   private bool preview_requested_ = false;
   private bool preview_interrupt_ = false;
 
-  // trace recognition
-  private TouchTrace touch_trace_ = new TouchTrace();
-
-
   ////////////////////////// private methods ///////////////////////////////////
 
   /////////////////////////// event handling ///////////////////////////////////
@@ -273,7 +258,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   // ---------------------------------------------------------------------------
   private void on_key_down(Key key) {
     // initial click on root menu
-    if (state == State.BIG_INACTIVE && !activated) {
+    if (state == State.BIG_INACTIVE && !activated && foreground_.has_pointer) {
       activated = true;
       state = State.BIG_ACTIVE;
 
@@ -291,9 +276,9 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
         state == State.BIG_PREVIEW) {
 
       if (sub_menus.size > 0) {
-        // parent_menu_.cancel(1000);
+        parent_menu_.cancel(1000);
       } else {
-        // parent_menu_.select(this, 1500);
+        parent_menu_.select(this, 1500);
       }
     }
   }
@@ -340,7 +325,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
     if (!isRoot()) {
       parent_menu_.foreground.set_child_above_sibling(foreground_, null);
     }
-
     return true;
   }
 
@@ -365,7 +349,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
       var rel_pos_world_space = new Vector(x - parent_pos.x, y - parent_pos.y);
 
       set_relative_position(rel_pos_world_space);
-      touch_trace_.update(new Vector(x, y));
 
       // if it's still attached
       if (state == State.BIG_ATTACHED) {
@@ -439,34 +422,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   }
 
   // ---------------------------------------------------------------------------
-  private void on_decision_point(Vector position) {
-    if (state == State.BIG_ATTACHED) {
-
-      if (sub_menus.size == 0 ) {
-        parent_menu_.select(this, 1500);
-        if (!isRoot() && parent_menu_.schematize)
-          parent_item.schematize();
-      } else {
-        if (!isRoot()) {
-          var rel_pos = Vector.direction(
-            parent_item.get_absolute_position(), position
-          );
-
-          set_relative_position(rel_pos);
-        }
-
-        state = State.BIG_ACTIVE;
-
-        foreach (var item in sub_menus)
-          item.state = State.SMALL_ACTIVE;
-      }
-
-      // if (!isRoot() && parent_menu_.schematize)
-      //   parent_item.schematize();
-    }
-  }
-
-  // ---------------------------------------------------------------------------
   private void schematize() {
 
     var child = get_selected_child();
@@ -502,13 +457,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
         set_highlighted(true);
         set_scale(0.4f, animation_ease_);
         grab_global_mouse_events(true);
-
-        touch_trace_.reset();
-
-        if (!isRoot()) {
-          var pos = parent_item.get_absolute_position();
-          touch_trace_.update(pos);
-        }
         break;
 
       case State.BIG_ACTIVE:
@@ -727,7 +675,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   }
 
   // ---------------------------------------------------------------------------
-  private int get_hovered_menu(Vector direction, TouchMenuItem parent) {
+  private int get_hovered_menu(Vector direction, CircleMenuItem parent) {
 
     int children_count = parent.sub_menus.size;
     bool has_empty_sector = false;
@@ -777,7 +725,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   }
 
   // ---------------------------------------------------------------------------
-  private Vector to_item_space(TouchMenuItem item, Vector position) {
+  private Vector to_item_space(CircleMenuItem item, Vector position) {
 
     float x = 0.0f;
     float y = 0.0f;

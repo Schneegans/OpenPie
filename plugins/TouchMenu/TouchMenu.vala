@@ -57,6 +57,7 @@ public class TouchMenu : MenuPlugin, Menu {
   public Clutter.Actor text         { get; construct set; }
 
   public bool          schematize   { get; construct set; }
+  public bool          hide_mouse   { get; construct set; }
 
   //////////////////////////// public methods //////////////////////////////////
 
@@ -80,6 +81,7 @@ public class TouchMenu : MenuPlugin, Menu {
 
     var settings  = new GLib.Settings("org.gnome.openpie.touchmenu");
     schematize    = settings.get_boolean("schematize");
+    hide_mouse    = settings.get_boolean("hidemouse");
   }
 
   // ---------------------------------------------------------------------------
@@ -110,9 +112,13 @@ public class TouchMenu : MenuPlugin, Menu {
     mouse_layer_.content.invalidate();
 
     Clutter.FrameSource.add(60, () => {
-      mouse_layer_.content.invalidate();
-      return !selected_ && window.visible;
+      if (!closed_)
+        mouse_layer_.content.invalidate();
+      return !closed_ && window.visible;
     });
+
+    if (hide_mouse)
+      window.get_window().set_cursor(new Gdk.Cursor(Gdk.CursorType.BLANK_CURSOR));
 
     window.on_mouse_move.connect(on_mouse_move);
     window.on_key_up.connect(on_key_up);
@@ -139,6 +145,8 @@ public class TouchMenu : MenuPlugin, Menu {
 
   // ---------------------------------------------------------------------------
   public override void close() {
+    closed_ = true;
+
     window.on_mouse_move.disconnect(on_mouse_move);
     window.on_key_up.disconnect(on_key_up);
 
@@ -150,12 +158,6 @@ public class TouchMenu : MenuPlugin, Menu {
     base.close();
   }
 
-  // ---------------------------------------------------------------------------
-  public void on_decision_point(Vector position) {
-    // mouse_path_[mouse_path_.length-1] = position;
-    // mouse_path_ += position;
-  }
-
   //////////////////////////////////////////////////////////////////////////////
   //                          private stuff                                   //
   //////////////////////////////////////////////////////////////////////////////
@@ -165,6 +167,7 @@ public class TouchMenu : MenuPlugin, Menu {
   private Clutter.Actor mouse_layer_ = null;
   private Vector[]      mouse_path_ = {};
   private bool          selected_ = false;
+  private bool          closed_ = false;
 
   ////////////////////////// private methods ///////////////////////////////////
 
@@ -187,8 +190,9 @@ public class TouchMenu : MenuPlugin, Menu {
     }
   }
 
+  // ---------------------------------------------------------------------------
   private void draw_line_to_item(TouchMenuItem item, Cairo.Context ctx)  {
-    var pos = item.get_absolute_position();
+    var pos = item.get_absolute_position_animated();
     ctx.line_to(pos.x, pos.y);
 
     var child = item.get_selected_child();
@@ -214,13 +218,13 @@ public class TouchMenu : MenuPlugin, Menu {
     if (mouse_path_.length > 0) {
       if (schematize) {
 
-
-
         draw_line_to_item(root, ctx);
 
-        ctx.line_to(
-          mouse_path_[mouse_path_.length-1].x, mouse_path_[mouse_path_.length-1].y
-        );
+        if (root.get_selected_child() != null) {
+          ctx.line_to(
+            mouse_path_[mouse_path_.length-1].x, mouse_path_[mouse_path_.length-1].y
+          );
+        }
 
       } else {
         foreach (var pos in mouse_path_) {
