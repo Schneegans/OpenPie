@@ -291,9 +291,11 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
         state == State.BIG_PREVIEW) {
 
       if (sub_menus.size > 0) {
-        // parent_menu_.cancel(1000);
+        parent_menu_.cancel(1000);
       } else {
-        // parent_menu_.select(this, 1500);
+        parent_menu_.select(this, 1500);
+        if (!isRoot() && parent_menu_.schematize)
+          parent_item.schematize();
       }
     }
   }
@@ -443,9 +445,9 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
     if (state == State.BIG_ATTACHED) {
 
       if (sub_menus.size == 0 ) {
-        parent_menu_.select(this, 1500);
-        if (!isRoot() && parent_menu_.schematize)
-          parent_item.schematize();
+        // parent_menu_.select(this, 1500);
+        // if (!isRoot() && parent_menu_.schematize)
+        //   parent_item.schematize();
       } else {
         if (!isRoot()) {
           var rel_pos = Vector.direction(
