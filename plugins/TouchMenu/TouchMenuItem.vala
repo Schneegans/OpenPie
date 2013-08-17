@@ -61,9 +61,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   construct {
     sub_menus = new Gee.ArrayList<TouchMenuItem>();
 
-    background_ = new Clutter.Texture();
-    foreground_ = new Clutter.Texture();
-    hover_effect_ = new Clutter.BrightnessContrastEffect();
+    background_   = new Clutter.Texture();
 
     text_ = new Clutter.Text.full(
       "ubuntu 10", "", Clutter.Color.from_string("black"));
@@ -99,15 +97,8 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
     background_.height = SIZE;
     background_.set_pivot_point(0.5f, 0.5f);
     background_.z_position = -0.01f;
-
-    load_texture(foreground_, parent_menu_.plugin_directory + "/data/bg.png");
-    foreground_.width = SIZE*0.9f;
-    foreground_.height = SIZE*0.9f;
-    foreground_.pick_with_alpha = true;
-    foreground_.reactive = true;
-    foreground_.z_position =  0.0f;
-    foreground_.set_pivot_point(0.5f, 0.5f);
-    foreground_.add_effect(hover_effect_);
+    background_.pick_with_alpha = true;
+    background_.reactive = true;
 
     text_.text = text;
     text_.set_line_alignment(Pango.Alignment.CENTER);
@@ -140,15 +131,14 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
     }
 
     parent_menu_.background.add_child(background_);
-    parent_menu_.foreground.add_child(foreground_);
     parent_menu_.text.add_child(text_);
 
     parent_menu_.on_cancel.connect(on_cancel);
     parent_menu_.on_select.connect(on_select);
 
-    foreground_.enter_event.connect(on_enter);
-    foreground_.leave_event.connect(on_leave);
-    foreground_.motion_event.connect(on_motion);
+    background_.enter_event.connect(on_enter);
+    background_.leave_event.connect(on_leave);
+    background_.motion_event.connect(on_motion);
 
     touch_trace_.on_decision_point.connect(on_decision_point);
 
@@ -160,16 +150,15 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   // removes the MenuItem and all of it's sub menus from the screen ------------
   public void close() {
 
-    parent_menu_.background.remove_child(background_);
-    parent_menu_.foreground.remove_child(foreground_);
-    parent_menu_.text.remove_child(text_);
+    // parent_menu_.background.remove_child(background_);
+    // parent_menu_.text.remove_child(text_);
 
     parent_menu_.on_cancel.disconnect(on_cancel);
     parent_menu_.on_select.disconnect(on_select);
 
-    foreground_.enter_event.disconnect(on_enter);
-    foreground_.leave_event.disconnect(on_leave);
-    foreground_.motion_event.disconnect(on_motion);
+    background_.enter_event.disconnect(on_enter);
+    background_.leave_event.disconnect(on_leave);
+    background_.motion_event.disconnect(on_motion);
 
     touch_trace_.on_decision_point.disconnect(on_decision_point);
 
@@ -206,7 +195,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   // ---------------------------------------------------------------------------
   public Vector get_absolute_position_animated() {
     return new Vector(
-      foreground_.x + foreground_.width/2, foreground_.y + foreground_.height/2
+      background_.x + background_.width/2, background_.y + background_.height/2
     );
   }
 
@@ -237,10 +226,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
   // textures of this actor
   private Clutter.Texture background_ = null;
-  private Clutter.Texture foreground_ = null;
-
-  // shading the foreground
-  private Clutter.BrightnessContrastEffect hover_effect_ = null;
 
   // menu's position relative to its parent
   private Vector relative_position_ = new Vector(0, 0);
@@ -291,9 +276,9 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
         state == State.BIG_PREVIEW) {
 
       if (sub_menus.size > 0) {
-        parent_menu_.cancel(1000);
+        parent_menu_.cancel(700);
       } else {
-        parent_menu_.select(this, 1500);
+        parent_menu_.select(this, 2000);
         if (!isRoot() && parent_menu_.schematize)
           parent_item.schematize();
       }
@@ -313,7 +298,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
       state = State.HIDDEN;
     }
 
-    GLib.Timeout.add(500, () => {
+    GLib.Timeout.add(200, () => {
       state = State.FINAL;
       return false;
     });
@@ -331,7 +316,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
       state = State.HIDDEN;
     }
 
-    GLib.Timeout.add(1000, () => {
+    GLib.Timeout.add(1500, () => {
       state = State.FINAL;
       return false;
     });
@@ -339,10 +324,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
   // ---------------------------------------------------------------------------
   private bool on_enter(Clutter.CrossingEvent event) {
-    if (!isRoot()) {
-      parent_menu_.foreground.set_child_above_sibling(foreground_, null);
-    }
-
+    parent_menu_.background.set_child_above_sibling(background_, null);
     return true;
   }
 
@@ -353,8 +335,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
   // ---------------------------------------------------------------------------
   private bool on_motion(Clutter.MotionEvent event) {
-    // on_mouse_move(event.x, event.y);
-
     return true;
   }
 
@@ -395,7 +375,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
       // so, cancel all selected items up to the specific one and make this
       // active again
       var rel_pos = to_item_space(this, new Vector(x, y));
-      if (rel_pos.length_sqr() < Math.powf(foreground_.width*0.5f, 2.0f)) {
+      if (rel_pos.length_sqr() < Math.powf(background_.width*0.5f, 2.0f)) {
 
         state = State.BIG_ACTIVE;
 
@@ -414,7 +394,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
         var rel_pos = to_item_space(this, new Vector(x, y));
 
-        if (rel_pos.length_sqr() > Math.powf(foreground_.width*0.5f, 2.0f)) {
+        if (rel_pos.length_sqr() > Math.powf(background_.width*0.5f, 2.0f)) {
 
           int child_index = get_hovered_menu(rel_pos, this);
 
@@ -482,13 +462,13 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
         GLib.Math.sinf(child.angle)*radius
       );
 
-      var offset = Vector.direction(perfect_child_pos, child.relative_position_);
+      // var offset = Vector.direction(perfect_child_pos, child.relative_position_);
 
       child.set_relative_position(perfect_child_pos, animation_ease_);
 
-      set_relative_position(new Vector(
-        relative_position_.x + offset.x, relative_position_.y + offset.y
-      ), animation_ease_);
+      // set_relative_position(new Vector(
+      //   relative_position_.x + offset.x, relative_position_.y + offset.y
+      // ), animation_ease_);
     }
 
     if (!isRoot())
@@ -641,13 +621,18 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   // ---------------------------------------------------------------------------
   private void set_opacity(uint opacity) {
     animate(text_, "opacity", opacity, animation_linear_);
-    animate(foreground_, "opacity", opacity, animation_linear_);
     animate(background_, "opacity", opacity, animation_linear_);
   }
 
   // ---------------------------------------------------------------------------
   private void set_highlighted(bool highlighted) {
-    hover_effect_.set_brightness(highlighted ? 0.5f : 0.0f);
+
+    string texture = parent_menu_.plugin_directory;
+
+    if (highlighted) texture += "/data/bg_highlight.png";
+    else             texture += "/data/bg.png";
+
+    load_texture(background_, texture);
   }
 
   // ---------------------------------------------------------------------------
@@ -705,13 +690,10 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   private void set_scale(float scale,
                          Animatable.Config config = new Animatable.Config()) {
 
-    text_.width = foreground_.width * scale * 0.9f;
+    text_.width = background_.width * scale * 0.9f;
 
     animate(background_, "scale_x", scale, config);
     animate(background_, "scale_y", scale, config);
-
-    animate(foreground_, "scale_x", scale, config);
-    animate(foreground_, "scale_y", scale, config);
   }
 
   // ---------------------------------------------------------------------------
@@ -720,9 +702,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
     animate(background_, "x", absolute_position.x - background_.width/2, config);
     animate(background_, "y", absolute_position.y - background_.height/2, config);
-
-    animate(foreground_, "x", absolute_position.x - foreground_.width/2, config);
-    animate(foreground_, "y", absolute_position.y - foreground_.height/2, config);
 
     animate(text_, "x", absolute_position.x - text_.width/2, config);
     animate(text_, "y", absolute_position.y - text_.height/2, config);
@@ -784,11 +763,11 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
     float x = 0.0f;
     float y = 0.0f;
 
-    item.foreground_.transform_stage_point(position.x, position.y, out x, out y);
+    item.background_.transform_stage_point(position.x, position.y, out x, out y);
 
     return new Vector(
-      (float)(x - item.foreground_.width/2),
-      (float)(y - item.foreground_.height/2)
+      (float)(x - item.background_.width/2),
+      (float)(y - item.background_.height/2)
     );
   }
 

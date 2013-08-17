@@ -31,7 +31,6 @@ public interface MenuItem : GLib.Object {
 
   public abstract string text  { get; set; }
   public abstract string icon  { get; set; }
-  public abstract float  angle { get; set; }
 
   // returns all sub menus of this item ----------------------------------------
   public abstract Gee.ArrayList<MenuItem> get_sub_menus();
@@ -71,8 +70,7 @@ public interface MenuItem : GLib.Object {
 
     debug(space + get_type().name() + ":"
                 + "\"" + this.text
-                + "\" (Icon: \"" + this.icon
-                + "\", Angle: %f)".printf(this.angle));
+                + "\" (Icon: \"" + this.icon);
 
     foreach (var menu in get_sub_menus())
       menu.print(indent + 1);

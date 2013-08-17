@@ -53,7 +53,6 @@ public class TouchMenu : MenuPlugin, Menu {
   public TouchMenuItem root         { public get; public set; default=null; }
 
   public Clutter.Actor background   { get; construct set; }
-  public Clutter.Actor foreground   { get; construct set; }
   public Clutter.Actor text         { get; construct set; }
 
   public bool          schematize   { get; construct set; }
@@ -76,7 +75,6 @@ public class TouchMenu : MenuPlugin, Menu {
 
     mouse_layer_  = new Clutter.Actor();
     background    = new Clutter.Actor();
-    foreground    = new Clutter.Actor();
     text          = new Clutter.Actor();
 
     var settings  = new GLib.Settings("org.gnome.openpie.touchmenu");
@@ -112,9 +110,9 @@ public class TouchMenu : MenuPlugin, Menu {
     mouse_layer_.content.invalidate();
 
     Clutter.FrameSource.add(60, () => {
-      if (!closed_)
+      if (mouse_layer_ != null)
         mouse_layer_.content.invalidate();
-      return !closed_ && window.visible;
+      return !closed_;
     });
 
     if (hide_mouse)
@@ -125,7 +123,6 @@ public class TouchMenu : MenuPlugin, Menu {
 
     window.get_stage().add_child(mouse_layer_);
     window.get_stage().add_child(background);
-    window.get_stage().add_child(foreground);
     window.get_stage().add_child(text);
 
     var start = new Vector(w * 0.5f, h - 150.0f);
@@ -145,16 +142,16 @@ public class TouchMenu : MenuPlugin, Menu {
 
   // ---------------------------------------------------------------------------
   public override void close() {
-    closed_ = true;
+    if (!closed_) {
+      closed_ = true;
 
-    window.on_mouse_move.disconnect(on_mouse_move);
-    window.on_key_up.disconnect(on_key_up);
+      window.on_mouse_move.disconnect(on_mouse_move);
+      window.on_key_up.disconnect(on_key_up);
 
-    window.get_stage().remove_child(mouse_layer_);
-    window.get_stage().remove_child(background);
-    window.get_stage().remove_child(foreground);
-    window.get_stage().remove_child(text);
-
+      window.get_stage().remove_child(mouse_layer_);
+      window.get_stage().remove_child(background);
+      window.get_stage().remove_child(text);
+    }
     base.close();
   }
 
@@ -186,7 +183,6 @@ public class TouchMenu : MenuPlugin, Menu {
   private void on_key_up(Key key) {
     if (!key.with_mouse) {
       cancel(1000);
-      window.hide();
     }
   }
 
@@ -219,12 +215,6 @@ public class TouchMenu : MenuPlugin, Menu {
       if (schematize) {
 
         draw_line_to_item(root, ctx);
-
-        if (root.get_selected_child() != null) {
-          ctx.line_to(
-            mouse_path_[mouse_path_.length-1].x, mouse_path_[mouse_path_.length-1].y
-          );
-        }
 
       } else {
         foreach (var pos in mouse_path_) {
