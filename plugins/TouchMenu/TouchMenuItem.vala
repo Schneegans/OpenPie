@@ -424,11 +424,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   private void on_decision_point(Vector position) {
     if (state == State.BIG_ATTACHED) {
 
-      if (sub_menus.size == 0 ) {
-        // parent_menu_.select(this, 1500);
-        // if (!isRoot() && parent_menu_.schematize)
-        //   parent_item.schematize();
-      } else {
+      if (sub_menus.size > 0 ) {
         if (!isRoot()) {
           var rel_pos = Vector.direction(
             parent_item.get_absolute_position(), position
@@ -442,9 +438,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
         foreach (var item in sub_menus)
           item.state = State.SMALL_ACTIVE;
       }
-
-      // if (!isRoot() && parent_menu_.schematize)
-      //   parent_item.schematize();
     }
   }
 
@@ -462,13 +455,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
         GLib.Math.sinf(child.angle)*radius
       );
 
-      // var offset = Vector.direction(perfect_child_pos, child.relative_position_);
-
       child.set_relative_position(perfect_child_pos, animation_ease_);
-
-      // set_relative_position(new Vector(
-      //   relative_position_.x + offset.x, relative_position_.y + offset.y
-      // ), animation_ease_);
     }
 
     if (!isRoot())
