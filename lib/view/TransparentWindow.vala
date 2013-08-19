@@ -51,6 +51,8 @@ public class TransparentWindow : Gtk.Window {
     icon_name = "gnome-pie";
     set_accept_focus(false);
 
+    stick();
+
     // check for compositing
     if (screen.is_composited()) {
       set_visual(screen.get_rgba_visual());

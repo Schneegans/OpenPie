@@ -499,7 +499,7 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
   private Clutter.Color get_depth_color(int depth) {
     var result = Clutter.Color.from_hls(
       0.0f,
-      0.3f/(depth+1) + 0.4f,
+      0.5f - 0.3f/(depth+1),
       0.0f
     );
 
