@@ -48,15 +48,19 @@ public class TouchMenu : MenuPlugin, Menu {
   public string homepage    { get; construct set; }
   public string description { get; construct set; }
 
-  public string plugin_directory    { get; set; }
+  public string plugin_directory    { get; set; default=""; }
 
-  public TouchMenuItem root         { public get; public set; default=null; }
+  public TouchMenuItem root         { get; set; default=null; }
 
-  public Clutter.Actor background   { get; construct set; }
-  public Clutter.Actor text         { get; construct set; }
+  public Clutter.Actor background   { get; construct set; default=null; }
+  public Clutter.Actor text         { get; construct set; default=null; }
 
-  public bool          schematize   { get; construct set; }
-  public bool          hide_mouse   { get; construct set; }
+  public Cogl.Texture bg_normal     { get; construct set; default=null; }
+  public Cogl.Texture bg_highlight  { get; construct set; default=null; }
+
+
+  public bool          schematize   { get; construct set; default=false; }
+  public bool          hide_mouse   { get; construct set; default=false; }
 
   //////////////////////////// public methods //////////////////////////////////
 
@@ -97,6 +101,8 @@ public class TouchMenu : MenuPlugin, Menu {
 
   // ---------------------------------------------------------------------------
   public override void display(Vector position) {
+
+
     int w=0, h=0;
     window.get_size(out w, out h);
     mouse_layer_.width = w;
@@ -110,7 +116,7 @@ public class TouchMenu : MenuPlugin, Menu {
     mouse_layer_.content.invalidate();
 
     Clutter.FrameSource.add(60, () => {
-      if (mouse_layer_ != null)
+      if (mouse_layer_ != null && mouse_layer_.content != null)
         mouse_layer_.content.invalidate();
       return !closed_;
     });
@@ -129,6 +135,9 @@ public class TouchMenu : MenuPlugin, Menu {
 
     mouse_path_ += start;
     mouse_path_ += start;
+
+    bg_normal = load_texture(plugin_directory + "/data/bg.png");
+    bg_highlight = load_texture(plugin_directory + "/data/bg_highlight.png");
 
     base.display(start);
   }
@@ -265,6 +274,22 @@ public class TouchMenu : MenuPlugin, Menu {
 
       adjust_child_angles(item.sub_menus.get(i));
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  private Cogl.Texture load_texture(string path) {
+    try {
+      return new Cogl.Texture.from_file(
+        path, Cogl.TextureFlags.NO_AUTO_MIPMAP, Cogl.PixelFormat.ANY
+      );
+
+    } catch (GLib.Error e) {
+      warning("Failed to load image: " + e.message);
+    }
+
+    return new Cogl.Texture.with_size(
+      64, 64, Cogl.TextureFlags.NO_AUTO_MIPMAP, Cogl.PixelFormat.ANY
+    );
   }
 }
 

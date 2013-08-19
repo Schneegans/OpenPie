@@ -92,7 +92,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   // called prior to display() -------------------------------------------------
   public void init() {
 
-    load_texture(background_, parent_menu_.plugin_directory + "/data/bg.png");
+    // background_.cogl_texture = parent_menu_.bg_normal;
     background_.width = SIZE;
     background_.height = SIZE;
     background_.set_pivot_point(0.5f, 0.5f);
@@ -613,13 +613,11 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
   // ---------------------------------------------------------------------------
   private void set_highlighted(bool highlighted) {
-
-    string texture = parent_menu_.plugin_directory;
-
-    if (highlighted) texture += "/data/bg_highlight.png";
-    else             texture += "/data/bg.png";
-
-    load_texture(background_, texture);
+    if (highlighted && parent_menu_.bg_highlight != null) {
+      background_.cogl_texture = parent_menu_.bg_highlight;
+    } else if (parent_menu_.bg_normal != null) {
+      background_.cogl_texture = parent_menu_.bg_normal;
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -756,19 +754,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
       (float)(x - item.background_.width/2),
       (float)(y - item.background_.height/2)
     );
-  }
-
-  // ---------------------------------------------------------------------------
-  private bool load_texture(Clutter.Texture target, string path) {
-    try {
-      target.set_from_file(path);
-      return true;
-
-    } catch (GLib.Error e) {
-      warning("Failed to set background image: " + e.message);
-    }
-
-    return false;
   }
 
   // ---------------------------------------------------------------------------
