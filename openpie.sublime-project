@@ -3,7 +3,8 @@
 	[
 		{
 			"follow_symlinks": true,
-			"path": "/home/simon/.data/Projekte/Programmierung/Vala/OpenPie"
+			"path": ".",
+            "folder_exclude_patterns": ["build"]
 		}
 	]
 }
