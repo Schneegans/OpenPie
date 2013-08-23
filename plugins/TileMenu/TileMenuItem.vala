@@ -36,7 +36,9 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
     SELECTED,
     UNSELECTABLE,
     SELECTABLE,
+    SELECTABLE_HOVERED,
     PREVIEW,
+    PREVIEW_HOVERED,
     HIDDEN,
     FINAL_SELECTED,
     FINAL_UNSELECTED
@@ -64,7 +66,11 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
 
     background_ = new Clutter.Actor();
     text_       = new Clutter.Text.full(
-                        "ubuntu 10", "", Clutter.Color.from_string("black"));
+                        "ubuntu 9", "", Clutter.Color.from_string("black"));
+
+    icon_       = new Clutter.Texture();
+    icon_.load_async = true;
+    icon_.sync_size = false;
 
     color_          = get_random_color();
     selected_color_ = get_depth_color(0);
@@ -100,12 +106,17 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
     background_.z_position = -0.01f;
 
     text_.text = text;
-    text_.width = TILE_SIZE*0.9f;
+    text_.width = TILE_SIZE;
     text_.set_line_alignment(Pango.Alignment.CENTER);
-    text_.z_position = 0.01f;
     text_.set_pivot_point(0.5f, 0.5f);
     text_.line_wrap = true;
     text_.opacity = 0;
+    text_.y =  (int)(TILE_SIZE - text_.height - BORDER);
+
+    load_icon(icon_, icon);
+    icon_.opacity = 0;
+
+    set_size(0);
 
     foreach (var item in sub_menus)
       item.init();
@@ -114,11 +125,13 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
   // shows the MenuItem and all of it's sub menus on the screen ----------------
   public void display(Vector position) {
 
-    if (!isRoot()) {
-      parent_item.actor.add_child(actor);
+    actor.add_child(background_);
+
+    foreach (var child in sub_menus) {
+      actor.add_child(child.actor);
     }
 
-    actor.add_child(background_);
+    actor.add_child(icon_);
     actor.add_child(text_);
 
     parent_menu_.on_cancel.connect(on_cancel);
@@ -147,8 +160,9 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
     actor.remove_child(background_);
     actor.remove_child(text_);
 
-    if (!isRoot())
-      parent_item.actor.remove_child(actor);
+    foreach (var child in sub_menus) {
+      actor.remove_child(child.actor);
+    }
 
     parent_menu_.on_cancel.disconnect(on_cancel);
     parent_menu_.on_select.disconnect(on_select);
@@ -202,6 +216,9 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
   // text written on the item
   private Clutter.Text text_ = null;
 
+  // the icon
+  private Clutter.Texture icon_ = null;
+
   // textures of this actor
   private Clutter.Actor background_ = null;
 
@@ -209,9 +226,10 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
   private Clutter.Color selected_color_;
 
   // initial scale of the texture
-  private const int TILE_SIZE = 100;
+  private const int TILE_SIZE = 110;
   private const int DEPTH = 200;
-  private const int BORDER = 10;
+  private const int BORDER = 5;
+  private const int ICON_SIZE = 64;
 
   // some predefined animation configurations
   private Animatable.Config animation_ease_ = new Animatable.Config.full(
@@ -244,15 +262,25 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
 
   // ---------------------------------------------------------------------------
   private bool on_enter(Clutter.CrossingEvent event) {
-    if (state != State.SELECTED)
-      set_background_color(color_.lighten(), animation_ease_);
+    if (state == State.SELECTABLE) {
+      state = State.SELECTABLE_HOVERED;
+
+      foreach (var child in sub_menus) {
+        child.state = State.PREVIEW_HOVERED;
+      }
+    }
     return true;
   }
 
   // ---------------------------------------------------------------------------
   private bool on_leave(Clutter.CrossingEvent event) {
-    if (state != State.SELECTED)
-      set_background_color(color_, animation_ease_);
+    if (state == State.SELECTABLE_HOVERED) {
+      state = State.SELECTABLE;
+
+      foreach (var child in sub_menus) {
+        child.state = State.PREVIEW;
+      }
+    }
     return true;
   }
 
@@ -372,6 +400,7 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
       case State.SELECTED:
         background_.reactive = true;
         set_background_opacity(255);
+        set_icon_opacity(0);
         set_background_position(new Vector(-BORDER, -BORDER), animation_ease_);
         int count = get_horizontal_children_count();
         int size = TILE_SIZE*count + 2*BORDER;
@@ -387,6 +416,7 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
       case State.SELECTABLE:
         background_.reactive = true;
         set_background_opacity(255);
+        set_icon_opacity(255);
         set_background_color(color_, animation_ease_);
         set_background_position(new Vector(0, 0), animation_ease_);
         set_text_visible(true);
@@ -396,9 +426,19 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
 
         break;
 
+      case State.SELECTABLE_HOVERED:
+        if (sub_menus.size > 0) {
+          set_icon_opacity(0);
+        } else {
+          set_icon_opacity(255);
+        }
+        set_background_color(color_.lighten(), animation_ease_);
+        break;
+
       case State.PREVIEW:
         background_.reactive = false;
         set_background_opacity(50);
+        set_icon_opacity(0);
         set_background_color(color_);
         set_text_visible(false);
         int count = parent_item.get_horizontal_children_count();
@@ -407,14 +447,21 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
         set_position(new Vector(x*size, y*size), animation_ease_);
         break;
 
+      case State.PREVIEW_HOVERED:
+        set_background_opacity(150);
+        set_icon_opacity(150);
+        break;
+
       case State.UNSELECTABLE:
         background_.reactive = false;
         set_background_opacity(155);
+        set_icon_opacity(155);
         set_text_visible(false);
         break;
 
       case State.HIDDEN:
         set_background_opacity(0);
+        set_icon_opacity(0);
         set_text_visible(false);
         set_size(0, animation_ease_);
         break;
@@ -422,12 +469,14 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
       case State.FINAL_SELECTED:
         background_.reactive = false;
         set_background_opacity(255);
+        set_icon_opacity(255);
         set_text_visible(true);
         break;
 
       case State.FINAL_UNSELECTED:
         background_.reactive = false;
         set_background_opacity(0);
+        set_icon_opacity(0);
         set_text_visible(false);
 
         break;
@@ -455,6 +504,11 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
   }
 
   // ---------------------------------------------------------------------------
+  private void set_icon_opacity(uint opacity) {
+    animate(icon_, "opacity", opacity, animation_linear_);
+  }
+
+  // ---------------------------------------------------------------------------
   private void set_background_color(
     Clutter.Color color, Animatable.Config config = new Animatable.Config()) {
 
@@ -467,6 +521,11 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
 
     animate(background_, "width", size, config);
     animate(background_, "height", size, config);
+
+    animate(icon_, "width", size * 0.6, config);
+    animate(icon_, "height", size * 0.6, config);
+    animate(icon_, "x", (int)((size - size * 0.6)/2), config);
+    animate(icon_, "y", (int)((size - size * 0.6)/4), config);
   }
 
   // ---------------------------------------------------------------------------
@@ -481,18 +540,17 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
   private void set_background_position(Vector position,
                             Animatable.Config config = new Animatable.Config()) {
 
-    animate(background_, "x", position.x, config);
-    animate(background_, "y", position.y, config);
+    animate(background_, "x", (int)position.x, config);
+    animate(background_, "y", (int)position.y, config);
   }
 
   // ---------------------------------------------------------------------------
   private void set_position(Vector position,
                             Animatable.Config config = new Animatable.Config()) {
 
-    animate(actor, "x", position.x, config);
-    animate(actor, "y", position.y, config);
+    animate(actor, "x", (int)position.x, config);
+    animate(actor, "y", (int)position.y, config);
 
-    animate(text_, "y", TILE_SIZE/2 - text_.height/2, config);
   }
 
   // ---------------------------------------------------------------------------
@@ -519,6 +577,23 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
     result.alpha = 255;
 
     return result;
+  }
+
+  // ---------------------------------------------------------------------------
+  private void load_icon(Clutter.Texture texture, string icon_name) {
+    try {
+
+      var icon = Icon.get_icon_file(icon_name, ICON_SIZE);
+
+      if (icon != "") {
+        texture.set_from_file(icon);
+      }
+
+    } catch (GLib.Error e) {
+      warning("Failed to load image: " + e.message);
+    }
+
+
   }
 }
 

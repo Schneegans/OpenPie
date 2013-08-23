@@ -182,7 +182,7 @@ public class TransparentWindow : Gtk.Window {
     stage_.save_easing_state();
     stage_.set_easing_mode(Clutter.AnimationMode.LINEAR);
     stage_.set_easing_duration(250);
-    stage_.set_easing_delay(1500);
+    stage_.set_easing_delay(0);
     stage_.set_property("background_color", Clutter.Color() {red = 0, green = 0,
                                                           blue = 0, alpha = 0});
     stage_.restore_easing_state();

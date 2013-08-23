@@ -55,10 +55,20 @@ public interface MenuItem : GLib.Object {
   // returns the path to this menu item ----------------------------------------
   public string get_path() {
     if (get_parent_item() != null) {
-      return get_parent_item().get_path() + "/" + text;
+
+      var result = get_parent_item().get_path();
+
+      if (get_parent_item().get_parent_item() != null) {
+        result += " ";
+      }
+
+      result += "%d".printf(get_parent_item().get_sub_menus().index_of(this));
+
+
+      return result;
     }
 
-    return "/" + text;
+    return "";
   }
 
   // for debugging purposes ----------------------------------------------------
