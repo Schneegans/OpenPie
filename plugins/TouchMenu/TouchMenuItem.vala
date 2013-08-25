@@ -675,7 +675,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   private void set_scale(float scale,
                          Animatable.Config config = new Animatable.Config()) {
 
-    text_.width = background_.width * scale * 0.9f;
+    text_.width = background_.width * scale * 0.8f;
 
     animate(background_, "scale_x", scale, config);
     animate(background_, "scale_y", scale, config);
@@ -688,8 +688,8 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
     animate(background_, "x", absolute_position.x - background_.width/2, config);
     animate(background_, "y", absolute_position.y - background_.height/2, config);
 
-    animate(text_, "x", absolute_position.x - text_.width/2, config);
-    animate(text_, "y", absolute_position.y - text_.height/2, config);
+    animate(text_, "x", (int)(absolute_position.x - text_.width/2), config);
+    animate(text_, "y", (int)(absolute_position.y - text_.height/2), config);
   }
 
   // ---------------------------------------------------------------------------

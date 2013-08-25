@@ -259,13 +259,16 @@ public class TouchMenu : MenuPlugin, Menu {
 
     int item_count = item.sub_menus.size;
     int start_item = 0;
+    double e = 0.00001;
 
-    if (item.parent_item.sub_menus.index_of(item) == 0) {
-      item_count += 1;
-    } else if(item.parent_item.sub_menus.index_of(item) ==
-              item.parent_item.sub_menus.size-1) {
-      start_item += 1;
-      item_count += 1;
+    if (item.angle < GLib.Math.PI+e || item.angle > 2*GLib.Math.PI-e) {
+      if (item.parent_item.sub_menus.index_of(item) == 0) {
+        item_count += 1;
+      } else if(item.parent_item.sub_menus.index_of(item) ==
+                item.parent_item.sub_menus.size-1) {
+        start_item += 1;
+        item_count += 1;
+      }
     }
 
     for (int i=0; i<item.sub_menus.size; ++i) {
