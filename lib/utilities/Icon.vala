@@ -22,7 +22,7 @@ namespace OpenPie {
 // icon theme.                                                                //
 ////////////////////////////////////////////////////////////////////////////////
 
-public class Icon : Image {
+public class Icon : GLib.Object {
 
   //////////////////////////////////////////////////////////////////////////////
   //                          public interface                                //
