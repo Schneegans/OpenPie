@@ -30,7 +30,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
 
-
   /////////////////////////// public variables /////////////////////////////////
 
   public enum State {
@@ -688,8 +687,8 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
     animate(background_, "x", absolute_position.x - background_.width/2, config);
     animate(background_, "y", absolute_position.y - background_.height/2, config);
 
-    animate(text_, "x", absolute_position.x - text_.width/2, config);
-    animate(text_, "y", absolute_position.y - text_.height/2, config);
+    animate(text_, "x", (int)(absolute_position.x - text_.width/2), config);
+    animate(text_, "y", (int)(absolute_position.y - text_.height/2), config);
   }
 
   // ---------------------------------------------------------------------------

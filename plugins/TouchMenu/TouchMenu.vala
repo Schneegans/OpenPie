@@ -116,7 +116,8 @@ public class TouchMenu : MenuPlugin, Menu {
     mouse_layer_.content.invalidate();
 
     Clutter.FrameSource.add(60, () => {
-      if (mouse_layer_ != null && mouse_layer_.content != null)
+    // GLib.Timeout.add(16, () => {
+      if (!closed_)
         mouse_layer_.content.invalidate();
       return !closed_;
     });
@@ -144,7 +145,7 @@ public class TouchMenu : MenuPlugin, Menu {
 
   // ---------------------------------------------------------------------------
   public override void select(MenuItem item, uint close_delay) {
-    selected_ = true;
+    selected_ = item as TouchMenuItem;
 
     base.select(item, close_delay);
   }
@@ -172,7 +173,7 @@ public class TouchMenu : MenuPlugin, Menu {
 
   private Clutter.Actor mouse_layer_ = null;
   private Vector[]      mouse_path_ = {};
-  private bool          selected_ = false;
+  private TouchMenuItem selected_ = null;
   private bool          closed_ = false;
 
   ////////////////////////// private methods ///////////////////////////////////
@@ -213,8 +214,8 @@ public class TouchMenu : MenuPlugin, Menu {
     ctx.paint();
     ctx.set_operator (Cairo.Operator.OVER);
 
-    if (selected_)  ctx.set_source_rgb(0.78, 0.78, 0.78);
-    else            ctx.set_source_rgb(0.58, 0.58, 0.58);
+    if (selected_ != null)  ctx.set_source_rgb(0.62, 0.62, 0.62);
+    else                    ctx.set_source_rgb(0.53, 0.53, 0.53);
 
     ctx.set_line_width(20.0);
     ctx.set_line_join(Cairo.LineJoin.ROUND);
