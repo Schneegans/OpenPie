@@ -33,16 +33,17 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   /////////////////////////// public variables /////////////////////////////////
 
   public enum State {
-    BIG_ATTACHED,   // <- currently moving item
-    BIG_ACTIVE,     // <- currently focused item
-    BIG_INACTIVE,   // <- previously selected items
-    BIG_PREVIEW,    // <- highlighted current items
-    SMALL_ACTIVE,   // <- submenus of the currently focused item
-    SMALL_INACTIVE, // <- submenus of previously selected items
-    SMALL_PREVIEW,  // <- submenus of highlighted items
-    SELECTED,       // <- when a final selection is made
-    HIDDEN,         // <- submenus of submenus
-    FINAL           // <- final disappearance state
+    BIG_ATTACHED_INACTIVE,  // <- currently moving item
+    BIG_ATTACHED_ACTIVE,    // <- currently moving item with previews attached
+    BIG_ACTIVE,             // <- currently focused item
+    BIG_INACTIVE,           // <- previously selected items
+    BIG_PREVIEW,            // <- highlighted current items
+    SMALL_ACTIVE,           // <- submenus of the currently focused item
+    SMALL_INACTIVE,         // <- submenus of previously selected items
+    SMALL_PREVIEW,          // <- submenus of highlighted items
+    SELECTED,               // <- when a final selection is made
+    HIDDEN,                 // <- submenus of submenus
+    FINAL                   // <- final disappearance state
   }
 
   public State  state { get; set; default = State.HIDDEN; }
@@ -181,8 +182,8 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   public TouchMenuItem? get_selected_child() {
     foreach (var child in sub_menus) {
       if (child.state == State.BIG_PREVIEW || child.state == State.BIG_ACTIVE ||
-          child.state == State.BIG_INACTIVE || child.state == State.BIG_ATTACHED ||
-          child.state == State.SELECTED) {
+          child.state == State.BIG_INACTIVE || child.state == State.BIG_ATTACHED_INACTIVE ||
+          child.state == State.SELECTED || child.state == State.BIG_ATTACHED_ACTIVE) {
 
         return child;
       }
@@ -246,6 +247,8 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   private bool preview_requested_ = false;
   private bool preview_interrupt_ = false;
 
+  private bool hovering_ = false;
+
   // trace recognition
   private TouchTrace touch_trace_ = new TouchTrace();
 
@@ -257,9 +260,11 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   // ---------------------------------------------------------------------------
   private void on_key_down(Key key) {
     // initial click on root menu
-    if (state == State.BIG_INACTIVE && !activated) {
+    if (state == State.BIG_INACTIVE && !activated && hovering_) {
       activated = true;
       state = State.BIG_ACTIVE;
+
+      parent_menu_.show_active_area_hint(get_absolute_position(), 1.0f);
 
       foreach (var item in sub_menus) {
         item.state = State.SMALL_ACTIVE;
@@ -270,7 +275,8 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   // ---------------------------------------------------------------------------
   private void on_key_up(Key key) {
 
-    if (state == State.BIG_ATTACHED ||
+    if (state == State.BIG_ATTACHED_INACTIVE ||
+        state == State.BIG_ATTACHED_ACTIVE ||
         state == State.BIG_ACTIVE ||
         state == State.BIG_PREVIEW) {
 
@@ -297,7 +303,13 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
       state = State.HIDDEN;
     }
 
-    GLib.Timeout.add(200, () => {
+    uint hide_time = 200;
+
+    if (state == State.SMALL_ACTIVE || state == State.SMALL_INACTIVE) {
+      hide_time = 0;
+    }
+
+    GLib.Timeout.add(hide_time, () => {
       state = State.FINAL;
       return false;
     });
@@ -308,14 +320,23 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
     if (state == State.BIG_INACTIVE ||
         state == State.BIG_ACTIVE ||
         state == State.BIG_PREVIEW ||
-        state == State.BIG_ATTACHED ) {
+        state == State.BIG_ATTACHED_ACTIVE ||
+        state == State.BIG_ATTACHED_INACTIVE ) {
 
       state = State.SELECTED;
+    } else if (state == State.SMALL_ACTIVE || state == State.SMALL_INACTIVE) {
+      state = State.SMALL_INACTIVE;
     } else {
       state = State.HIDDEN;
     }
 
-    GLib.Timeout.add(1500, () => {
+    uint hide_time = 1500;
+
+    if (state == State.SMALL_ACTIVE || state == State.SMALL_INACTIVE) {
+      hide_time = 1300;
+    }
+
+    GLib.Timeout.add(hide_time, () => {
       state = State.FINAL;
       return false;
     });
@@ -324,11 +345,14 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   // ---------------------------------------------------------------------------
   private bool on_enter(Clutter.CrossingEvent event) {
     parent_menu_.background.set_child_above_sibling(background_, null);
+    hovering_ = true;
+
     return true;
   }
 
   // ---------------------------------------------------------------------------
   private bool on_leave(Clutter.CrossingEvent event) {
+    hovering_ = false;
     return true;
   }
 
@@ -340,7 +364,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   // ---------------------------------------------------------------------------
   private void on_mouse_move(float x, float y) {
 
-    if (state == State.BIG_ATTACHED) {
+    if (state == State.BIG_ATTACHED_INACTIVE) {
 
       var parent_pos = parent_item.get_absolute_position();
       var rel_pos_world_space = new Vector(x - parent_pos.x, y - parent_pos.y);
@@ -348,8 +372,61 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
       set_relative_position(rel_pos_world_space);
       touch_trace_.update(new Vector(x, y));
 
+      var hint_alpha = (4.0f - 4.0f*rel_pos_world_space.length() / TouchMenu.MINIMUM_DISTANCE).clamp(0.0f, 1.0f);
+      parent_menu_.show_active_area_hint(parent_item.get_absolute_position(), hint_alpha);
+
       // if it's still attached
-      if (state == State.BIG_ATTACHED) {
+      if (state == State.BIG_ATTACHED_INACTIVE) {
+
+        // check whether item is outside of inactive range
+        if (rel_pos_world_space.length_sqr() > Math.powf(TouchMenu.MINIMUM_DISTANCE, 2.0f)) {
+          state = State.BIG_ATTACHED_ACTIVE;
+          parent_menu_.hide_active_area_hint();
+
+          foreach (var child in sub_menus) {
+            child.state = State.SMALL_INACTIVE;
+          }
+        }
+
+        // check whether mouse is still in child's sector --- if not, change
+        // currently attached child
+        int child_index = get_hovered_menu(rel_pos_world_space, parent_item);
+
+        if (child_index >= 0 && parent_item.sub_menus.index_of(this) != child_index) {
+
+          state = State.SMALL_INACTIVE;
+
+          foreach (var child in sub_menus) {
+            child.state = State.HIDDEN;
+          }
+
+          parent_item.sub_menus[child_index].state = State.BIG_ATTACHED_INACTIVE;
+          parent_item.sub_menus[child_index].set_relative_position(rel_pos_world_space);
+
+        }
+      }
+
+    } else if (state == State.BIG_ATTACHED_ACTIVE) {
+
+      var parent_pos = parent_item.get_absolute_position();
+      var rel_pos_world_space = new Vector(x - parent_pos.x, y - parent_pos.y);
+
+      set_relative_position(rel_pos_world_space);
+      touch_trace_.update(new Vector(x, y));
+
+
+
+      // if it's still attached
+      if (state == State.BIG_ATTACHED_ACTIVE) {
+
+        // check whether item is inside of inactive range
+        if (rel_pos_world_space.length_sqr() < Math.powf(TouchMenu.MINIMUM_DISTANCE, 2.0f)) {
+          state = State.BIG_ATTACHED_INACTIVE;
+
+          foreach (var child in sub_menus) {
+            child.state = State.HIDDEN;
+          }
+        }
 
         // check whether mouse is still in child's sector --- if not, change
         // currently attached child
@@ -362,7 +439,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
           foreach (var child in sub_menus)
             child.state = State.HIDDEN;
 
-          parent_item.sub_menus[child_index].state = State.BIG_ATTACHED;
+          parent_item.sub_menus[child_index].state = State.BIG_ATTACHED_ACTIVE;
           parent_item.sub_menus[child_index].set_relative_position(rel_pos_world_space);
 
         }
@@ -377,6 +454,8 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
       if (rel_pos.length_sqr() < Math.powf(background_.width*0.5f, 2.0f)) {
 
         state = State.BIG_ACTIVE;
+
+        parent_menu_.show_active_area_hint(get_absolute_position(), 1.0f);
 
         foreach (var child in sub_menus) {
           child.state = State.SMALL_ACTIVE;
@@ -403,10 +482,10 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
             for (int i=0; i<sub_menus.size; ++i) {
               if (i==child_index) {
-                sub_menus[i].state = State.BIG_ATTACHED;
+                sub_menus[i].state = State.BIG_ATTACHED_INACTIVE;
 
                 foreach (var child in sub_menus[i].sub_menus) {
-                  child.state = State.SMALL_INACTIVE;
+                  child.state = State.HIDDEN;
                 }
 
               } else {
@@ -421,7 +500,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
   // ---------------------------------------------------------------------------
   private void on_decision_point(Vector position) {
-    if (state == State.BIG_ATTACHED) {
+    if (state == State.BIG_ATTACHED_INACTIVE || state == State.BIG_ATTACHED_ACTIVE) {
 
       if (sub_menus.size > 0 ) {
         if (!isRoot()) {
@@ -465,9 +544,10 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   private void on_state_change() {
 
     switch (state) {
-      case State.BIG_ATTACHED:
-        set_text_visible(false);
-        set_highlighted(true);
+      case State.BIG_ATTACHED_ACTIVE:
+      case State.BIG_ATTACHED_INACTIVE:
+        set_text_visible(true);
+        set_highlighted(false);
         set_scale(0.4f, animation_ease_);
         grab_global_mouse_events(true);
 
@@ -481,7 +561,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
       case State.BIG_ACTIVE:
         set_text_visible(false);
-        set_highlighted(true);
+        set_highlighted(false);
         set_scale(0.4f, animation_ease_);
         grab_global_mouse_events(true);
         request_preview();
@@ -497,16 +577,16 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
       case State.BIG_PREVIEW:
         set_text_visible(false);
-        set_highlighted(true);
+        set_highlighted(false);
         set_scale(1.0f, animation_ease_);
         grab_global_mouse_events(true);
         break;
 
       case State.SMALL_ACTIVE:
         set_text_visible(false);
-        set_highlighted(true);
-        set_scale(0.2f, animation_ease_);
-        set_relative_radius(50, animation_ease_);
+        set_highlighted(false);
+        set_scale(0.15f, animation_ease_);
+        set_relative_radius(45, animation_ease_);
         grab_global_mouse_events(false);
         cancel_preview();
         break;
@@ -514,15 +594,15 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
       case State.SMALL_INACTIVE:
         set_text_visible(false);
         set_highlighted(false);
-        set_scale(0.2f, animation_ease_);
-        set_relative_radius(50, animation_ease_);
+        set_scale(0.15f, animation_ease_);
+        set_relative_radius(45, animation_ease_);
         grab_global_mouse_events(false);
         cancel_preview();
         break;
 
       case State.SMALL_PREVIEW:
         set_text_visible(true);
-        set_highlighted(true);
+        set_highlighted(false);
         set_scale(0.4f, animation_ease_);
         set_relative_radius(110, animation_ease_);
         grab_global_mouse_events(false);
@@ -531,7 +611,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
       case State.SELECTED:
         set_text_visible(true);
-        set_highlighted(true);
+        set_highlighted(false);
         set_scale(0.4f, animation_ease_);
         grab_global_mouse_events(false);
         cancel_preview();
@@ -540,7 +620,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
       case State.HIDDEN:
         set_text_visible(false);
         set_highlighted(false);
-        set_relative_radius(0.0f, animation_ease_);
+        set_relative_radius(30.0f, animation_ease_);
         set_scale(0.0f, animation_ease_);
         grab_global_mouse_events(false);
         cancel_preview();
@@ -548,7 +628,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
       case State.FINAL:
         set_text_visible(false);
-        set_highlighted(true);
+        set_highlighted(false);
         grab_global_mouse_events(false);
         set_opacity(0);
         cancel_preview();
@@ -588,6 +668,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
         // if there was no interupt
         if (!preview_interrupt_) {
           state = State.BIG_PREVIEW;
+          parent_menu_.show_active_area_hint(get_absolute_position(), 1.0f);
           foreach (var item in sub_menus)
             item.state = State.SMALL_PREVIEW;
         }
@@ -674,7 +755,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   private void set_scale(float scale,
                          Animatable.Config config = new Animatable.Config()) {
 
-    text_.width = background_.width * scale * 0.9f;
+    text_.width = background_.width * scale * 0.8f;
 
     animate(background_, "scale_x", scale, config);
     animate(background_, "scale_y", scale, config);

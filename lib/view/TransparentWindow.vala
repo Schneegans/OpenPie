@@ -158,15 +158,6 @@ public class TransparentWindow : Gtk.Window {
 
   // grabs the input focus -----------------------------------------------------
   public void add_grab() {
-
-    // fade out background
-    stage_.save_easing_state();
-    stage_.set_easing_mode(Clutter.AnimationMode.LINEAR);
-    stage_.set_easing_duration(250);
-    stage_.set_property("background_color", Clutter.Color() {red = 255, green = 255,
-                                                        blue = 255, alpha = 150});
-    stage_.restore_easing_state();
-
     Gtk.grab_add(this);
     FocusGrabber.grab(get_window(), true, true, true);
 
@@ -177,16 +168,6 @@ public class TransparentWindow : Gtk.Window {
 
   // releases the input focus --------------------------------------------------
   public void remove_grab() {
-
-    // fade out background
-    stage_.save_easing_state();
-    stage_.set_easing_mode(Clutter.AnimationMode.LINEAR);
-    stage_.set_easing_duration(250);
-    stage_.set_easing_delay(2000);
-    stage_.set_property("background_color", Clutter.Color() {red = 255, green = 255,
-                                                          blue = 255, alpha = 0});
-    stage_.restore_easing_state();
-
     Gtk.grab_remove(this);
     FocusGrabber.ungrab();
 

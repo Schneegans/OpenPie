@@ -61,9 +61,7 @@ public class TileMenu : MenuPlugin, Menu {
     author      = "Simon Schneegans";
     email       = "code@simonschneegans.de";
     homepage    = "http://www.simonschneegans.de";
-    description = "A TileMenu is a 360-degree-spherical pie menu.";
-
-    // var settings  = new GLib.Settings("org.gnome.openpie.Tilemenu");
+    description = "A TileMenu is a square shaped recursive menu.";
   }
 
   // ---------------------------------------------------------------------------
@@ -99,10 +97,13 @@ public class TileMenu : MenuPlugin, Menu {
 
   ////////////////////////// private methods ///////////////////////////////////
 
-  public TileMenuItem calculate_positions(TileMenuItem root) {
+  // ---------------------------------------------------------------------------
+  private TileMenuItem calculate_positions(TileMenuItem root) {
 
     int count = root.get_horizontal_children_count();
 
+    // distribute children in a square --- if thats not possible, try to make
+    // the resulting shape in x direction larger than in y direction
     for (int i = 0; i<root.sub_menus.size; ++i) {
       var child = root.sub_menus[i];
 

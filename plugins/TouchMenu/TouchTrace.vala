@@ -74,7 +74,7 @@ public class TouchTrace : GLib.Object {
 
         // if nothing happened in between
         if (length == stroke_.length &&
-            Vector.distance(stroke_[0], mouse) > MINIMUM_DISTANCE) {
+            Vector.distance(stroke_[0], mouse) > TouchMenu.MINIMUM_DISTANCE) {
 
           on_decision_point(mouse);
           reset();
@@ -92,7 +92,7 @@ public class TouchTrace : GLib.Object {
       );
 
       if (angle > THRESHOLD_ANGLE &&
-          Vector.distance(stroke_[0], mouse) > MINIMUM_DISTANCE) {
+          Vector.distance(stroke_[0], mouse) > TouchMenu.MINIMUM_DISTANCE) {
 
         on_decision_point(last_position);
         reset();
@@ -107,7 +107,6 @@ public class TouchTrace : GLib.Object {
 
   ////////////////////////////// constants /////////////////////////////////////
 
-  private const int    MINIMUM_DISTANCE = 150;
   private const int    SAMPLING_DISTANCE = 10;
   private const uint   PAUSE_DELAY = 100;
   private const double THRESHOLD_ANGLE = GLib.Math.PI/30.0;
