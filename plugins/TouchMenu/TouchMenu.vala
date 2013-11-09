@@ -57,9 +57,7 @@ public class TouchMenu : MenuPlugin, Menu, Animatable {
   public Clutter.Actor background   { get; construct set; default=null; }
   public Clutter.Actor text         { get; construct set; default=null; }
 
-  public Cogl.Texture bg_normal     { get; construct set; default=null; }
-  public Cogl.Texture bg_highlight  { get; construct set; default=null; }
-
+  public Cogl.Texture[] bg_textures { get; private set; default=null; }
 
   public bool          schematize   { get; construct set; default=false; }
   public bool          hide_mouse   { get; construct set; default=false; }
@@ -99,6 +97,15 @@ public class TouchMenu : MenuPlugin, Menu, Animatable {
                                             menu_description);
     root = adjust_angles(loader.root as TouchMenuItem);
     root.set_parent_menu(this);
+
+    bg_textures = new Cogl.Texture[7];
+    bg_textures[0] = load_texture(plugin_directory + "/data/bg.png");
+    bg_textures[1] = load_texture(plugin_directory + "/data/bg_00.png");
+    bg_textures[2] = load_texture(plugin_directory + "/data/bg_45.png");
+    bg_textures[3] = load_texture(plugin_directory + "/data/bg_90.png");
+    bg_textures[4] = load_texture(plugin_directory + "/data/bg_135.png");
+    bg_textures[5] = load_texture(plugin_directory + "/data/bg_180.png");
+    bg_textures[6] = load_texture(plugin_directory + "/data/bg_item.png");
   }
 
   // ---------------------------------------------------------------------------
@@ -165,11 +172,13 @@ public class TouchMenu : MenuPlugin, Menu, Animatable {
     mouse_layer_.set_content(mouse_layer_canvas);
     mouse_layer_.content.invalidate();
 
-    Clutter.FrameSource.add(60, () => {
-    // GLib.Timeout.add(16, () => {
-      if (!closed_)
-        mouse_layer_.content.invalidate();
-      return !closed_;
+    GLib.Timeout.add(32, () => {
+    // Clutter.FrameSource.add(30, () => {
+      if (!this.closed_) {
+        this.mouse_layer_.content.invalidate();
+      }
+
+      return !this.closed_;
     });
 
     if (hide_mouse) {
@@ -188,9 +197,6 @@ public class TouchMenu : MenuPlugin, Menu, Animatable {
 
     mouse_path_ += start;
     mouse_path_ += start;
-
-    bg_normal = load_texture(plugin_directory + "/data/bg.png");
-    bg_highlight = load_texture(plugin_directory + "/data/bg_highlight.png");
 
     base.display(start);
   }

@@ -92,7 +92,8 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   // called prior to display() -------------------------------------------------
   public void init() {
 
-    // background_.cogl_texture = parent_menu_.bg_normal;
+    set_background_texture();
+
     background_.width = SIZE;
     background_.height = SIZE;
     background_.set_pivot_point(0.5f, 0.5f);
@@ -106,6 +107,8 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
     text_.set_pivot_point(0.5f, 0.5f);
     text_.line_wrap = true;
     text_.opacity = 0;
+    text_.width = SIZE * 0.35f;
+    // text_.font_name = "20";
 
     set_scale(0.0f);
 
@@ -344,7 +347,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
   // ---------------------------------------------------------------------------
   private bool on_enter(Clutter.CrossingEvent event) {
-    parent_menu_.background.set_child_above_sibling(background_, null);
+    // parent_menu_.background.set_child_above_sibling(background_, null);
     hovering_ = true;
 
     return true;
@@ -543,12 +546,13 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   // ---------------------------------------------------------------------------
   private void on_state_change() {
 
+    set_background_texture();
+
     switch (state) {
       case State.BIG_ATTACHED_ACTIVE:
       case State.BIG_ATTACHED_INACTIVE:
         set_text_visible(true);
-        set_highlighted(false);
-        set_scale(0.4f, animation_ease_);
+        set_scale(0.5f, animation_ease_);
         grab_global_mouse_events(true);
 
         touch_trace_.reset();
@@ -560,50 +564,44 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
         break;
 
       case State.BIG_ACTIVE:
-        set_text_visible(false);
-        set_highlighted(false);
-        set_scale(0.4f, animation_ease_);
+        set_text_visible(true);
+        set_scale(0.5f, animation_ease_);
         grab_global_mouse_events(true);
         request_preview();
         break;
 
       case State.BIG_INACTIVE:
         set_text_visible(true);
-        set_highlighted(false);
-        set_scale(0.4f, animation_ease_);
+        set_scale(0.5f, animation_ease_);
         grab_global_mouse_events(true);
         cancel_preview();
         break;
 
       case State.BIG_PREVIEW:
-        set_text_visible(false);
-        set_highlighted(false);
+        set_text_visible(true);
         set_scale(1.0f, animation_ease_);
         grab_global_mouse_events(true);
         break;
 
       case State.SMALL_ACTIVE:
         set_text_visible(false);
-        set_highlighted(false);
-        set_scale(0.15f, animation_ease_);
-        set_relative_radius(45, animation_ease_);
+        set_scale(0.25f, animation_ease_);
+        set_relative_radius(55, animation_ease_);
         grab_global_mouse_events(false);
         cancel_preview();
         break;
 
       case State.SMALL_INACTIVE:
         set_text_visible(false);
-        set_highlighted(false);
-        set_scale(0.15f, animation_ease_);
-        set_relative_radius(45, animation_ease_);
+        set_scale(0.25f, animation_ease_);
+        set_relative_radius(55, animation_ease_);
         grab_global_mouse_events(false);
         cancel_preview();
         break;
 
       case State.SMALL_PREVIEW:
         set_text_visible(true);
-        set_highlighted(false);
-        set_scale(0.4f, animation_ease_);
+        set_scale(0.5f, animation_ease_);
         set_relative_radius(110, animation_ease_);
         grab_global_mouse_events(false);
         cancel_preview();
@@ -611,16 +609,14 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
       case State.SELECTED:
         set_text_visible(true);
-        set_highlighted(false);
-        set_scale(0.4f, animation_ease_);
+        set_scale(0.5f, animation_ease_);
         grab_global_mouse_events(false);
         cancel_preview();
         break;
 
       case State.HIDDEN:
         set_text_visible(false);
-        set_highlighted(false);
-        set_relative_radius(30.0f, animation_ease_);
+        set_relative_radius(35.0f, animation_ease_);
         set_scale(0.0f, animation_ease_);
         grab_global_mouse_events(false);
         cancel_preview();
@@ -628,7 +624,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
 
       case State.FINAL:
         set_text_visible(false);
-        set_highlighted(false);
         grab_global_mouse_events(false);
         set_opacity(0);
         cancel_preview();
@@ -692,15 +687,6 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   }
 
   // ---------------------------------------------------------------------------
-  private void set_highlighted(bool highlighted) {
-    if (highlighted && parent_menu_.bg_highlight != null) {
-      background_.cogl_texture = parent_menu_.bg_highlight;
-    } else if (parent_menu_.bg_normal != null) {
-      background_.cogl_texture = parent_menu_.bg_normal;
-    }
-  }
-
-  // ---------------------------------------------------------------------------
   private void set_relative_radius(
     float radius, Animatable.Config config = new Animatable.Config()) {
 
@@ -755,7 +741,8 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
   private void set_scale(float scale,
                          Animatable.Config config = new Animatable.Config()) {
 
-    text_.width = background_.width * scale * 0.8f;
+    // animate(text_, "scale_x", (scale+1)/2, config);
+    // animate(text_, "scale_y", (scale+1)/2, config);
 
     animate(background_, "scale_x", scale, config);
     animate(background_, "scale_y", scale, config);
@@ -769,7 +756,7 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
     animate(background_, "y", absolute_position.y - background_.height/2, config);
 
     animate(text_, "x", (int)(absolute_position.x - text_.width/2), config);
-    animate(text_, "y", (int)(absolute_position.y - text_.height/2), config);
+    animate(text_, "y", (int)(absolute_position.y - text_.height/2 - 20), config);
   }
 
   // ---------------------------------------------------------------------------
@@ -846,6 +833,32 @@ public class TouchMenuItem : MenuItem, Animatable, GLib.Object {
       parent_menu_.window.on_mouse_move.disconnect(on_mouse_move);
       parent_menu_.window.on_key_up.disconnect(on_key_up);
       parent_menu_.window.on_key_down.disconnect(on_key_down);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  private void set_background_texture() {
+
+    if (sub_menus.size == 0) {
+      background_.cogl_texture = parent_menu_.bg_textures[6];
+    } else if (state == State.BIG_ACTIVE || state == State.BIG_PREVIEW ||
+               state == State.BIG_INACTIVE || state == State.FINAL ||
+               state == State.SELECTED) {
+
+      background_.cogl_texture = parent_menu_.bg_textures[0];
+    } else {
+
+      if (GLib.Math.fabs(angle - 1.0f*GLib.Math.PI) < 0.1) {
+        background_.cogl_texture = parent_menu_.bg_textures[1];
+      } else if (GLib.Math.fabs(angle - 1.25f*GLib.Math.PI) < 0.1) {
+        background_.cogl_texture = parent_menu_.bg_textures[2];
+      } else if (GLib.Math.fabs(angle - 1.5f*GLib.Math.PI) < 0.1) {
+        background_.cogl_texture = parent_menu_.bg_textures[3];
+      } else if (GLib.Math.fabs(angle - 1.75f*GLib.Math.PI) < 0.1) {
+        background_.cogl_texture = parent_menu_.bg_textures[4];
+      } else {
+        background_.cogl_texture = parent_menu_.bg_textures[5];
+      }
     }
   }
 }
