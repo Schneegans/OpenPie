@@ -40,16 +40,21 @@ public abstract class Menu : GLib.Object {
   // emitted when the menu finally disappears from screen
   public signal void on_close(Menu menu);
 
+  /////////////////////// public abstract methods //////////////////////////////
+  // derived classes have to implement them!
+
+  // returns the root MenuItem of the Menu -------------------------------------
+  public abstract MenuItem get_root();
+
+  // sets the menu content which shall be displayed ----------------------------
+  public abstract void set_content(string menu_description);
+
   //////////////////////////// public methods //////////////////////////////////
+  // derived classes may to extend or overide them. Extending is recommended.
 
   // shows the menu on screen --------------------------------------------------
   public virtual void display(Vector position) {
     get_root().display(position);
-  }
-
-  // for debugging purposes ----------------------------------------------------
-  public void print() {
-    get_root().print();
   }
 
   // called before the menu is displayed ---------------------------------------
@@ -84,13 +89,13 @@ public abstract class Menu : GLib.Object {
     on_close(this);
   }
 
-  /////////////////////// public abstract methods //////////////////////////////
+  //////////////////////////// public methods //////////////////////////////////
 
-  // returns the root MenuItem of the Menu -------------------------------------
-  public abstract MenuItem get_root();
+  // for debugging purposes ----------------------------------------------------
+  public void print() {
+    get_root().print();
+  }
 
-  // sets the menu content which shall be displayed ----------------------------
-  public abstract void set_content(string menu_description);
 }
 
 }

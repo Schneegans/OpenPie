@@ -48,12 +48,16 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
   public string text  { get; set; default = "Unnamed Item"; }
   public string icon  { get; set; default = "none"; }
 
-  public int x        { get; set; default = 0; }
-  public int y        { get; set; default = 0; }
-  public int z        { get; set; default = 0; }
+  // the index position of the tile (top left is 0,0), z equals it's depth and
+  // may change when a submenu is opened
+  public int x { get; set; default = 0; }
+  public int y { get; set; default = 0; }
+  public int z { get; set; default = 0; }
 
-  public Clutter.Actor               actor       { get; set; default=null; }
+  // this actor contains background, icon, text and children
+  public Clutter.Actor actor { get; set; default=null; }
 
+  // recursive tree structure
   public weak TileMenuItem           parent_item { get; set; default=null; }
   public Gee.ArrayList<TileMenuItem> sub_menus   { get; set; default=null; }
 
@@ -61,20 +65,21 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
 
   // initializes all members ---------------------------------------------------
   construct {
-    sub_menus   = new Gee.ArrayList<TileMenuItem>();
-    actor       = new Clutter.Actor();
+    sub_menus         = new Gee.ArrayList<TileMenuItem>();
+    actor             = new Clutter.Actor();
 
-    background_ = new Clutter.Actor();
-    text_       = new Clutter.Text.full(
-                        "ubuntu 9", "", Clutter.Color.from_string("black"));
+    background_       = new Clutter.Actor();
+    text_             = new Clutter.Text.full(
+                            "ubuntu 9", "", Clutter.Color.from_string("black"));
 
-    icon_       = new Clutter.Texture();
-    icon_.load_async = true;
-    icon_.sync_size = false;
+    icon_             = new Clutter.Texture();
+    icon_.load_async  = true;
+    icon_.sync_size   = false;
 
-    color_          = get_random_color();
-    selected_color_ = get_depth_color(0);
+    color_            = get_random_color();
+    selected_color_   = get_depth_color(0);
 
+    // update appearance whenever the state changes
     notify["state"].connect(() => {
       on_state_change();
     });
@@ -118,6 +123,7 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
 
     set_size(0);
 
+    // recursive init()
     foreach (var item in sub_menus)
       item.init();
   }
@@ -151,7 +157,6 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
       set_position(position);
       set_active(position);
     }
-
   }
 
   // removes the MenuItem and all of it's sub menus from the screen ------------
@@ -334,15 +339,14 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
     state = State.SELECTED;
 
     // set children to preview mode
-
     if (position != null) {
       var width = TILE_SIZE*get_horizontal_children_count();
       var height = TILE_SIZE*get_vertical_children_count();
-      set_position(new Vector(position.x - width*0.5f, position.y-height*0.5f), animation_ease_);
+      set_position_clamped(new Vector(position.x - width*0.5f, position.y-height*0.5f), animation_ease_);
     } else if (!isRoot()) {
       var width = TILE_SIZE*(get_horizontal_children_count()-1);
       var height = TILE_SIZE*(get_vertical_children_count()-1);
-      set_position(new Vector(x*TILE_SIZE- width*0.5f, y*TILE_SIZE-height*0.5f), animation_ease_);
+      set_position_clamped(new Vector(x*TILE_SIZE- width*0.5f, y*TILE_SIZE-height*0.5f), animation_ease_);
     }
 
     foreach(var child in sub_menus) {
@@ -550,7 +554,38 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
 
     animate(actor, "x", (int)position.x, config);
     animate(actor, "y", (int)position.y, config);
+  }
 
+  // ---------------------------------------------------------------------------
+  private void set_position_clamped(Vector position,
+                            Animatable.Config config = new Animatable.Config()) {
+
+    // clamp position to screen edges
+    float parent_x = 0;
+    float parent_y = 0;
+
+    if (!isRoot()) {
+      parent_item.actor.get_transformed_position(out parent_x, out parent_y);
+    }
+
+    float width = TILE_SIZE*get_horizontal_children_count() + 2*BORDER;
+    float height = TILE_SIZE*get_vertical_children_count() + 2*BORDER;
+
+    float max_x = 0;
+    float max_y = 0;
+    parent_menu_.window.get_size(out max_x, out max_y);
+
+    max_x = max_x - parent_x - width;
+    max_y = max_y - parent_y - height;
+
+    var min_x = -parent_x;
+    var min_y = -parent_y;
+
+    int x = (int)Math.fmin(max_x, Math.fmax(min_x, position.x));
+    int y = (int)Math.fmin(max_y, Math.fmax(min_y, position.y));
+
+    animate(actor, "x", x, config);
+    animate(actor, "y", y, config);
   }
 
   // ---------------------------------------------------------------------------

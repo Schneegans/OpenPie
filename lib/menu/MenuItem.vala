@@ -29,8 +29,14 @@ public interface MenuItem : GLib.Object {
   //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
 
+  /////////////////////// public abstract members //////////////////////////////
+  // derived classes have to implement them!
+
   public abstract string text  { get; set; }
   public abstract string icon  { get; set; }
+
+  /////////////////////// public abstract methods //////////////////////////////
+  // derived classes have to implement them!
 
   // returns all sub menus of this item ----------------------------------------
   public abstract Gee.ArrayList<MenuItem> get_sub_menus();
@@ -49,6 +55,24 @@ public interface MenuItem : GLib.Object {
 
   // removes the MenuItem and all of it's sub menus from the screen ------------
   public abstract void close();
+
+  //////////////////////// public virtual methods //////////////////////////////
+  // derived classes may to extend or overide them. Extending is recommended.
+
+  // for debugging purposes ----------------------------------------------------
+  public virtual void print(int indent = 0) {
+    string space = "";
+
+    for (int i=0; i<indent; ++i)
+      space += "  ";
+
+    debug(space + get_type().name() + ":"
+                + "\"" + this.text
+                + "\" (Icon: \"" + this.icon);
+
+    foreach (var menu in get_sub_menus())
+      menu.print(indent + 1);
+  }
 
   //////////////////////////// public methods //////////////////////////////////
 
@@ -69,21 +93,6 @@ public interface MenuItem : GLib.Object {
     }
 
     return "";
-  }
-
-  // for debugging purposes ----------------------------------------------------
-  public virtual void print(int indent = 0) {
-    string space = "";
-
-    for (int i=0; i<indent; ++i)
-      space += "  ";
-
-    debug(space + get_type().name() + ":"
-                + "\"" + this.text
-                + "\" (Icon: \"" + this.icon);
-
-    foreach (var menu in get_sub_menus())
-      menu.print(indent + 1);
   }
 }
 

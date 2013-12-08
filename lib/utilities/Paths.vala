@@ -53,9 +53,12 @@ public class Paths : GLib.Object {
     }
 
     // get global path
-    string[] search_dirs = {"/usr/share/openpie/",
-                       "/usr/local/share/openpie/",
-                       "/opt/openpie" };
+    string[] search_dirs = {
+      "/usr/share/openpie/",
+      "/usr/local/share/openpie/",
+      "/opt/openpie"
+    };
+
     var global_dir = "";
     foreach (var dir_name in search_dirs) {
       var dir = GLib.File.new_for_path(dir_name);

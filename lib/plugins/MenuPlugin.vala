@@ -25,13 +25,26 @@ public interface MenuPlugin : Menu {
 
   /////////////////////////// public variables /////////////////////////////////
 
+  // name of the plugin, e.g. "Cool.Menu"
   public abstract string name        { get; construct set; }
+
+  // version string, e.g. "2.0"
   public abstract string version     { get; construct set; }
+
+  // name of the main author, e.g. "John Doe"
   public abstract string author      { get; construct set; }
+
+  // email of the main author, e.g. "john.doe@sample.org"
   public abstract string email       { get; construct set; }
+
+  // homepage of the main author, e.g. "www.sample.org"
   public abstract string homepage    { get; construct set; }
+
+  // a description of the menu plugin, e.g. "A Cool.Menu is a very cool menu
+  //                                         because ... and ..."
   public abstract string description { get; construct set; }
 
+  // this gets set by openpie and can be used to access resources
   public abstract string plugin_directory { get; set; }
 
 }
