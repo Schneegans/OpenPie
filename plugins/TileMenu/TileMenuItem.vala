@@ -76,7 +76,7 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
     icon_.load_async  = true;
     icon_.sync_size   = false;
 
-    color_            = get_random_color();
+    color_            = get_depth_color(0);
     selected_color_   = get_depth_color(0);
 
     // update appearance whenever the state changes
@@ -602,14 +602,48 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
   }
 
   // ---------------------------------------------------------------------------
-  private Clutter.Color get_random_color() {
-    var result = Clutter.Color.from_hls(
-      (float)GLib.Random.double_range(0.0, 360.0),
-      (float)GLib.Random.double_range(0.5, 0.8),
-      (float)GLib.Random.double_range(0.2, 0.3)
-    );
+  private Clutter.Color get_texture_color(Gdk.Pixbuf texture) {
 
-    result.alpha = 255;
+    uint width = texture.width;
+    uint height = texture.height;
+    uint row_bytes = texture.rowstride;
+
+    unowned uchar[] data = texture.get_pixels();
+
+    double total = 0.0;
+    double rtotal = 0.0;
+    double gtotal = 0.0;
+    double btotal = 0.0;
+
+    for (uint i = 0; i < width; ++i) {
+      for (uint j = 0; j < height; ++j) {
+        uint pixel = j * row_bytes + i * 4;
+        double r = data[pixel + 0]/255.0;
+        double g = data[pixel + 1]/255.0;
+        double b = data[pixel + 2]/255.0;
+        double a = data[pixel + 3]/255.0;
+
+        double saturation = (Math.fmax (r, Math.fmax (g, b)) - Math.fmin (r, Math.fmin (g, b)));
+        double relevance = 0.1 + 0.9 * a * saturation;
+
+        rtotal +=  (r * relevance);
+        gtotal +=  (g * relevance);
+        btotal +=  (b * relevance);
+
+        total += relevance;
+      }
+    }
+
+    var tmp = new Color.from_rgb((float)(rtotal/total), (float)(gtotal/total), (float)(btotal/total));
+
+    // if (tmp.s > 0.15f) {
+    //   tmp.s = 0.45f;
+    // }
+
+    tmp.v = 0.9f;
+
+    var result = Clutter.Color();
+    result.init((uint8)(255*tmp.r), (uint8)(255*tmp.g), (uint8)(255*tmp.b), 255);
 
     return result;
   }
@@ -621,14 +655,29 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
       var icon = Icon.get_icon_file(icon_name, ICON_SIZE);
 
       if (icon != "") {
-        texture.set_from_file(icon);
+
+        // load it with GDK, since I failed to get pixel data from a
+        // Cogl.Texture.
+        // texture.set_from_file(icon);
+
+        Gdk.Pixbuf pixbuf = new Gdk.Pixbuf.from_file(icon);
+        color_ = get_texture_color(pixbuf);
+
+        texture.set_from_rgb_data(
+          pixbuf.get_pixels(),
+          pixbuf.has_alpha,
+          pixbuf.width,
+          pixbuf.height,
+          pixbuf.rowstride,
+          (pixbuf.bits_per_sample * pixbuf.n_channels)/8,
+          Clutter.TextureFlags.NONE
+        );
+
       }
 
     } catch (GLib.Error e) {
       warning("Failed to load image: " + e.message);
     }
-
-
   }
 }
 
