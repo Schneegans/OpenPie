@@ -80,6 +80,7 @@ public class TileMenu : MenuPlugin, Menu {
   // ---------------------------------------------------------------------------
   public override void display(Vector position) {
     window.get_stage().add_child(root.actor);
+    window.get_stage().button_release_event.connect(on_button_release);
 
     base.display(position);
   }
@@ -87,6 +88,7 @@ public class TileMenu : MenuPlugin, Menu {
   // ---------------------------------------------------------------------------
   public override void close() {
     window.get_stage().remove_child(root.actor);
+    window.get_stage().button_release_event.disconnect(on_button_release);
 
     base.close();
   }
@@ -114,6 +116,14 @@ public class TileMenu : MenuPlugin, Menu {
     }
 
     return root;
+  }
+
+  // ---------------------------------------------------------------------------
+  private bool on_button_release(Clutter.ButtonEvent event) {
+
+    // close menu on background click
+    cancel(500);
+    return true;
   }
 }
 
