@@ -118,7 +118,7 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
     text_.opacity = 0;
     text_.y =  (int)(TILE_SIZE - text_.height - BORDER);
 
-    load_icon(icon_, icon);
+    icon_ = load_icon(icon);
     icon_.opacity = 0;
 
     set_size(0);
@@ -431,17 +431,13 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
         break;
 
       case State.SELECTABLE_HOVERED:
-        if (sub_menus.size > 0) {
-          set_icon_opacity(0);
-        } else {
-          set_icon_opacity(255);
-        }
+        set_icon_opacity(255);
         set_background_color(color_.lighten(), animation_ease_);
         break;
 
       case State.PREVIEW:
         background_.reactive = false;
-        set_background_opacity(50);
+        set_background_opacity(100);
         set_icon_opacity(0);
         set_background_color(color_);
         set_text_visible(false);
@@ -452,14 +448,14 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
         break;
 
       case State.PREVIEW_HOVERED:
-        set_background_opacity(150);
-        set_icon_opacity(150);
+        set_background_opacity(200);
+        set_icon_opacity(0);
         break;
 
       case State.UNSELECTABLE:
         background_.reactive = false;
-        set_background_opacity(155);
-        set_icon_opacity(155);
+        set_background_opacity(100);
+        set_icon_opacity(255);
         set_text_visible(false);
         break;
 
@@ -602,82 +598,10 @@ public class TileMenuItem : MenuItem, Animatable, GLib.Object {
   }
 
   // ---------------------------------------------------------------------------
-  private Clutter.Color get_texture_color(Gdk.Pixbuf texture) {
-
-    uint width = texture.width;
-    uint height = texture.height;
-    uint row_bytes = texture.rowstride;
-
-    unowned uchar[] data = texture.get_pixels();
-
-    double total = 0.0;
-    double rtotal = 0.0;
-    double gtotal = 0.0;
-    double btotal = 0.0;
-
-    for (uint i = 0; i < width; ++i) {
-      for (uint j = 0; j < height; ++j) {
-        uint pixel = j * row_bytes + i * 4;
-        double r = data[pixel + 0]/255.0;
-        double g = data[pixel + 1]/255.0;
-        double b = data[pixel + 2]/255.0;
-        double a = data[pixel + 3]/255.0;
-
-        double saturation = (Math.fmax (r, Math.fmax (g, b)) - Math.fmin (r, Math.fmin (g, b)));
-        double relevance = 0.1 + 0.9 * a * saturation;
-
-        rtotal +=  (r * relevance);
-        gtotal +=  (g * relevance);
-        btotal +=  (b * relevance);
-
-        total += relevance;
-      }
-    }
-
-    var tmp = new Color.from_rgb((float)(rtotal/total), (float)(gtotal/total), (float)(btotal/total));
-
-    // if (tmp.s > 0.15f) {
-    //   tmp.s = 0.45f;
-    // }
-
-    tmp.v = 0.9f;
-
-    var result = Clutter.Color();
-    result.init((uint8)(255*tmp.r), (uint8)(255*tmp.g), (uint8)(255*tmp.b), 255);
-
-    return result;
-  }
-
-  // ---------------------------------------------------------------------------
-  private void load_icon(Clutter.Texture texture, string icon_name) {
-    try {
-
-      var icon = Icon.get_icon_file(icon_name, ICON_SIZE);
-
-      if (icon != "") {
-
-        // load it with GDK, since I failed to get pixel data from a
-        // Cogl.Texture.
-        // texture.set_from_file(icon);
-
-        Gdk.Pixbuf pixbuf = new Gdk.Pixbuf.from_file(icon);
-        color_ = get_texture_color(pixbuf);
-
-        texture.set_from_rgb_data(
-          pixbuf.get_pixels(),
-          pixbuf.has_alpha,
-          pixbuf.width,
-          pixbuf.height,
-          pixbuf.rowstride,
-          (pixbuf.bits_per_sample * pixbuf.n_channels)/8,
-          Clutter.TextureFlags.NONE
-        );
-
-      }
-
-    } catch (GLib.Error e) {
-      warning("Failed to load image: " + e.message);
-    }
+  private Clutter.Texture load_icon(string icon_name) {
+    var icon = new Icon(icon_name, ICON_SIZE);
+    color_ = new Color.from_icon(icon).to_clutter();
+    return icon.to_clutter();
   }
 }
 

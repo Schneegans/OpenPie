@@ -125,7 +125,7 @@ public class Image : GLib.Object {
 
   // Converts the image to a Gdk.Pixbuf. ---------------------------------------
   public Gdk.Pixbuf to_pixbuf() {
-    if (this.surface == null || this.surface.get_data().length <= 0)
+    if (this.surface == null)
       return new Gdk.Pixbuf(Gdk.Colorspace.RGB, true, 8, 1, 1);
 
     var pixbuf = new Gdk.Pixbuf.from_data(this.surface.get_data(), Gdk.Colorspace.RGB, true, 8,
@@ -143,6 +143,32 @@ public class Image : GLib.Object {
     }
 
 		return pixbuf;
+  }
+
+  // Converts the image to a Clutter.Texture. ---------------------------------------
+  public Clutter.Texture to_clutter() {
+
+    var result = new Clutter.Texture();
+
+    if (this.surface == null) {
+      return result;
+    }
+
+    try {
+      result.set_from_rgb_data(
+        surface.get_data(),
+        surface.get_format() == Cairo.Format.ARGB32,
+        surface.get_width(),
+        surface.get_height(),
+        surface.get_stride(),
+        surface.get_format() == Cairo.Format.ARGB32 ? 4 : 3,
+        Clutter.TextureFlags.RGB_FLAG_BGR
+      );
+    } catch (GLib.Error e) {
+      warning("Failed to load image: " + e.message);
+    }
+
+    return result;
   }
 
   // Returns a Cairo.Context for the Image. ------------------------------------

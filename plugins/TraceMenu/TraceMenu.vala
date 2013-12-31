@@ -33,11 +33,13 @@ namespace OpenPie {
 // that's also fun!                                                           //
 ////////////////////////////////////////////////////////////////////////////////
 
-public class TraceMenu : MenuPlugin, Menu {
+public class TraceMenu : MenuPlugin, Menu, Animatable {
 
   //////////////////////////////////////////////////////////////////////////////
   //                         public interface                                 //
   //////////////////////////////////////////////////////////////////////////////
+
+  public static const int    MINIMUM_DISTANCE = 200;
 
   /////////////////////////// public variables /////////////////////////////////
 
@@ -48,16 +50,22 @@ public class TraceMenu : MenuPlugin, Menu {
   public string homepage    { get; construct set; }
   public string description { get; construct set; }
 
+  public TraceMenuItem root         { get; set; default=null; }
+
+  public Clutter.Actor background   { get; construct set; default=null; }
+  public Clutter.Actor text         { get; construct set; default=null; }
+
+  public static bool    schematize  { get; private set; default=false; }
+
   public string plugin_directory    { get; set; }
 
-  public TraceMenuItem root         { public get; public set; default=null; }
-
-  public Clutter.Actor background   { get; construct set; }
-  public Clutter.Actor text         { get; construct set; }
-
-  public bool          schematize   { get; construct set; }
-
   //////////////////////////// public methods //////////////////////////////////
+
+  static construct {
+    var settings  = new GLib.Settings("org.gnome.openpie.tracemenu");
+    schematize    = settings.get_boolean("schematize");
+    current_theme_         = settings.get_string("theme");
+  }
 
   // initializes all members ---------------------------------------------------
   construct {
@@ -75,9 +83,13 @@ public class TraceMenu : MenuPlugin, Menu {
     mouse_layer_  = new Clutter.Actor();
     background    = new Clutter.Actor();
     text          = new Clutter.Actor();
+  }
 
-    var settings  = new GLib.Settings("org.gnome.openpie.tracemenu");
-    schematize    = settings.get_boolean("schematize");
+  public override void init() {
+    var theme_directory = plugin_directory + "/data/themes";
+    load_themes(theme_directory);
+
+    base.init();
   }
 
   // ---------------------------------------------------------------------------
@@ -94,12 +106,62 @@ public class TraceMenu : MenuPlugin, Menu {
   }
 
   // ---------------------------------------------------------------------------
+  public void hide_active_area_hint() {
+    if (active_area_hint_visible_) {
+      active_area_hint_visible_ = false;
+      animate(active_area_hint_, "opacity", 0, animation_fast_);
+      animate(active_area_hint_, "scale_x", 0.5f, animation_fast_);
+      animate(active_area_hint_, "scale_y", 0.5f, animation_fast_);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  public void show_active_area_hint(Vector position, float alpha) {
+
+    if (!active_area_hint_visible_) {
+      active_area_hint_visible_ = true;
+      active_area_hint_.scale_x = 0.5f;
+      active_area_hint_.scale_y = 0.5f;
+      active_area_hint_.x = position.x - active_area_hint_.width/2;
+      active_area_hint_.y = position.y - active_area_hint_.height/2;
+    }
+
+    animate(active_area_hint_, "scale_x", 1.0f + 0.3f * alpha, animation_fast_);
+    animate(active_area_hint_, "scale_y", 1.0f + 0.3f * alpha, animation_fast_);
+
+    animate(active_area_hint_, "opacity", 200 * alpha, animation_fast_);
+    animate(active_area_hint_, "x", position.x - active_area_hint_.width/2, animation_fast_);
+    animate(active_area_hint_, "y", position.y - active_area_hint_.height/2, animation_fast_);
+
+  }
+
+  // ---------------------------------------------------------------------------
   public override void display(Vector position) {
+
+
     int w=0, h=0;
     window.get_size(out w, out h);
     mouse_layer_.width = w;
     mouse_layer_.height = h;
     mouse_layer_.z_position = -1.0f;
+    mouse_layer_.opacity = 0;
+    animate(mouse_layer_, "opacity", 255, animation_slow_);
+
+    try {
+      active_area_hint_ = new Clutter.Texture.from_file(plugin_directory + "/data/active_area_hint.png");
+    } catch (GLib.Error e) {
+      warning("Failed to load image: " + e.message);
+    }
+
+    active_area_hint_.set_size(MINIMUM_DISTANCE*2, MINIMUM_DISTANCE*2);
+    active_area_hint_visible_ = false;
+    active_area_hint_.opacity = 0;
+    active_area_hint_.z_position = -2.0f;
+    active_area_hint_.scale_x = 0.5f;
+    active_area_hint_.scale_y = 0.5f;
+    active_area_hint_.x = position.x - active_area_hint_.width/2;
+    active_area_hint_.y = position.y - active_area_hint_.height/2;
+    active_area_hint_.set_pivot_point(0.5f, 0.5f);
 
     var mouse_layer_canvas = new Clutter.Canvas();
     mouse_layer_canvas.set_size(w, h);
@@ -107,15 +169,19 @@ public class TraceMenu : MenuPlugin, Menu {
     mouse_layer_.set_content(mouse_layer_canvas);
     mouse_layer_.content.invalidate();
 
-    Clutter.FrameSource.add(60, () => {
-      if (mouse_layer_ != null)
-        mouse_layer_.content.invalidate();
-      return !closed_;
+    GLib.Timeout.add(32, () => {
+    // Clutter.FrameSource.add(30, () => {
+      if (!this.closed_) {
+        this.mouse_layer_.content.invalidate();
+      }
+
+      return !this.closed_;
     });
 
     window.on_mouse_move.connect(on_mouse_move);
     window.on_key_up.connect(on_key_up);
 
+    window.get_stage().add_child(active_area_hint_);
     window.get_stage().add_child(mouse_layer_);
     window.get_stage().add_child(background);
     window.get_stage().add_child(text);
@@ -128,7 +194,14 @@ public class TraceMenu : MenuPlugin, Menu {
 
   // ---------------------------------------------------------------------------
   public override void select(MenuItem item, uint close_delay) {
-    selected_ = true;
+    selected_ = item as TraceMenuItem;
+
+    GLib.Timeout.add(close_delay - 500, () => {
+      animate(mouse_layer_, "opacity", 0, animation_slow_);
+      return false;
+    });
+
+    hide_active_area_hint();
 
     base.select(item, close_delay);
   }
@@ -141,11 +214,19 @@ public class TraceMenu : MenuPlugin, Menu {
       window.on_mouse_move.disconnect(on_mouse_move);
       window.on_key_up.disconnect(on_key_up);
 
+      window.get_stage().remove_child(active_area_hint_);
       window.get_stage().remove_child(mouse_layer_);
       window.get_stage().remove_child(background);
       window.get_stage().remove_child(text);
     }
     base.close();
+
+    hide_active_area_hint();
+  }
+
+  // ---------------------------------------------------------------------------
+  public Theme get_current_theme() {
+    return themes[current_theme_];
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -154,12 +235,66 @@ public class TraceMenu : MenuPlugin, Menu {
 
   ////////////////////////// member variables //////////////////////////////////
 
-  private Clutter.Actor mouse_layer_ = null;
-  private Vector[]      mouse_path_ = {};
-  private bool          selected_ = false;
-  private bool          closed_ = false;
+  private Clutter.Actor   mouse_layer_                = null;
+  private Clutter.Texture active_area_hint_           = null;
+  private Vector[]        mouse_path_                 = {};
+  private TraceMenuItem   selected_                   = null;
+  private bool            closed_                     = false;
+  private bool            active_area_hint_visible_   = false;
+
+  // some predefined animation configurations
+  private Animatable.Config animation_fast_ = new Animatable.Config.full(
+    100, Clutter.AnimationMode.EASE_OUT
+  );
+
+  // some predefined animation configurations
+  private Animatable.Config animation_slow_ = new Animatable.Config.full(
+    500, Clutter.AnimationMode.LINEAR
+  );
+
+  private static string  current_theme_ = "Unity";
+  private static Gee.HashMap<string, Theme?> themes = null;
 
   ////////////////////////// private methods ///////////////////////////////////
+
+  private static void load_themes(string directory) {
+    if (themes == null) {
+      themes = new Gee.HashMap<string, Theme?>();
+      try {
+        string name = "";
+        // load global themes
+        var d = Dir.open(directory);
+        while ((name = d.read_name()) != null) {
+          var new_theme = new Theme(directory + "/" + name);
+          if (new_theme.load()) {
+            themes.set(name, new_theme);
+          }
+        }
+
+      } catch (Error e) {
+        warning (e.message);
+      }
+
+      if (themes.size > 0) {
+        if (current_theme_ == "") {
+          current_theme_ = "Unity";
+          warning("No theme specified! Using default...");
+        }
+
+        var theme = themes.values.to_array()[0];
+
+        if (themes.has_key(current_theme_)) {
+          theme = themes[current_theme_];
+        } else {
+          warning("Theme \"" + current_theme_ + "\" not found! Using fallback...");
+        }
+
+        theme.load_images();
+      } else {
+        error("No theme found!");
+      }
+    }
+  }
 
   // ---------------------------------------------------------------------------
   private void on_mouse_move(float x, float y) {
@@ -193,14 +328,15 @@ public class TraceMenu : MenuPlugin, Menu {
   // ---------------------------------------------------------------------------
   private bool draw_background(Cairo.Context ctx, int width, int height) {
 
-    ctx.set_operator (Cairo.Operator.CLEAR);
+    ctx.set_operator (Cairo.Operator.SOURCE);
+    ctx.set_source_rgba(0, 0, 0, 0.4);
     ctx.paint();
     ctx.set_operator (Cairo.Operator.OVER);
 
-    if (selected_)  ctx.set_source_rgb(0.78, 0.78, 0.78);
-    else            ctx.set_source_rgb(0.58, 0.58, 0.58);
+    if (selected_ != null)  ctx.set_source_rgb(1.0, 1.0, 1.0);
+    else                    ctx.set_source_rgb(1.0, 1.0, 1.0);
 
-    ctx.set_line_width(20.0);
+    ctx.set_line_width(25.0);
     ctx.set_line_join(Cairo.LineJoin.ROUND);
     ctx.set_line_cap(Cairo.LineCap.ROUND);
 

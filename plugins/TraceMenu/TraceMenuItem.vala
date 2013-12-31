@@ -30,20 +30,20 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
   //                          public interface                                //
   //////////////////////////////////////////////////////////////////////////////
 
-
   /////////////////////////// public variables /////////////////////////////////
 
   public enum State {
-    BIG_ATTACHED,   // <- currently moving item
-    BIG_ACTIVE,     // <- currently focused item
-    BIG_INACTIVE,   // <- previously selected items
-    BIG_PREVIEW,    // <- highlighted current items
-    SMALL_ACTIVE,   // <- submenus of the currently focused item
-    SMALL_INACTIVE, // <- submenus of previously selected items
-    SMALL_PREVIEW,  // <- submenus of highlighted items
-    SELECTED,       // <- when a final selection is made
-    HIDDEN,         // <- submenus of submenus
-    FINAL           // <- final disappearance state
+    BIG_ATTACHED_INACTIVE,  // <- currently moving item
+    BIG_ATTACHED_ACTIVE,    // <- currently moving item with previews attached
+    BIG_ACTIVE,             // <- currently focused item
+    BIG_INACTIVE,           // <- previously selected items
+    BIG_PREVIEW,            // <- highlighted current items
+    SMALL_ACTIVE,           // <- submenus of the currently focused item
+    SMALL_INACTIVE,         // <- submenus of previously selected items
+    SMALL_PREVIEW,          // <- submenus of highlighted items
+    SELECTED,               // <- when a final selection is made
+    HIDDEN,                 // <- submenus of submenus
+    FINAL                   // <- final disappearance state
   }
 
   public State  state { get; set; default = State.HIDDEN; }
@@ -62,9 +62,6 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
     sub_menus = new Gee.ArrayList<TraceMenuItem>();
 
     background_   = new Clutter.Texture();
-
-    text_ = new Clutter.Text.full(
-      "ubuntu 10", "", Clutter.Color.from_string("black"));
 
     notify["state"].connect(() => {
       on_state_change();
@@ -92,20 +89,12 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
   // called prior to display() -------------------------------------------------
   public void init() {
 
-    load_texture(background_, parent_menu_.plugin_directory + "/data/bg.png");
-    background_.width = SIZE;
-    background_.height = SIZE;
+    set_background_texture();
+
     background_.set_pivot_point(0.5f, 0.5f);
     background_.z_position = -0.01f;
     background_.pick_with_alpha = true;
     background_.reactive = true;
-
-    text_.text = text;
-    text_.set_line_alignment(Pango.Alignment.CENTER);
-    text_.z_position = 0.01f;
-    text_.set_pivot_point(0.5f, 0.5f);
-    text_.line_wrap = true;
-    text_.opacity = 0;
 
     set_scale(0.0f);
 
@@ -131,7 +120,6 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
     }
 
     parent_menu_.background.add_child(background_);
-    parent_menu_.text.add_child(text_);
 
     parent_menu_.on_cancel.connect(on_cancel);
     parent_menu_.on_select.connect(on_select);
@@ -151,7 +139,6 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
   public void close() {
 
     // parent_menu_.background.remove_child(background_);
-    // parent_menu_.text.remove_child(text_);
 
     parent_menu_.on_cancel.disconnect(on_cancel);
     parent_menu_.on_select.disconnect(on_select);
@@ -182,8 +169,8 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
   public TraceMenuItem? get_selected_child() {
     foreach (var child in sub_menus) {
       if (child.state == State.BIG_PREVIEW || child.state == State.BIG_ACTIVE ||
-          child.state == State.BIG_INACTIVE || child.state == State.BIG_ATTACHED ||
-          child.state == State.SELECTED) {
+          child.state == State.BIG_INACTIVE || child.state == State.BIG_ATTACHED_INACTIVE ||
+          child.state == State.SELECTED || child.state == State.BIG_ATTACHED_ACTIVE) {
 
         return child;
       }
@@ -221,17 +208,11 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
   // the menu of which this TraceMenuItem is a member
   private weak TraceMenu parent_menu_ = null;
 
-  // text written on the item
-  private Clutter.Text text_ = null;
-
   // textures of this actor
   private Clutter.Texture background_ = null;
 
   // menu's position relative to its parent
   private Vector relative_position_ = new Vector(0, 0);
-
-  // initial scale of the texture
-  private const int SIZE = 200;
 
   // some predefined animation configurations
   private Animatable.Config animation_ease_ = new Animatable.Config.full(
@@ -243,9 +224,11 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
   );
 
   // preview mode
-  private const float PREVIEW_DELAY = 1.5f;
+  private const float PREVIEW_DELAY = 0.5f;
   private bool preview_requested_ = false;
   private bool preview_interrupt_ = false;
+
+  private bool hovering_ = false;
 
   // trace recognition
   private Trace trace_ = new Trace();
@@ -258,9 +241,11 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
   // ---------------------------------------------------------------------------
   private void on_key_down(Key key) {
     // initial click on root menu
-    if (state == State.BIG_INACTIVE && !activated) {
+    if (state == State.BIG_INACTIVE && !activated && hovering_) {
       activated = true;
       state = State.BIG_ACTIVE;
+
+      parent_menu_.show_active_area_hint(get_absolute_position(), 1.0f);
 
       foreach (var item in sub_menus) {
         item.state = State.SMALL_ACTIVE;
@@ -271,7 +256,8 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
   // ---------------------------------------------------------------------------
   private void on_key_up(Key key) {
 
-    if (state == State.BIG_ATTACHED ||
+    if (state == State.BIG_ATTACHED_INACTIVE ||
+        state == State.BIG_ATTACHED_ACTIVE ||
         state == State.BIG_ACTIVE ||
         state == State.BIG_PREVIEW) {
 
@@ -279,7 +265,7 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
         parent_menu_.cancel(700);
       } else {
         parent_menu_.select(this, 2000);
-        if (!isRoot() && parent_menu_.schematize)
+        if (!isRoot() && TraceMenu.schematize)
           parent_item.schematize();
       }
     }
@@ -298,7 +284,13 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
       state = State.HIDDEN;
     }
 
-    GLib.Timeout.add(200, () => {
+    uint hide_time = 200;
+
+    if (state == State.SMALL_ACTIVE || state == State.SMALL_INACTIVE) {
+      hide_time = 0;
+    }
+
+    GLib.Timeout.add(hide_time, () => {
       state = State.FINAL;
       return false;
     });
@@ -309,14 +301,23 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
     if (state == State.BIG_INACTIVE ||
         state == State.BIG_ACTIVE ||
         state == State.BIG_PREVIEW ||
-        state == State.BIG_ATTACHED ) {
+        state == State.BIG_ATTACHED_ACTIVE ||
+        state == State.BIG_ATTACHED_INACTIVE ) {
 
       state = State.SELECTED;
+    } else if (state == State.SMALL_ACTIVE || state == State.SMALL_INACTIVE) {
+      state = State.SMALL_INACTIVE;
     } else {
       state = State.HIDDEN;
     }
 
-    GLib.Timeout.add(1500, () => {
+    uint hide_time = 1500;
+
+    if (state == State.SMALL_ACTIVE || state == State.SMALL_INACTIVE) {
+      hide_time = 1300;
+    }
+
+    GLib.Timeout.add(hide_time, () => {
       state = State.FINAL;
       return false;
     });
@@ -324,12 +325,15 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
 
   // ---------------------------------------------------------------------------
   private bool on_enter(Clutter.CrossingEvent event) {
-    parent_menu_.background.set_child_above_sibling(background_, null);
+    // parent_menu_.background.set_child_above_sibling(background_, null);
+    hovering_ = true;
+
     return true;
   }
 
   // ---------------------------------------------------------------------------
   private bool on_leave(Clutter.CrossingEvent event) {
+    hovering_ = false;
     return true;
   }
 
@@ -341,7 +345,7 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
   // ---------------------------------------------------------------------------
   private void on_mouse_move(float x, float y) {
 
-    if (state == State.BIG_ATTACHED) {
+    if (state == State.BIG_ATTACHED_INACTIVE) {
 
       var parent_pos = parent_item.get_absolute_position();
       var rel_pos_world_space = new Vector(x - parent_pos.x, y - parent_pos.y);
@@ -349,8 +353,61 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
       set_relative_position(rel_pos_world_space);
       trace_.update(new Vector(x, y));
 
+      var hint_alpha = (4.0f - 4.0f*rel_pos_world_space.length() / TraceMenu.MINIMUM_DISTANCE).clamp(0.0f, 1.0f);
+      parent_menu_.show_active_area_hint(parent_item.get_absolute_position(), hint_alpha);
+
       // if it's still attached
-      if (state == State.BIG_ATTACHED) {
+      if (state == State.BIG_ATTACHED_INACTIVE) {
+
+        // check whether item is outside of inactive range
+        if (rel_pos_world_space.length_sqr() > Math.powf(TraceMenu.MINIMUM_DISTANCE, 2.0f)) {
+          state = State.BIG_ATTACHED_ACTIVE;
+          parent_menu_.hide_active_area_hint();
+
+          foreach (var child in sub_menus) {
+            child.state = State.SMALL_INACTIVE;
+          }
+        }
+
+        // check whether mouse is still in child's sector --- if not, change
+        // currently attached child
+        int child_index = get_hovered_menu(rel_pos_world_space, parent_item);
+
+        if (child_index >= 0 && parent_item.sub_menus.index_of(this) != child_index) {
+
+          state = State.SMALL_INACTIVE;
+
+          foreach (var child in sub_menus) {
+            child.state = State.HIDDEN;
+          }
+
+          parent_item.sub_menus[child_index].state = State.BIG_ATTACHED_INACTIVE;
+          parent_item.sub_menus[child_index].set_relative_position(rel_pos_world_space);
+
+        }
+      }
+
+    } else if (state == State.BIG_ATTACHED_ACTIVE) {
+
+      var parent_pos = parent_item.get_absolute_position();
+      var rel_pos_world_space = new Vector(x - parent_pos.x, y - parent_pos.y);
+
+      set_relative_position(rel_pos_world_space);
+      trace_.update(new Vector(x, y));
+
+
+
+      // if it's still attached
+      if (state == State.BIG_ATTACHED_ACTIVE) {
+
+        // check whether item is inside of inactive range
+        if (rel_pos_world_space.length_sqr() < Math.powf(TraceMenu.MINIMUM_DISTANCE, 2.0f)) {
+          state = State.BIG_ATTACHED_INACTIVE;
+
+          foreach (var child in sub_menus) {
+            child.state = State.HIDDEN;
+          }
+        }
 
         // check whether mouse is still in child's sector --- if not, change
         // currently attached child
@@ -363,7 +420,7 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
           foreach (var child in sub_menus)
             child.state = State.HIDDEN;
 
-          parent_item.sub_menus[child_index].state = State.BIG_ATTACHED;
+          parent_item.sub_menus[child_index].state = State.BIG_ATTACHED_ACTIVE;
           parent_item.sub_menus[child_index].set_relative_position(rel_pos_world_space);
 
         }
@@ -378,6 +435,8 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
       if (rel_pos.length_sqr() < Math.powf(background_.width*0.5f, 2.0f)) {
 
         state = State.BIG_ACTIVE;
+
+        parent_menu_.show_active_area_hint(get_absolute_position(), 1.0f);
 
         foreach (var child in sub_menus) {
           child.state = State.SMALL_ACTIVE;
@@ -394,7 +453,7 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
 
         var rel_pos = to_item_space(this, new Vector(x, y));
 
-        if (rel_pos.length_sqr() > 2.0f*Math.powf(background_.width*0.5f, 2.0f)) {
+        if (rel_pos.length_sqr() > Math.powf(background_.width*0.5f, 2.0f)) {
 
           int child_index = get_hovered_menu(rel_pos, this);
 
@@ -404,14 +463,14 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
 
             for (int i=0; i<sub_menus.size; ++i) {
               if (i==child_index) {
-                sub_menus[i].state = State.BIG_ATTACHED;
-
-              } else {
-                sub_menus[i].state = State.SMALL_INACTIVE;
+                sub_menus[i].state = State.BIG_ATTACHED_INACTIVE;
 
                 foreach (var child in sub_menus[i].sub_menus) {
                   child.state = State.HIDDEN;
                 }
+
+              } else {
+                sub_menus[i].state = State.SMALL_INACTIVE;
               }
             }
           }
@@ -422,7 +481,7 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
 
   // ---------------------------------------------------------------------------
   private void on_decision_point(Vector position) {
-    if (state == State.BIG_ATTACHED) {
+    if (state == State.BIG_ATTACHED_INACTIVE || state == State.BIG_ATTACHED_ACTIVE) {
 
       if (sub_menus.size > 0 ) {
         if (!isRoot()) {
@@ -465,11 +524,12 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
   // ---------------------------------------------------------------------------
   private void on_state_change() {
 
+    // set_background_texture();
+
     switch (state) {
-      case State.BIG_ATTACHED:
-        set_text_visible(false);
-        set_highlighted(true);
-        set_scale(0.4f, animation_ease_);
+      case State.BIG_ATTACHED_ACTIVE:
+      case State.BIG_ATTACHED_INACTIVE:
+        set_scale(0.5f, animation_ease_);
         grab_global_mouse_events(true);
 
         trace_.reset();
@@ -481,75 +541,57 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
         break;
 
       case State.BIG_ACTIVE:
-        set_text_visible(false);
-        set_highlighted(true);
-        set_scale(0.3f, animation_ease_);
+        set_scale(1.0f, animation_ease_);
         grab_global_mouse_events(true);
         request_preview();
         break;
 
       case State.BIG_INACTIVE:
-        set_text_visible(true);
-        set_highlighted(false);
-        set_scale(0.4f, animation_ease_);
+        set_scale(0.9f, animation_ease_);
         grab_global_mouse_events(true);
         cancel_preview();
         break;
 
       case State.BIG_PREVIEW:
-        set_text_visible(false);
-        set_highlighted(true);
-        set_scale(0.7f, animation_ease_);
+        set_scale(1.1f, animation_ease_);
         grab_global_mouse_events(true);
         break;
 
       case State.SMALL_ACTIVE:
-        set_text_visible(false);
-        set_highlighted(true);
-        set_scale(0.3f, animation_ease_);
-        set_relative_radius(80, animation_ease_);
+        set_scale(0.5f, animation_ease_);
+        set_relative_radius(55, animation_ease_);
         grab_global_mouse_events(false);
         cancel_preview();
         break;
 
       case State.SMALL_INACTIVE:
-        set_text_visible(false);
-        set_highlighted(false);
-        set_scale(0.2f, animation_ease_);
-        set_relative_radius(40, animation_ease_);
+        set_scale(0.5f, animation_ease_);
+        set_relative_radius(55, animation_ease_);
         grab_global_mouse_events(false);
         cancel_preview();
         break;
 
       case State.SMALL_PREVIEW:
-        set_text_visible(true);
-        set_highlighted(true);
-        set_scale(0.5f, animation_ease_);
-        set_relative_radius(140, animation_ease_);
+        set_scale(0.8f, animation_ease_);
+        set_relative_radius(110, animation_ease_);
         grab_global_mouse_events(false);
         cancel_preview();
         break;
 
       case State.SELECTED:
-        set_text_visible(true);
-        set_highlighted(true);
-        set_scale(0.4f, animation_ease_);
+        set_scale(1.0f, animation_ease_);
         grab_global_mouse_events(false);
         cancel_preview();
         break;
 
       case State.HIDDEN:
-        set_text_visible(false);
-        set_highlighted(false);
-        set_relative_radius(0.0f, animation_ease_);
+        set_relative_radius(35.0f, animation_ease_);
         set_scale(0.0f, animation_ease_);
         grab_global_mouse_events(false);
         cancel_preview();
         break;
 
       case State.FINAL:
-        set_text_visible(false);
-        set_highlighted(true);
         grab_global_mouse_events(false);
         set_opacity(0);
         cancel_preview();
@@ -589,10 +631,9 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
         // if there was no interupt
         if (!preview_interrupt_) {
           state = State.BIG_PREVIEW;
-          foreach (var item in sub_menus) {
+          parent_menu_.show_active_area_hint(get_absolute_position(), 1.0f);
+          foreach (var item in sub_menus)
             item.state = State.SMALL_PREVIEW;
-            parent_menu_.background.set_child_above_sibling(item.background_, null);
-          }
         }
 
         preview_requested_ = false;
@@ -603,25 +644,8 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
   }
 
   // ---------------------------------------------------------------------------
-  private void set_text_visible(bool visible) {
-    animate(text_, "opacity", visible ? 255 : 0, animation_linear_);
-  }
-
-  // ---------------------------------------------------------------------------
   private void set_opacity(uint opacity) {
-    animate(text_, "opacity", opacity, animation_linear_);
     animate(background_, "opacity", opacity, animation_linear_);
-  }
-
-  // ---------------------------------------------------------------------------
-  private void set_highlighted(bool highlighted) {
-
-    string texture = parent_menu_.plugin_directory;
-
-    if (highlighted) texture += "/data/bg_highlight.png";
-    else             texture += "/data/bg.png";
-
-    load_texture(background_, texture);
   }
 
   // ---------------------------------------------------------------------------
@@ -679,8 +703,6 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
   private void set_scale(float scale,
                          Animatable.Config config = new Animatable.Config()) {
 
-    text_.width = background_.width * scale * 0.9f;
-
     animate(background_, "scale_x", scale, config);
     animate(background_, "scale_y", scale, config);
   }
@@ -691,12 +713,9 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
 
     animate(background_, "x", absolute_position.x - background_.width/2, config);
     animate(background_, "y", absolute_position.y - background_.height/2, config);
-
-    animate(text_, "x", absolute_position.x - text_.width/2, config);
-    animate(text_, "y", absolute_position.y - text_.height/2, config);
   }
 
-  // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
   private int get_hovered_menu(Vector direction, TraceMenuItem parent) {
 
     int children_count = parent.sub_menus.size;
@@ -747,29 +766,34 @@ public class TraceMenuItem : MenuItem, Animatable, GLib.Object {
   }
 
   // ---------------------------------------------------------------------------
-  private bool load_texture(Clutter.Texture target, string path) {
-    try {
-      target.set_from_file(path);
-      return true;
-
-    } catch (GLib.Error e) {
-      warning("Failed to set background image: " + e.message);
-    }
-
-    return false;
-  }
-
-  // ---------------------------------------------------------------------------
   private void grab_global_mouse_events(bool grab) {
+
+    parent_menu_.window.on_mouse_move.disconnect(on_mouse_move);
+    parent_menu_.window.on_key_up.disconnect(on_key_up);
+    parent_menu_.window.on_key_down.disconnect(on_key_down);
+
     if (grab) {
       parent_menu_.window.on_mouse_move.connect(on_mouse_move);
       parent_menu_.window.on_key_up.connect(on_key_up);
       parent_menu_.window.on_key_down.connect(on_key_down);
-    } else {
-      parent_menu_.window.on_mouse_move.disconnect(on_mouse_move);
-      parent_menu_.window.on_key_up.disconnect(on_key_up);
-      parent_menu_.window.on_key_down.disconnect(on_key_down);
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  private void set_background_texture() {
+
+    var icon = new ThemedIcon(parent_menu_.get_current_theme(), text, icon);
+    background_ = icon.to_clutter();
+
+    // if (sub_menus.size == 0) {
+
+    // } else if (state == State.BIG_ACTIVE || state == State.BIG_PREVIEW ||
+    //            state == State.BIG_INACTIVE || state == State.FINAL ||
+    //            state == State.SELECTED) {
+
+    // } else {
+
+    // }
   }
 }
 

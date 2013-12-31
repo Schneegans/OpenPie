@@ -11,5 +11,13 @@
       </description>
     </key>
 
+    <key name="menu-scale" type="d">
+      <default>1.0</default>
+      <summary>The global scale of all menus.</summary>
+      <description>
+        The global scale of all menus of OpenPie.
+      </description>
+    </key>
+
   </schema>
 </schemalist>

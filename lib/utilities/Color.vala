@@ -99,9 +99,16 @@ public class Color: GLib.Object {
 
     Color.from_rgb((float)(rtotal/total), (float)(gtotal/total), (float)(btotal/total));
 
-    if (s > 0.15f) s = 0.65f;
+    // if (s > 0.15f) s = 0.65f;
 
-    v = 1.0f;
+    v = 0.9f;
+  }
+
+  // Converts this color to a Clutter.Color. -----------------------------------
+  public Clutter.Color to_clutter() {
+    var result = Clutter.Color();
+    result.init((uint8)(255*r), (uint8)(255*g), (uint8)(255*b), 255);
+    return result;
   }
 
   // The reddish part of the color. --------------------------------------------
