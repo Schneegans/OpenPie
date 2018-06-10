@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.openpie.Daemon
+Exec=/home/simon/Projects/gnome-pie/OpenPie/install/bin/openpie-daemon --gapplication-service
